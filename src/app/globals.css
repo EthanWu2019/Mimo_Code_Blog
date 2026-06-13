@@ -100,3 +100,26 @@ body {
   background: rgba(10, 10, 11, 0.8);
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
+
+/* View Transitions API - theme toggle circle reveal */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none !important;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-group(root) {
+  animation: none;
+}
+
+::view-transition-image-pair(root) {
+  isolation: auto;
+}

@@ -1,8 +1,18 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 
 type Theme = 'dark' | 'light';
+
+// View Transitions API 类型声明
+interface Document {
+  startViewTransition?: (callback: () => void) => ViewTransition;
+}
+
+interface ViewTransition {
+  ready: Promise<void>;
+  finished: Promise<void>;
+}
 
 const ThemeContext = createContext<{
   theme: Theme;
@@ -15,6 +25,7 @@ const ThemeContext = createContext<{
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
+  const isAnimatingRef = useRef(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('theme') as Theme;
@@ -25,45 +36,58 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleTheme = useCallback((x?: number, y?: number) => {
-    const next = theme === 'dark' ? 'light' : 'dark';
+    if (isAnimatingRef.current) return;
+
     const cx = x ?? window.innerWidth / 2;
     const cy = y ?? window.innerHeight / 2;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
 
-    // 1. 先切换真实 DOM 的主题（此时用户还看不到，因为会被快照覆盖）
-    document.documentElement.classList.remove('dark', 'light');
-    document.documentElement.classList.add(next);
-    localStorage.setItem('theme', next);
-    setTheme(next);
+    // 计算从点击位置到屏幕四角的最大距离
+    const maxRadius = Math.ceil(
+      Math.sqrt(Math.max(cx, w - cx) ** 2 + Math.max(cy, h - cy) ** 2)
+    );
 
-    // 2. 创建旧主题的快照覆盖在上面
-    const snapshot = document.documentElement.cloneNode(true) as HTMLElement;
-    snapshot.style.position = 'fixed';
-    snapshot.style.inset = '0';
-    snapshot.style.zIndex = '99998';
-    snapshot.style.margin = '0';
-    snapshot.style.width = '100vw';
-    snapshot.style.height = '100vh';
-    snapshot.style.overflow = 'hidden';
-    snapshot.style.pointerEvents = 'none';
-    snapshot.classList.remove('dark', 'light');
-    snapshot.classList.add(theme); // 旧主题
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
 
-    // 3. 快照从全屏开始，逐渐缩小到点击位置（露出下面的新主题）
-    const maxR = Math.sqrt(Math.max(cx, window.innerWidth - cx) ** 2 + Math.max(cy, window.innerHeight - cy) ** 2);
-    snapshot.style.clipPath = `circle(${maxR}px at ${cx}px ${cy}px)`;
-    snapshot.style.transition = 'clip-path 0.65s cubic-bezier(0.4, 0, 0.2, 1)';
+    if (document.startViewTransition) {
+      isAnimatingRef.current = true;
 
-    document.body.appendChild(snapshot);
-
-    // 4. 下一帧开始收缩动画
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        snapshot.style.clipPath = `circle(0px at ${cx}px ${cy}px)`;
+      // 启动 View Transition - 自动捕获新旧快照
+      const transition = document.startViewTransition(() => {
+        document.documentElement.classList.remove('dark', 'light');
+        document.documentElement.classList.add(newTheme);
+        setTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
       });
-    });
 
-    // 5. 动画结束后移除快照
-    setTimeout(() => snapshot.remove(), 700);
+      // 当 transition 准备好后，执行 clip-path 动画
+      transition.ready.then(() => {
+        document.documentElement.animate(
+          {
+            clipPath: [
+              `circle(0px at ${cx}px ${cy}px)`,           // 起点：0半径的圆
+              `circle(${maxRadius}px at ${cx}px ${cy}px)`, // 终点：覆盖全屏的圆
+            ],
+          },
+          {
+            duration: 500,
+            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            pseudoElement: '::view-transition-new(root)',  // 作用于新视图
+          }
+        );
+      });
+
+      transition.finished.then(() => {
+        isAnimatingRef.current = false;
+      });
+    } else {
+      // 降级处理：不支持 View Transitions API 的浏览器
+      document.documentElement.classList.remove('dark', 'light');
+      document.documentElement.classList.add(newTheme);
+      setTheme(newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
   }, [theme]);
 
   if (!mounted) return <>{children}</>;
