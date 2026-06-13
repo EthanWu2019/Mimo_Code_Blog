@@ -5,7 +5,7 @@ echo   Ethan's Blog - One-Click Startup
 echo ========================================
 echo.
 
-echo [1/5] Starting Docker services (PostgreSQL + Redis)...
+echo [1/6] Starting Docker services (PostgreSQL + Redis)...
 docker compose up -d
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to start Docker. Make sure Docker Desktop is running.
@@ -15,12 +15,22 @@ if %errorlevel% neq 0 (
 echo [OK] Docker services started
 echo.
 
-echo [2/5] Waiting for database to be ready...
+echo [2/6] Waiting for database to be ready...
 timeout /t 3 /nobreak >nul
 echo [OK] Database ready
 echo.
 
-echo [3/5] Generating Prisma client...
+echo [3/6] Installing dependencies...
+call npm install
+if %errorlevel% neq 0 (
+    echo [ERROR] npm install failed
+    pause
+    exit /b 1
+)
+echo [OK] Dependencies installed
+echo.
+
+echo [4/6] Generating Prisma client...
 call npx prisma generate
 if %errorlevel% neq 0 (
     echo [ERROR] Prisma generate failed
@@ -30,7 +40,7 @@ if %errorlevel% neq 0 (
 echo [OK] Prisma client generated
 echo.
 
-echo [4/5] Syncing database schema...
+echo [5/6] Syncing database schema...
 call npx prisma db push
 if %errorlevel% neq 0 (
     echo [WARNING] Database sync had issues, but continuing...
@@ -38,7 +48,7 @@ if %errorlevel% neq 0 (
 echo [OK] Database schema synced
 echo.
 
-echo [5/5] Cleaning cache and starting Next.js...
+echo [6/6] Cleaning cache and starting Next.js...
 if exist ".next" (
     rmdir /s /q .next
     echo [OK] Cleaned .next cache
