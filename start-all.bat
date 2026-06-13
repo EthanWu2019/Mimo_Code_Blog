@@ -5,22 +5,35 @@ echo   Ethan's Blog - One-Click Startup
 echo ========================================
 echo.
 
-echo [1/6] Starting Docker services (PostgreSQL + Redis)...
+echo [1/7] Starting Docker Desktop...
+start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+echo Waiting for Docker to be ready...
+:wait_loop
+timeout /t 5 /nobreak >nul
+docker info >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Docker not ready yet, waiting...
+    goto wait_loop
+)
+echo [OK] Docker Desktop started
+echo.
+
+echo [2/7] Starting Docker services (PostgreSQL + Redis)...
 docker compose up -d
 if %errorlevel% neq 0 (
-    echo [ERROR] Failed to start Docker. Make sure Docker Desktop is running.
+    echo [ERROR] Failed to start Docker services
     pause
     exit /b 1
 )
 echo [OK] Docker services started
 echo.
 
-echo [2/6] Waiting for database to be ready...
+echo [3/7] Waiting for database to be ready...
 timeout /t 3 /nobreak >nul
 echo [OK] Database ready
 echo.
 
-echo [3/6] Installing dependencies...
+echo [4/7] Installing dependencies...
 call npm install
 if %errorlevel% neq 0 (
     echo [ERROR] npm install failed
@@ -30,7 +43,7 @@ if %errorlevel% neq 0 (
 echo [OK] Dependencies installed
 echo.
 
-echo [4/6] Generating Prisma client...
+echo [5/7] Generating Prisma client...
 call npx prisma generate
 if %errorlevel% neq 0 (
     echo [ERROR] Prisma generate failed
@@ -40,7 +53,7 @@ if %errorlevel% neq 0 (
 echo [OK] Prisma client generated
 echo.
 
-echo [5/6] Syncing database schema...
+echo [6/7] Syncing database schema...
 call npx prisma db push
 if %errorlevel% neq 0 (
     echo [WARNING] Database sync had issues, but continuing...
@@ -48,7 +61,7 @@ if %errorlevel% neq 0 (
 echo [OK] Database schema synced
 echo.
 
-echo [6/6] Cleaning cache and starting Next.js...
+echo [7/7] Cleaning cache and starting Next.js...
 if exist ".next" (
     rmdir /s /q .next
     echo [OK] Cleaned .next cache
