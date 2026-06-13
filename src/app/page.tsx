@@ -34,7 +34,10 @@ export default function Home() {
   const reduce = useReducedMotion();
 
   useEffect(() => {
-    fetch('/api/posts').then(r => r.json()).then(d => { setPosts(d); setLoading(false); }).catch(() => setLoading(false));
+    fetch('/api/posts')
+      .then(r => r.json())
+      .then(d => { setPosts(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
   const allTags = Array.from(new Set(posts.flatMap(p => p.tags.map(t => t.name))));
