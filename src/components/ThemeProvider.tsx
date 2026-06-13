@@ -29,7 +29,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const cx = x ?? window.innerWidth / 2;
     const cy = y ?? window.innerHeight / 2;
 
-    // Snapshot current state
+    // 1. 先切换真实 DOM 的主题（此时用户还看不到，因为会被快照覆盖）
+    document.documentElement.classList.remove('dark', 'light');
+    document.documentElement.classList.add(next);
+    localStorage.setItem('theme', next);
+    setTheme(next);
+
+    // 2. 创建旧主题的快照覆盖在上面
     const snapshot = document.documentElement.cloneNode(true) as HTMLElement;
     snapshot.style.position = 'fixed';
     snapshot.style.inset = '0';
@@ -39,28 +45,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     snapshot.style.height = '100vh';
     snapshot.style.overflow = 'hidden';
     snapshot.style.pointerEvents = 'none';
-    snapshot.style.transition = 'clip-path 0.65s cubic-bezier(0.4, 0, 0.2, 1)';
     snapshot.classList.remove('dark', 'light');
-    snapshot.classList.add(theme);
+    snapshot.classList.add(theme); // 旧主题
 
-    // Switch theme on real DOM
-    document.documentElement.classList.remove('dark', 'light');
-    document.documentElement.classList.add(next);
-    localStorage.setItem('theme', next);
-    setTheme(next);
-
-    // Clip snapshot so new theme is visible, then shrink clip to hide old
+    // 3. 快照从全屏开始，逐渐缩小到点击位置（露出下面的新主题）
     const maxR = Math.sqrt(Math.max(cx, window.innerWidth - cx) ** 2 + Math.max(cy, window.innerHeight - cy) ** 2);
     snapshot.style.clipPath = `circle(${maxR}px at ${cx}px ${cy}px)`;
+    snapshot.style.transition = 'clip-path 0.65s cubic-bezier(0.4, 0, 0.2, 1)';
 
     document.body.appendChild(snapshot);
 
+    // 4. 下一帧开始收缩动画
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         snapshot.style.clipPath = `circle(0px at ${cx}px ${cy}px)`;
       });
     });
 
+    // 5. 动画结束后移除快照
     setTimeout(() => snapshot.remove(), 700);
   }, [theme]);
 
