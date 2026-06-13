@@ -5,19 +5,26 @@
 :root {
   --background: #fafafa;
   --foreground: #09090b;
+  --accent: #2563eb;
+  --accent-muted: #3b82f6;
   color-scheme: light;
 }
 
 .dark {
-  --background: #06060a;
+  --background: #0a0a0b;
   --foreground: #fafafa;
+  --accent: #60a5fa;
+  --accent-muted: #93bbfd;
   color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --color-accent: var(--accent);
+  --color-accent-muted: var(--accent-muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 html {
@@ -33,12 +40,12 @@ body {
 }
 
 ::selection {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(37, 99, 235, 0.2);
   color: inherit;
 }
 
 .dark ::selection {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(96, 165, 250, 0.2);
 }
 
 * {
@@ -57,38 +64,39 @@ body {
 *::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.2); }
 .dark *::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.15); }
 
+/* Glass morphism - refined */
 .glass {
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .dark .glass {
-  background: rgba(10, 10, 18, 0.5);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .glass-subtle {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(16px) saturate(1.5);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px) saturate(1.5);
+  -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .dark .glass-subtle {
-  background: rgba(10, 10, 18, 0.3);
-  border-color: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .glass-nav {
-  background: rgba(250, 250, 250, 0.6);
-  backdrop-filter: blur(40px) saturate(2);
-  -webkit-backdrop-filter: blur(40px) saturate(2);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgba(250, 250, 250, 0.8);
+  backdrop-filter: blur(24px) saturate(2);
+  -webkit-backdrop-filter: blur(24px) saturate(2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .dark .glass-nav {
-  background: rgba(6, 6, 10, 0.55);
-  border-bottom-color: rgba(255, 255, 255, 0.04);
+  background: rgba(10, 10, 11, 0.8);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
