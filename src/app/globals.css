@@ -119,19 +119,6 @@ body {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* 覆盖 glass-refraction 的默认参数 - 更模糊 */
-:root {
-  --gr-blur: 40px;
-  --gr-saturation: 1.8;
-  --gr-bg-start: rgba(18, 22, 35, 0.6);
-  --gr-bg-end: rgba(12, 16, 28, 0.55);
-}
-
-.dark {
-  --gr-bg-start: rgba(10, 10, 15, 0.65);
-  --gr-bg-end: rgba(8, 8, 12, 0.6);
-}
-
 /* View Transitions API - theme toggle */
 ::view-transition-old(root),
 ::view-transition-new(root) {

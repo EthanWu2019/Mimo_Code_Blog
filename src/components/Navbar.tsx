@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from './ThemeProvider';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { Glass } from 'glass-refraction';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -21,9 +20,19 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // 主页滚动 80vh 后切换，文章页滚动 200px 就切换
-      const threshold = isPostPage ? 200 : window.innerHeight * 0.8;
-      setIsCompact(window.scrollY > threshold);
+      if (isPostPage) {
+        // 文章详情页：滚动 50px 就缩短
+        setIsCompact(window.scrollY > 50);
+      } else {
+        // 主页：滚动到文章列表 (#posts) 才缩短
+        const postsSection = document.getElementById('posts');
+        if (postsSection) {
+          const rect = postsSection.getBoundingClientRect();
+          setIsCompact(rect.top <= 100);
+        } else {
+          setIsCompact(window.scrollY > window.innerHeight);
+        }
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -39,13 +48,12 @@ export default function Navbar() {
         transition: 'padding 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      <Glass 
-        as="nav"
-        className="rounded-full px-6 h-14 flex items-center justify-between w-full"
+      <div 
+        className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
         style={{
           maxWidth: isPostPage 
-            ? (isCompact ? '72rem' : '80rem')  // 文章页面：缩短后比现在长一点，默认和主页同步
-            : (isCompact ? '56rem' : '80rem'),  // 其他页面：原来的长度
+            ? (isCompact ? '72rem' : '80rem')  // 文章页面
+            : (isCompact ? '56rem' : '80rem'),  // 其他页面
           transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
@@ -114,7 +122,7 @@ export default function Navbar() {
             </div>
           )}
         </nav>
-      </Glass>
+      </div>
     </header>
   );
 }
