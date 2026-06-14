@@ -97,12 +97,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
       });
 
+      // 等待 transition 完全结束后再清理
       transition.finished.then(() => {
-        // 延迟移除反转类，避免闪烁
-        setTimeout(() => {
+        // 使用 requestAnimationFrame 确保在下一帧清理
+        requestAnimationFrame(() => {
           document.documentElement.classList.remove('theme-toggle-reverse');
           isAnimatingRef.current = false;
-        }, 50);
+        });
       });
     } else {
       document.documentElement.classList.remove('dark', 'light');
