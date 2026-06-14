@@ -101,4 +101,37 @@ body {
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
+/* View Transitions API - theme toggle */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none !important;
+  mix-blend-mode: normal;
+}
+
+/* 默认：黑切白 - 新主题在上层 */
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* 反转：白切黑 - 旧主题在上层 */
+.theme-toggle-reverse::view-transition-old(root) {
+  z-index: 9999;
+}
+
+.theme-toggle-reverse::view-transition-new(root) {
+  z-index: 1;
+}
+
+::view-transition-group(root) {
+  animation: none;
+}
+
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
 
