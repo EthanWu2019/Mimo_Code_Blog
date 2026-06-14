@@ -1,13 +1,15 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
+  session: { strategy: "database" },
   pages: {
     signIn: "/login",
   },
+  adapter: PrismaAdapter(prisma),
   providers: [
     Credentials({
       name: "credentials",
@@ -42,24 +44,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role || "user";
-      }
-      // 移除不必要的字段，保持 JWT 精简
-      return token;
-    },
-    async session({ session, token }) {
+    async session({ session, user }) {
       if (session.user) {
-        (session.user as any).id = token.id as string;
-        (session.user as any).role = token.role as string;
+        (session.user as any).id = user.id;
+        (session.user as any).role = (user as any).role || "user";
       }
       return session;
     },
-  },
-  // 限制 JWT 大小
-  jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 天
   },
 });
