@@ -4,12 +4,15 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useTheme } from './ThemeProvider';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
   const { theme, toggleTheme } = useTheme();
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isCompact, setIsCompact] = useState(false);
+  const pathname = usePathname();
+  const isPostPage = pathname.startsWith('/posts/');
 
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
@@ -38,7 +41,9 @@ export default function Navbar() {
       <div 
         className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
         style={{
-          maxWidth: isCompact ? '56rem' : '80rem',
+          maxWidth: isPostPage 
+            ? (isCompact ? '72rem' : '90rem')  // 文章页面：正文+侧边栏
+            : (isCompact ? '56rem' : '80rem'),  // 其他页面
           transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
