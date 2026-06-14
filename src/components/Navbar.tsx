@@ -29,12 +29,17 @@ export default function Navbar() {
   const userImage = avatar || (session?.user as any)?.image;
 
   return (
-    <header className="sticky top-0 z-50 glass-nav-acrylic">
+    <header 
+      className="sticky top-0 z-50 flex justify-center px-4 pt-3"
+      style={{
+        transition: 'padding 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
+    >
       <div 
-        className="mx-auto px-6 h-14 flex items-center justify-between"
+        className="glass-nav-acrylic rounded-2xl px-6 h-14 flex items-center justify-between w-full"
         style={{
-          maxWidth: isCompact ? '56rem' : '80rem', // max-w-4xl : max-w-7xl
-          transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+          maxWidth: isCompact ? '56rem' : '80rem',
+          transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         <Link href="/" className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
