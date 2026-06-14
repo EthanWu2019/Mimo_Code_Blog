@@ -76,6 +76,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             {
               duration: 500,
               easing: 'cubic-bezier(0.55, 0.06, 0.75, 0.52)',
+              fill: 'forwards',
               pseudoElement: '::view-transition-old(root)',
             }
           );
