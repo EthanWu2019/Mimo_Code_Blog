@@ -45,61 +45,96 @@ export default function Home() {
 
   return (
     <div>
-      {/* Hero - Left-aligned editorial style */}
-      <section className="relative min-h-[100dvh] flex items-center">
-        <div className="max-w-7xl mx-auto px-6 w-full py-24">
-          <div className="max-w-2xl">
-            <motion.div
-              initial={reduce ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-xs font-medium text-blue-700 dark:text-blue-400 mb-6"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              Open for collaboration
-            </motion.div>
-
-            <motion.h1
-              initial={reduce ? false : { opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-zinc-900 dark:text-white mb-6 leading-[1.05]"
-            >
-              Hi, I&apos;m Ethan.
-            </motion.h1>
-
-            <motion.p
-              initial={reduce ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="text-lg text-zinc-600 dark:text-zinc-400 max-w-xl mb-10 leading-relaxed"
-            >
-              I build things for the web and write about what I learn along the way.
-            </motion.p>
-
-            <motion.div
-              initial={reduce ? false : { opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="flex gap-3"
-            >
-              <a
-                href="#posts"
-                className="group px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black text-sm font-medium rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all duration-200 flex items-center gap-2"
+      {/* Hero - Editorial asymmetric layout */}
+      <section className="relative min-h-[100dvh] flex items-end pb-20">
+        <div className="max-w-7xl mx-auto px-6 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+            {/* Left content */}
+            <div className="lg:col-span-8">
+              <motion.div
+                initial={reduce ? false : { opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="mb-6"
               >
-                Read the blog
-                <svg className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </a>
-              <Link
-                href="/register"
-                className="px-5 py-2.5 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-medium rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all duration-200"
+                <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
+                  Software Engineer & Writer
+                </span>
+              </motion.div>
+
+              <motion.h1
+                initial={reduce ? false : { opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+                className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.9] mb-8"
               >
-                Join the community
-              </Link>
-            </motion.div>
+                Ethan
+                <br />
+                <span className="text-zinc-300 dark:text-zinc-700">Wu</span>
+              </motion.h1>
+
+              <motion.p
+                initial={reduce ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2, ease: 'easeOut' }}
+                className="text-base text-zinc-500 dark:text-zinc-400 max-w-md leading-relaxed mb-10"
+              >
+                Building for the web, writing about the craft.
+                <br />
+                Currently at WashU studying CS.
+              </motion.p>
+
+              <motion.div
+                initial={reduce ? false : { opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut' }}
+                className="flex gap-4"
+              >
+                <a
+                  href="#posts"
+                  className="group px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black text-sm font-medium rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all duration-150 flex items-center gap-2"
+                >
+                  Read the blog
+                  <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </a>
+                <Link
+                  href="/register"
+                  className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm font-medium hover:text-zinc-900 dark:hover:text-white transition-colors duration-150"
+                >
+                  Join community
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Right decorative element */}
+            <div className="hidden lg:flex lg:col-span-4 justify-end items-end">
+              <motion.div
+                initial={reduce ? false : { opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+                className="text-right"
+              >
+                <span className="text-[120px] font-bold leading-none text-zinc-100 dark:text-zinc-800/50 select-none">
+                  01
+                </span>
+              </motion.div>
+            </div>
           </div>
+
+          {/* Scroll indicator */}
+          <motion.div
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          >
+            <div className="w-[1px] h-12 bg-zinc-200 dark:bg-zinc-800 mx-auto mb-2" />
+            <span className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
+              Scroll
+            </span>
+          </motion.div>
         </div>
       </section>
 
