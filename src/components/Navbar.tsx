@@ -9,19 +9,34 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const { theme, toggleTheme } = useTheme();
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
   }, [session]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      // 英雄界面大约是 100vh，滚动超过 80vh 时切换到紧凑模式
+      const threshold = window.innerHeight * 0.8;
+      setIsCompact(window.scrollY > threshold);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const userImage = avatar || (session?.user as any)?.image;
 
   return (
-    <header
-      className="sticky top-0 z-50 glass-nav-acrylic"
-      style={{ willChange: 'backdrop-filter', WebkitBackdropFilter: 'blur(40px) saturate(180%)', backdropFilter: 'blur(40px) saturate(180%)' }}
-    >
-      <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+    <header className="sticky top-0 z-50 glass-nav-acrylic">
+      <div 
+        className="mx-auto px-6 h-14 flex items-center justify-between"
+        style={{
+          maxWidth: isCompact ? '56rem' : '80rem', // max-w-4xl : max-w-7xl
+          transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
         <Link href="/" className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
           Ethan&apos;s Blog
         </Link>
