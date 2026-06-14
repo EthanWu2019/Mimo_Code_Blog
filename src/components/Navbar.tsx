@@ -24,14 +24,8 @@ export default function Navbar() {
         // 文章详情页：滚动 50px 就缩短
         setIsCompact(window.scrollY > 50);
       } else {
-        // 主页：滚动到文章列表 (#posts) 才缩短
-        const postsSection = document.getElementById('posts');
-        if (postsSection) {
-          const rect = postsSection.getBoundingClientRect();
-          setIsCompact(rect.top <= 100);
-        } else {
-          setIsCompact(window.scrollY > window.innerHeight);
-        }
+        // 主页：滚动过整个英雄界面 (100vh) 才缩短
+        setIsCompact(window.scrollY > window.innerHeight);
       }
     };
 
