@@ -21,8 +21,9 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // 滚动 200px 就切换到紧凑模式
-      setIsCompact(window.scrollY > 200);
+      // 主页滚动 80vh 后切换，文章页滚动 200px 就切换
+      const threshold = isPostPage ? 200 : window.innerHeight * 0.8;
+      setIsCompact(window.scrollY > threshold);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
