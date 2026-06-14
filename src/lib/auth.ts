@@ -47,6 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id;
         token.role = (user as any).role || "user";
       }
+      // 移除不必要的字段，保持 JWT 精简
       return token;
     },
     async session({ session, token }) {
@@ -56,5 +57,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+  },
+  // 限制 JWT 大小
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 天
   },
 });
