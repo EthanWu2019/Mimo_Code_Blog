@@ -41,8 +41,8 @@ export default function Navbar() {
         className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
         style={{
           maxWidth: isPostPage 
-            ? (isCompact ? '64rem' : '90rem')  // 文章页面：更短
-            : (isCompact ? '48rem' : '80rem'),  // 其他页面：更短
+            ? (isCompact ? '72rem' : '80rem')  // 文章页面：缩短后比现在长一点，默认和主页同步
+            : (isCompact ? '56rem' : '80rem'),  // 其他页面：原来的长度
           transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
