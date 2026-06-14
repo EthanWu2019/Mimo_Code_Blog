@@ -21,7 +21,7 @@ export default function Navbar() {
       className="sticky top-0 z-50 glass-nav-acrylic"
       style={{ willChange: 'backdrop-filter', WebkitBackdropFilter: 'blur(40px) saturate(180%)', backdropFilter: 'blur(40px) saturate(180%)' }}
     >
-      <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
         <Link href="/" className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
           Ethan&apos;s Blog
         </Link>
