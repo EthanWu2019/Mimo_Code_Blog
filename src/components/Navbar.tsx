@@ -20,9 +20,8 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // 英雄界面大约是 100vh，滚动超过 80vh 时切换到紧凑模式
-      const threshold = window.innerHeight * 0.8;
-      setIsCompact(window.scrollY > threshold);
+      // 滚动 200px 就切换到紧凑模式
+      setIsCompact(window.scrollY > 200);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -42,8 +41,8 @@ export default function Navbar() {
         className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
         style={{
           maxWidth: isPostPage 
-            ? (isCompact ? '72rem' : '90rem')  // 文章页面：正文+侧边栏
-            : (isCompact ? '56rem' : '80rem'),  // 其他页面
+            ? (isCompact ? '64rem' : '90rem')  // 文章页面：更短
+            : (isCompact ? '48rem' : '80rem'),  // 其他页面：更短
           transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
