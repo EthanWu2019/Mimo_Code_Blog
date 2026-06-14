@@ -98,8 +98,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       });
 
       transition.finished.then(() => {
-        isAnimatingRef.current = false;
-        document.documentElement.classList.remove('theme-toggle-reverse');
+        // 延迟移除反转类，避免闪烁
+        setTimeout(() => {
+          document.documentElement.classList.remove('theme-toggle-reverse');
+          isAnimatingRef.current = false;
+        }, 50);
       });
     } else {
       document.documentElement.classList.remove('dark', 'light');
