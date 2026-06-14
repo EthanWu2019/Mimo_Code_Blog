@@ -24,14 +24,14 @@ export default function Navbar() {
         // 文章详情页：滚动 50px 就缩短
         setIsCompact(window.scrollY > 50);
       } else {
-        // 主页：滚动过整个英雄界面 (100vh) 才缩短
-        setIsCompact(window.scrollY > window.innerHeight);
+        // 主页：滚动 90vh 才缩短
+        setIsCompact(window.scrollY > window.innerHeight * 0.9);
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isPostPage]);
 
   const userImage = avatar || (session?.user as any)?.image;
 
