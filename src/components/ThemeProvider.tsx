@@ -53,6 +53,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (document.startViewTransition) {
       isAnimatingRef.current = true;
 
+      // 白切黑时添加反转类，改变新旧主题的层级
+      if (theme === 'light') {
+        document.documentElement.classList.add('theme-transition-reverse');
+      }
+
       // 启动 View Transition - 自动捕获新旧快照
       const transition = document.startViewTransition(() => {
         document.documentElement.classList.remove('dark', 'light');
@@ -63,34 +68,44 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
       // 当 transition 准备好后，执行 clip-path 动画
       transition.ready.then(() => {
-        // 黑切白：圆形从 0 扩大（新主题生长出来）
-        // 白切黑：圆形从全屏缩小到 0（旧主题收缩回去）
         const isDarkToLight = theme === 'dark';
 
-        document.documentElement.animate(
-          {
-            clipPath: isDarkToLight
-              ? [
-                  `circle(0px at ${cx}px ${cy}px)`,
-                  `circle(${maxRadius}px at ${cx}px ${cy}px)`,
-                ]
-              : [
-                  `circle(${maxRadius}px at ${cx}px ${cy}px)`,
-                  `circle(0px at ${cx}px ${cy}px)`,
-                ],
-          },
-          {
-            duration: 500,
-            easing: isDarkToLight
-              ? 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'  // 扩散：先快后慢
-              : 'cubic-bezier(0.55, 0.06, 0.75, 0.52)',  // 收缩：先慢后快
-            pseudoElement: '::view-transition-new(root)',
-          }
-        );
+        if (isDarkToLight) {
+          // 黑切白：新主题（白色）从点击位置扩散
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(0px at ${cx}px ${cy}px)`,
+                `circle(${maxRadius}px at ${cx}px ${cy}px)`,
+              ],
+            },
+            {
+              duration: 500,
+              easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              pseudoElement: '::view-transition-new(root)',
+            }
+          );
+        } else {
+          // 白切黑：旧主题（白色）从边缘收缩到点击位置
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(${maxRadius}px at ${cx}px ${cy}px)`,
+                `circle(0px at ${cx}px ${cy}px)`,
+              ],
+            },
+            {
+              duration: 500,
+              easing: 'cubic-bezier(0.55, 0.06, 0.75, 0.52)',
+              pseudoElement: '::view-transition-old(root)',
+            }
+          );
+        }
       });
 
       transition.finished.then(() => {
         isAnimatingRef.current = false;
+        document.documentElement.classList.remove('theme-transition-reverse');
       });
     } else {
       // 降级处理：不支持 View Transitions API 的浏览器
