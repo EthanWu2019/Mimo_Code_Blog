@@ -36,7 +36,7 @@ export default function Navbar() {
       }}
     >
       <div 
-        className="glass-nav-acrylic rounded-2xl px-6 h-14 flex items-center justify-between w-full"
+        className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
         style={{
           maxWidth: isCompact ? '56rem' : '80rem',
           transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
