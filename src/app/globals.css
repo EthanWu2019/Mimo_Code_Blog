@@ -103,17 +103,17 @@ body {
 
 /* 亚克力高斯模糊导航栏 */
 .glass-nav-acrylic {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(24px) saturate(200%) brightness(1.1);
-  -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.1);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(40px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
 }
 
 .dark .glass-nav-acrylic {
-  background: rgba(10, 10, 11, 0.6);
-  border-bottom-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background: rgba(17, 25, 40, 0.4) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* View Transitions API - theme toggle */
