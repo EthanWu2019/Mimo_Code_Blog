@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import GlobalBackground from "@/components/GlobalBackground";
 import BackToTop from "@/components/BackToTop";
+import { GlassFilters } from "glass-refraction";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
       <body style={{ background: 'var(--background)', margin: 0 }}>
+        <GlassFilters />
         <GlobalBackground />
         <Providers>{children}</Providers>
         <BackToTop />

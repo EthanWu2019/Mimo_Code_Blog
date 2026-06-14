@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from './ThemeProvider';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { Glass } from 'glass-refraction';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -37,8 +38,9 @@ export default function Navbar() {
         transition: 'padding 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      <div 
-        className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
+      <Glass 
+        as="nav"
+        className="rounded-full px-6 h-14 flex items-center justify-between w-full"
         style={{
           maxWidth: isPostPage 
             ? (isCompact ? '72rem' : '80rem')  // 文章页面：缩短后比现在长一点，默认和主页同步
@@ -111,7 +113,7 @@ export default function Navbar() {
             </div>
           )}
         </nav>
-      </div>
+      </Glass>
     </header>
   );
 }
