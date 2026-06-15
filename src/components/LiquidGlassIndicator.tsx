@@ -75,7 +75,7 @@ export default function LiquidGlassIndicator({
 }: LiquidGlassIndicatorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const animState = useRef({ time: 0, currentTop: top });
+  const animState = useRef({ time: 0, currentTop: top, currentLeft: left ?? 0 });
   const tickerRef = useRef<((time: number) => void) | null>(null);
 
   const draw = useCallback(() => {
@@ -201,20 +201,34 @@ export default function LiquidGlassIndicator({
     };
   }, [draw]);
 
-  // Animate position when top changes
+  // Animate position when top changes — overwrite: true prevents stutter when jumping
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     gsap.to(animState.current, {
       currentTop: top,
-      duration: 0.4,
-      ease: 'power2.out',
+      duration: 0.5,
+      ease: 'elastic.out(1, 0.75)',
+      overwrite: true,
       onUpdate: () => {
         container.style.top = `${animState.current.currentTop}px`;
-        container.style.left = `${left}px`;
       },
     });
-  }, [top, left]);
+  }, [top]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    gsap.to(animState.current, {
+      currentLeft: left,
+      duration: 0.5,
+      ease: 'elastic.out(1, 0.75)',
+      overwrite: true,
+      onUpdate: () => {
+        container.style.left = `${animState.current.currentLeft}px`;
+      },
+    });
+  }, [left]);
 
   return (
     <div

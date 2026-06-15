@@ -50,7 +50,10 @@ export default function PostPage() {
   const params = useParams(); const slug = params.slug as string; const { data: session } = useSession();
   const [post, setPost] = useState<Post | null>(null); const [related, setRelated] = useState<RelatedPost[]>([]);
   const [loading, setLoading] = useState(true); const [comment, setComment] = useState(''); const [submitting, setSubmitting] = useState(false);
-  const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]); const [activeH, setActiveH] = useState('');
+  const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]);
+  const [activeH, setActiveH] = useState('');
+  const activeHRef = useRef('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const articleRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const [indicator, setIndicator] = useState({ top: 0, height: 0, left: 0, width: 0, ready: false });
@@ -64,9 +67,20 @@ export default function PostPage() {
 
   useEffect(() => {
     if (headings.length === 0) return;
-    const obs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) setActiveH(e.target.id); }); }, { rootMargin: '-80px 0px -75% 0px' });
+    const obs = new IntersectionObserver(entries => {
+      let latest = '';
+      entries.forEach(e => {
+        if (e.isIntersecting) latest = e.target.id;
+      });
+      if (!latest) return;
+      // Immediate ref update for accurate tracking
+      activeHRef.current = latest;
+      // Debounce state update to prevent animation stutter when jumping
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => setActiveH(latest), 60);
+    }, { rootMargin: '-80px 0px -75% 0px' });
     headings.forEach(h => { const el = document.getElementById(h.id); if (el) obs.observe(el); });
-    return () => obs.disconnect();
+    return () => { obs.disconnect(); if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [headings]);
 
   const updateIndicator = useCallback(() => {
@@ -120,7 +134,10 @@ export default function PostPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });
+                        // Immediate update on click (skip debounce for instant feedback)
+                        if (debounceRef.current) clearTimeout(debounceRef.current);
                         setActiveH(h.id);
+                        activeHRef.current = h.id;
                       }}
                       className={`block text-[11px] py-1.5 px-2.5 rounded-lg transition-colors duration-200 leading-snug ${
                         activeH === h.id
@@ -136,10 +153,10 @@ export default function PostPage() {
                 {/* Canvas-based liquid glass indicator */}
                 {indicator.ready && (
                   <LiquidGlassIndicator
-                    top={indicator.top - 2}
-                    height={indicator.height + 4}
-                    width={indicator.width + 8}
-                    left={indicator.left - 4}
+                    top={indicator.top - 4}
+                    height={indicator.height + 8}
+                    width={indicator.width + 14}
+                    left={indicator.left - 7}
                   />
                 )}
               </nav>
