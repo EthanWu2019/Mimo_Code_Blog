@@ -169,7 +169,7 @@ export default function PostPage() {
 
         {/* Article content — scrolls naturally */}
         <article ref={articleRef} className="flex-1 min-w-0 max-w-4xl">
-          <header className="mb-12 pb-8 border-b border-zinc-200/30 dark:border-white/[0.06]">
+          <header className="mb-12 pb-8 border-b border-zinc-300/70 dark:border-white/15">
             <div className="flex flex-wrap gap-2 mb-4">{post.tags.map(t => <span key={t.id} className="px-2.5 py-0.5 text-[11px] font-medium text-zinc-500 dark:text-white/40 glass rounded-full">{t.name}</span>)}</div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4 leading-tight">{post.title}</h1>
             <div className="flex items-center gap-3 text-sm text-zinc-500 dark:text-white/40">
@@ -199,7 +199,7 @@ export default function PostPage() {
             return <p key={i} className="text-zinc-800 dark:text-white/85 leading-[1.9] mb-5 text-base" dangerouslySetInnerHTML={{ __html: withCode }} />;
           })}</div>
 
-          <section className="border-t border-zinc-200/30 dark:border-white/[0.06] pt-10">
+          <section className="border-t border-zinc-300/70 dark:border-white/15 pt-10">
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-6">Comments ({post.comments.length})</h2>
             {session?.user ? (<form onSubmit={handleCommentSubmit} className="mb-8"><textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Share your thoughts..." className="w-full p-4 glass rounded-xl text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-white/20 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/15 resize-none" rows={3} /><div className="flex justify-end mt-3"><button type="submit" disabled={submitting || !comment.trim()} className="px-5 py-2.5 bg-zinc-900/80 dark:bg-white/80 backdrop-blur-sm text-white dark:text-black text-sm font-medium rounded-xl disabled:opacity-50 transition-all">{submitting ? '...' : 'Post'}</button></div></form>)
             : (<div className="mb-8 p-5 glass rounded-xl text-center"><p className="text-sm text-zinc-500 dark:text-white/40"><Link href="/login" className="text-zinc-900 dark:text-white font-medium hover:underline">Sign in</Link> to comment</p></div>)}
@@ -210,7 +210,7 @@ export default function PostPage() {
         {/* Right sidebar — visually separated related posts */}
         {related.length > 0 && (
           <aside className="hidden lg:block w-52 flex-shrink-0">
-            <div className="sticky top-24 border-l border-zinc-200/50 dark:border-white/[0.06] pl-6">
+            <div className="sticky top-24 border-l border-zinc-300/70 dark:border-white/15 pl-6">
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-5">Related</p>
               <div className="space-y-5">
                 {related.map(r => (
