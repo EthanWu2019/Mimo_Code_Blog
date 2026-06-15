@@ -33,16 +33,18 @@ function getColors(dark: boolean) {
     };
   }
   return {
-    bodyTop: 'rgba(0,0,0,0.12)',
-    bodyBottom: 'rgba(0,0,0,0.06)',
-    edge: 'rgba(0,0,0,0.18)',
-    specular: 'rgba(255,255,255,0.5)',
-    glow: 'rgba(0,0,0,0.10)',
-    shimmer: 'rgba(255,255,255,0.15)',
-    highlightTop: 'rgba(255,255,255,0.25)',
+    bodyTop: 'rgba(0,0,0,0.0)',
+    bodyBottom: 'rgba(0,0,0,0.0)',
+    edge: 'rgba(180,140,220,0.35)',
+    specular: 'rgba(255,255,255,0.7)',
+    glow: 'rgba(180,140,220,0.18)',
+    shimmer: 'rgba(255,255,255,0.2)',
+    highlightTop: 'rgba(255,255,255,0.3)',
     highlightBottom: 'rgba(255,255,255,0.0)',
-    tintA: 'rgba(80,80,120,0.08)',
-    tintB: 'rgba(100,90,140,0.06)',
+    tintA: 'rgba(255,180,220,0.35)',   // pink
+    tintB: 'rgba(160,200,255,0.35)',   // light blue
+    tintC: 'rgba(200,170,255,0.35)',   // purple
+    isColorful: true,
   };
 }
 
@@ -116,10 +118,22 @@ export default function LiquidGlassIndicator({
 
     // Glass body with animated gradient
     const gradShift = Math.sin(t * 0.8) * 0.15;
-    const bodyGrad = ctx.createLinearGradient(0, 0, 0, h);
-    bodyGrad.addColorStop(0, c.bodyTop);
-    bodyGrad.addColorStop(0.5 + gradShift, c.bodyBottom);
-    bodyGrad.addColorStop(1, c.bodyTop);
+    const bodyGrad = ctx.createLinearGradient(0, 0, w, h);
+
+    if ('isColorful' in c && c.isColorful) {
+      // Colorful animated gradient for light mode
+      const phase = t * 0.4;
+      const shift1 = 0.2 + Math.sin(phase) * 0.15;
+      const shift2 = 0.5 + Math.sin(phase + 2) * 0.15;
+      bodyGrad.addColorStop(0, (c as any).tintA);
+      bodyGrad.addColorStop(shift1, (c as any).tintB);
+      bodyGrad.addColorStop(shift2, (c as any).tintC);
+      bodyGrad.addColorStop(1, (c as any).tintA);
+    } else {
+      bodyGrad.addColorStop(0, c.bodyTop);
+      bodyGrad.addColorStop(0.5 + gradShift, c.bodyBottom);
+      bodyGrad.addColorStop(1, c.bodyTop);
+    }
 
     drawRoundedRect(ctx, 1, 1, w - 2, h - 2, r);
     ctx.fillStyle = bodyGrad;

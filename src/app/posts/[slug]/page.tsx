@@ -120,10 +120,11 @@ export default function PostPage() {
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-10">
-      <div className="flex gap-4 justify-center">
+      <div className="flex gap-8">
+        {/* Left sidebar — fixed position, doesn't scroll */}
         {headings.length > 0 && (
-          <aside className="hidden lg:block w-64 flex-shrink-0 relative">
-            <div className="sticky top-20">
+          <aside className="hidden lg:block w-64 flex-shrink-0">
+            <div className="fixed top-24 w-64">
               <p className="text-sm font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-5">Contents</p>
               <nav ref={navRef} className="relative">
                 {/* TOC links */}
@@ -135,7 +136,6 @@ export default function PostPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });
-                        // Lock observer updates during smooth scroll
                         if (clickLockRef.current) clearTimeout(clickLockRef.current);
                         clickLockRef.current = setTimeout(() => { clickLockRef.current = null; }, 800);
                         if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -167,6 +167,7 @@ export default function PostPage() {
           </aside>
         )}
 
+        {/* Article content — scrolls naturally */}
         <article ref={articleRef} className="flex-1 min-w-0 max-w-4xl">
           <header className="mb-12 pb-8 border-b border-zinc-200/30 dark:border-white/[0.06]">
             <div className="flex flex-wrap gap-2 mb-4">{post.tags.map(t => <span key={t.id} className="px-2.5 py-0.5 text-[11px] font-medium text-zinc-500 dark:text-white/40 glass rounded-full">{t.name}</span>)}</div>
@@ -206,19 +207,18 @@ export default function PostPage() {
           </section>
         </article>
 
+        {/* Right sidebar — visually separated related posts */}
         {related.length > 0 && (
           <aside className="hidden lg:block w-52 flex-shrink-0">
-            <div className="sticky top-20">
-              <div className="rounded-2xl p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-300 dark:text-white/15 mb-5">Related</p>
-                <div className="space-y-5">
-                  {related.map(r => (
-                    <Link key={r.id} href={`/posts/${r.slug}`} className="block group">
-                      <p className="text-[13px] font-medium text-zinc-500 dark:text-white/40 group-hover:text-zinc-800 dark:group-hover:text-white/70 transition-colors leading-snug mb-1.5">{r.title}</p>
-                      {r.excerpt && <p className="text-[11px] text-zinc-400 dark:text-white/20 line-clamp-2 leading-relaxed">{r.excerpt}</p>}
-                    </Link>
-                  ))}
-                </div>
+            <div className="sticky top-24 border-l border-zinc-200/50 dark:border-white/[0.06] pl-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-5">Related</p>
+              <div className="space-y-5">
+                {related.map(r => (
+                  <Link key={r.id} href={`/posts/${r.slug}`} className="block group">
+                    <p className="text-[13px] font-medium text-zinc-600 dark:text-white/50 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-snug mb-1.5">{r.title}</p>
+                    {r.excerpt && <p className="text-[11px] text-zinc-400 dark:text-white/20 line-clamp-2 leading-relaxed">{r.excerpt}</p>}
+                  </Link>
+                ))}
               </div>
             </div>
           </aside>
