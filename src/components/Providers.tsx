@@ -8,8 +8,8 @@ import gsap from 'gsap';
 import { TransitionRouter } from 'next-transition-router';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const firstLayer = useRef<HTMLDivElement | null>(null);
-  const secondLayer = useRef<HTMLDivElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const layerRef = useRef<HTMLDivElement | null>(null);
   const logoRef = useRef<HTMLSpanElement | null>(null);
   const lineRef = useRef<HTMLDivElement | null>(null);
 
@@ -19,59 +19,85 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <TransitionRouter
           auto={true}
           leave={(next) => {
+            const wrapper = wrapperRef.current;
+            const layer = layerRef.current;
+            const logo = logoRef.current;
+            const line = lineRef.current;
+            if (!wrapper || !layer) { next(); return; }
+
+            // Show wrapper, reset positions
+            gsap.set(wrapper, { display: 'block' });
+            gsap.set(layer, { y: '100%' });
+            gsap.set(logo, { opacity: 0, y: 10 });
+            gsap.set(line, { scaleX: 0 });
+
             const tl = gsap.timeline({ onComplete: next });
 
-            // Layer 1 slides up with slight scale
-            tl.fromTo(firstLayer.current,
-              { y: '100%', scaleY: 1.1 },
-              { y: '0%', scaleY: 1, duration: 0.45, ease: 'power3.inOut' }
-            )
-            // Layer 2 follows, slightly faster
-            .fromTo(secondLayer.current,
-              { y: '100%', scaleY: 1.05 },
-              { y: '0%', scaleY: 1, duration: 0.4, ease: 'power3.inOut' },
-              '-=0.25'
-            )
-            // Logo fades in on the overlay
-            .fromTo(logoRef.current,
-              { opacity: 0, y: 10, scale: 0.95 },
-              { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: 'power2.out' },
-              '-=0.15'
-            )
-            // Decorative line expands
-            .fromTo(lineRef.current,
-              { scaleX: 0 },
-              { scaleX: 1, duration: 0.35, ease: 'power2.inOut' },
-              '-=0.2'
-            );
+            // Layer 1 (background) slides up
+            tl.to(wrapper, {
+              clipPath: 'inset(0 0 0 0)',
+              duration: 0.45,
+              ease: 'power3.inOut',
+            })
+            // Layer 2 (foreground) slides up
+            .to(layer, {
+              y: '0%',
+              duration: 0.4,
+              ease: 'power3.inOut',
+            }, '-=0.25')
+            // Logo appears
+            .to(logo, {
+              opacity: 1, y: 0,
+              duration: 0.25,
+              ease: 'power2.out',
+            }, '-=0.15')
+            // Line expands
+            .to(line, {
+              scaleX: 1,
+              duration: 0.3,
+              ease: 'power2.inOut',
+            }, '-=0.15');
 
             return () => { tl.kill(); };
           }}
           enter={(next) => {
-            const tl = gsap.timeline();
+            const wrapper = wrapperRef.current;
+            const layer = layerRef.current;
+            const logo = logoRef.current;
+            const line = lineRef.current;
+            if (!wrapper || !layer) { next(); return; }
+
+            const tl = gsap.timeline({
+              onComplete: () => {
+                gsap.set(wrapper, { display: 'none' });
+                next();
+              },
+            });
 
             // Logo fades out
-            tl.to(logoRef.current,
-              { opacity: 0, y: -10, scale: 0.95, duration: 0.2, ease: 'power2.in' }
-            )
-            // Line shrinks away
-            .to(lineRef.current,
-              { scaleX: 0, duration: 0.2, ease: 'power2.in' },
-              '-=0.15'
-            )
+            tl.to(logo, {
+              opacity: 0, y: -10,
+              duration: 0.2,
+              ease: 'power2.in',
+            })
+            // Line shrinks
+            .to(line, {
+              scaleX: 0,
+              duration: 0.15,
+              ease: 'power2.in',
+            }, '-=0.1')
             // Layer 2 slides up and away
-            .to(secondLayer.current,
-              { y: '-100%', scaleY: 1.05, duration: 0.45, ease: 'power3.inOut' },
-              '-=0.1'
-            )
+            .to(layer, {
+              y: '-100%',
+              duration: 0.4,
+              ease: 'power3.inOut',
+            }, '-=0.05')
             // Layer 1 follows
-            .to(firstLayer.current,
-              { y: '-100%', scaleY: 1.1, duration: 0.45, ease: 'power3.inOut' },
-              '-=0.3'
-            )
-            .call(() => {
-              requestAnimationFrame(() => next());
-            }, undefined, '-=0.1');
+            .to(wrapper, {
+              clipPath: 'inset(0 0 100% 0)',
+              duration: 0.4,
+              ease: 'power3.inOut',
+            }, '-=0.25');
 
             return () => { tl.kill(); };
           }}
@@ -79,47 +105,28 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <Navbar />
           <main>{children}</main>
 
-          {/* === Transition overlay layers === */}
-
-          {/* Layer 1: background color */}
+          {/* Transition overlay — hidden by default */}
           <div
-            ref={firstLayer}
-            className="fixed inset-0 z-[100] flex items-center justify-center"
-            style={{
-              background: 'var(--background)',
-              transform: 'translateY(100%)',
-              willChange: 'transform',
-            }}
+            ref={wrapperRef}
+            className="fixed inset-0 z-[100] pointer-events-none"
+            style={{ display: 'none', clipPath: 'inset(0 0 100% 0)', background: 'var(--background)' }}
           >
-            {/* Layer 2: foreground accent */}
             <div
-              ref={secondLayer}
+              ref={layerRef}
               className="absolute inset-0 flex flex-col items-center justify-center"
-              style={{
-                background: 'var(--foreground)',
-                transform: 'translateY(100%)',
-                willChange: 'transform',
-              }}
+              style={{ background: 'var(--foreground)', transform: 'translateY(100%)' }}
             >
-              {/* Logo text */}
               <span
                 ref={logoRef}
-                className="text-2xl font-semibold tracking-tight"
+                className="text-2xl font-semibold tracking-tight select-none"
                 style={{ color: 'var(--background)', opacity: 0 }}
               >
                 Ethan&apos;s Blog
               </span>
-
-              {/* Decorative line */}
               <div
                 ref={lineRef}
                 className="mt-4 h-px w-16"
-                style={{
-                  background: 'var(--background)',
-                  opacity: 0.3,
-                  transform: 'scaleX(0)',
-                  transformOrigin: 'center',
-                }}
+                style={{ background: 'var(--background)', opacity: 0.3, transform: 'scaleX(0)', transformOrigin: 'center' }}
               />
             </div>
           </div>
