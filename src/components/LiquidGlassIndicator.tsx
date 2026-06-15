@@ -7,6 +7,7 @@ interface LiquidGlassIndicatorProps {
   top: number;
   height: number;
   width?: number;
+  left?: number;
 }
 
 const PILL_RADIUS = 999;
@@ -70,6 +71,7 @@ export default function LiquidGlassIndicator({
   top,
   height,
   width,
+  left = 0,
 }: LiquidGlassIndicatorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -209,16 +211,18 @@ export default function LiquidGlassIndicator({
       ease: 'power2.out',
       onUpdate: () => {
         container.style.top = `${animState.current.currentTop}px`;
+        container.style.left = `${left}px`;
       },
     });
-  }, [top]);
+  }, [top, left]);
 
   return (
     <div
       ref={containerRef}
       style={{
-        position: 'relative',
+        position: 'absolute',
         top,
+        left,
         width: width ?? '100%',
         height,
         pointerEvents: 'none',

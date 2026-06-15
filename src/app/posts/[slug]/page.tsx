@@ -53,7 +53,7 @@ export default function PostPage() {
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]); const [activeH, setActiveH] = useState('');
   const articleRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
-  const [indicator, setIndicator] = useState({ top: 0, height: 0, ready: false });
+  const [indicator, setIndicator] = useState({ top: 0, height: 0, left: 0, width: 0, ready: false });
 
   useEffect(() => {
     Promise.all([fetch(`/api/posts/${slug}`).then(r => r.json()), fetch(`/api/posts/${slug}/related`).then(r => r.json())])
@@ -72,10 +72,22 @@ export default function PostPage() {
   const updateIndicator = useCallback(() => {
     if (!navRef.current || !activeH) return;
     const link = navRef.current.querySelector(`a[href="#${activeH}"]`);
-    if (link) {
-      const navRect = navRef.current.getBoundingClientRect();
-      const linkRect = link.getBoundingClientRect();
-      setIndicator({ top: linkRect.top - navRect.top, height: linkRect.height, ready: true });
+    if (!link) return;
+
+    // Use Range API to measure actual text dimensions (excluding padding)
+    const range = document.createRange();
+    range.selectNodeContents(link);
+    const textRect = range.getBoundingClientRect();
+    const navRect = navRef.current.getBoundingClientRect();
+
+    if (textRect.width > 0 && textRect.height > 0) {
+      setIndicator({
+        top: textRect.top - navRect.top,
+        height: textRect.height,
+        left: textRect.left - navRect.left,
+        width: textRect.width,
+        ready: true,
+      });
     }
   }, [activeH]);
 
@@ -125,9 +137,10 @@ export default function PostPage() {
               {/* Canvas-based liquid glass indicator */}
               {indicator.ready && (
                 <LiquidGlassIndicator
-                  top={indicator.top + 28}
-                  height={indicator.height + 4}
-                  width={176}
+                  top={indicator.top}
+                  height={indicator.height}
+                  width={indicator.width}
+                  left={indicator.left}
                 />
               )}
             </div>
