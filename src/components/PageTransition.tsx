@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import gsap from 'gsap';
 
@@ -22,42 +22,44 @@ export default function PageTransition() {
       Math.max(originY, vh - originY) ** 2
     ));
 
-    // Kill any running animations on this element
     gsap.killTweensOf(el);
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        gsap.set(el, { display: 'none', clearProps: 'all' });
-        isAnimating.current = false;
-      },
-    });
-
-    tl.set(el, {
+    // Set initial state
+    gsap.set(el, {
       display: 'block',
       opacity: 1,
       clipPath: `circle(0px at ${originX}px ${originY}px)`,
-    })
-    // Expand circle to cover screen
-    .to(el, {
+      WebkitClipPath: `circle(0px at ${originX}px ${originY}px)`,
+    });
+
+    // Phase 1: Expand circle
+    gsap.to(el, {
       clipPath: `circle(${maxR}px at ${originX}px ${originY}px)`,
+      WebkitClipPath: `circle(${maxR}px at ${originX}px ${originY}px)`,
       duration: 0.4,
       ease: 'power2.in',
-    })
-    // Brief hold
-    .to({}, { duration: 0.06 })
-    // Fade out to reveal new page
-    .to(el, {
-      opacity: 0,
-      duration: 0.35,
-      ease: 'power2.out',
+      onComplete: () => {
+        // Phase 2: Fade out
+        gsap.to(el, {
+          opacity: 0,
+          duration: 0.3,
+          ease: 'power2.out',
+          onComplete: () => {
+            gsap.set(el, {
+              display: 'none',
+              clipPath: 'none',
+              WebkitClipPath: 'none',
+            });
+            isAnimating.current = false;
+          },
+        });
+      },
     });
   }, []);
 
-  // Global click interceptor for internal links
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (isAnimating.current) return;
-      // Only left click, no modifier keys
       if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
       const a = (e.target as HTMLElement).closest('a');
@@ -80,7 +82,6 @@ export default function PageTransition() {
     return () => document.removeEventListener('click', handler, true);
   }, [pathname, playTransition]);
 
-  // Reset on path change
   useEffect(() => {
     if (pathname !== prevPath.current) {
       prevPath.current = pathname;
@@ -90,11 +91,20 @@ export default function PageTransition() {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[100]"
-      style={{ display: 'none', pointerEvents: 'none' }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100,
+        display: 'none',
+        pointerEvents: 'none',
+      }}
       aria-hidden="true"
     >
-      <div className="absolute inset-0 bg-zinc-900 dark:bg-white" />
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundColor: 'var(--background)',
+      }} />
     </div>
   );
 }
