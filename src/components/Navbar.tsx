@@ -15,63 +15,88 @@ export default function Navbar() {
   const pathname = usePathname();
   const isBlog = pathname === '/blog';
   const isPost = pathname.startsWith('/posts/');
-  const isHome = pathname === '/';
 
   const headerRef = useRef<HTMLElement>(null);
   const bounceRef = useRef<gsap.core.Tween | null>(null);
-  const isBouncing = useRef(false);
   const pullActive = useRef(false);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
   }, [session]);
 
-  const handleScroll = useCallback(() => {
-    const y = window.scrollY;
+  // Compact mode via scroll
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (isPost) setIsCompact(y > 30);
+      else if (isBlog) setIsCompact(y > window.innerHeight * 0.85);
+      else setIsCompact(false);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isPost, isBlog]);
+
+  // Pull-down elastic: uses wheel event (works with trackpad overscroll)
+  useEffect(() => {
     const el = headerRef.current;
     if (!el) return;
 
-    // --- Compact mode ---
-    if (isPost) {
-      setIsCompact(y > 30);
-    } else if (isBlog) {
-      setIsCompact(y > window.innerHeight * 0.85);
-    } else {
-      setIsCompact(false);
-    }
+    const onWheel = (e: WheelEvent) => {
+      // Scrolling UP while at the very top = trackpad overscroll
+      if (window.scrollY <= 0 && e.deltaY < 0) {
+        if (settleTimer.current) { clearTimeout(settleTimer.current); settleTimer.current = null; }
 
-    // --- Pull-down elastic bounce ---
-    // Overscroll at top: pull navbar down
-    if (y <= 0) {
-      if (!pullActive.current && !isBouncing.current) {
-        pullActive.current = true;
-        if (bounceRef.current) bounceRef.current.kill();
-        // Snap to pulled state
-        gsap.to(el, { y: 16, scale: 1.035, duration: 0.15, ease: 'power2.out' });
+        if (!pullActive.current) {
+          pullActive.current = true;
+          if (bounceRef.current) bounceRef.current.kill();
+          gsap.set(el, { y: 16, scale: 1.035 });
+        }
       }
-    } else if (pullActive.current) {
-      // Released from overscroll: bounce back with elastic
+      // Scrolling DOWN while pulled = release, bounce back
+      else if (pullActive.current && e.deltaY > 0) {
+        doBounceBack(el);
+      }
+    };
+
+    const onScroll = () => {
+      // scrollY became positive while pulled = also release
+      if (pullActive.current && window.scrollY > 0) {
+        doBounceBack(el);
+      }
+      // At top, not pulled, not bouncing: schedule settle in case overscroll ends silently
+      if (window.scrollY <= 0 && !pullActive.current) {
+        if (settleTimer.current) clearTimeout(settleTimer.current);
+        settleTimer.current = setTimeout(() => {
+          if (pullActive.current) doBounceBack(el);
+        }, 400);
+      }
+    };
+
+    const doBounceBack = (target: HTMLElement) => {
+      if (!pullActive.current) return;
       pullActive.current = false;
-      isBouncing.current = true;
+      if (settleTimer.current) { clearTimeout(settleTimer.current); settleTimer.current = null; }
       if (bounceRef.current) bounceRef.current.kill();
-      bounceRef.current = gsap.to(el, {
+      bounceRef.current = gsap.to(target, {
         y: 0,
         scale: 1,
-        duration: 0.8,
-        ease: 'elastic.out(1.2, 0.35)',
-        onComplete: () => { isBouncing.current = false; },
+        duration: 0.9,
+        ease: 'elastic.out(1.2, 0.3)',
       });
-    }
-  }, [isPost, isBlog]);
+    };
 
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+    window.addEventListener('wheel', onWheel, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('scroll', onScroll);
+      if (settleTimer.current) clearTimeout(settleTimer.current);
+    };
+  }, []);
 
   const userImage = avatar || (session?.user as any)?.image;
 
-  // Navbar width: blog page has dramatic shrink, post page has moderate shrink
   const getMaxWidth = () => {
     if (isPost) return isCompact ? '64rem' : '80rem';
     if (isBlog) return isCompact ? '52rem' : '80rem';
