@@ -120,11 +120,11 @@ export default function PostPage() {
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-10">
-      <div className="flex gap-6 justify-center">
+      <div className="flex gap-4 justify-center">
         {headings.length > 0 && (
-          <aside className="hidden lg:block w-56 flex-shrink-0 relative">
+          <aside className="hidden lg:block w-64 flex-shrink-0 relative">
             <div className="sticky top-20">
-              <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-5">Contents</p>
+              <p className="text-sm font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-5">Contents</p>
               <nav ref={navRef} className="relative">
                 {/* TOC links */}
                 <div className="relative z-10 space-y-1">
