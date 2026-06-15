@@ -54,6 +54,7 @@ export default function PostPage() {
   const [activeH, setActiveH] = useState('');
   const activeHRef = useRef('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clickLockRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const articleRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const [indicator, setIndicator] = useState({ top: 0, height: 0, left: 0, width: 0, ready: false });
@@ -68,16 +69,16 @@ export default function PostPage() {
   useEffect(() => {
     if (headings.length === 0) return;
     const obs = new IntersectionObserver(entries => {
+      // Skip observer updates during click-triggered scroll
+      if (clickLockRef.current) return;
       let latest = '';
       entries.forEach(e => {
         if (e.isIntersecting) latest = e.target.id;
       });
       if (!latest) return;
-      // Immediate ref update for accurate tracking
       activeHRef.current = latest;
-      // Debounce state update to prevent animation stutter when jumping
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => setActiveH(latest), 60);
+      debounceRef.current = setTimeout(() => setActiveH(latest), 80);
     }, { rootMargin: '-80px 0px -75% 0px' });
     headings.forEach(h => { const el = document.getElementById(h.id); if (el) obs.observe(el); });
     return () => { obs.disconnect(); if (debounceRef.current) clearTimeout(debounceRef.current); };
@@ -121,12 +122,12 @@ export default function PostPage() {
     <div className="max-w-[1600px] mx-auto px-6 py-10">
       <div className="flex gap-6 justify-center">
         {headings.length > 0 && (
-          <aside className="hidden lg:block w-44 flex-shrink-0 relative">
+          <aside className="hidden lg:block w-56 flex-shrink-0 relative">
             <div className="sticky top-20">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-4">Contents</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-5">Contents</p>
               <nav ref={navRef} className="relative">
                 {/* TOC links */}
-                <div className="relative z-10 space-y-0.5">
+                <div className="relative z-10 space-y-1">
                   {headings.map(h => (
                     <a
                       key={h.id}
@@ -134,18 +135,20 @@ export default function PostPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });
-                        // Immediate update on click (skip debounce for instant feedback)
+                        // Lock observer updates during smooth scroll
+                        if (clickLockRef.current) clearTimeout(clickLockRef.current);
+                        clickLockRef.current = setTimeout(() => { clickLockRef.current = null; }, 800);
                         if (debounceRef.current) clearTimeout(debounceRef.current);
                         setActiveH(h.id);
                         activeHRef.current = h.id;
                       }}
-                      className={`block text-[11px] py-1.5 px-2.5 rounded-lg transition-colors duration-200 leading-snug ${
+                      className={`block text-[13px] py-2 px-3 rounded-lg transition-colors duration-200 leading-snug ${
                         activeH === h.id
                           ? 'text-zinc-900 dark:text-white font-semibold'
                           : 'text-zinc-400 dark:text-white/25 hover:text-zinc-600 dark:hover:text-white/50'
                       }`}
                     >
-                      {h.text.length > 28 ? h.text.slice(0, 28) + '...' : h.text}
+                      {h.text.length > 26 ? h.text.slice(0, 26) + '...' : h.text}
                     </a>
                   ))}
                 </div>
@@ -153,10 +156,10 @@ export default function PostPage() {
                 {/* Canvas-based liquid glass indicator */}
                 {indicator.ready && (
                   <LiquidGlassIndicator
-                    top={indicator.top - 4}
-                    height={indicator.height + 8}
-                    width={indicator.width + 14}
-                    left={indicator.left - 7}
+                    top={indicator.top - 5}
+                    height={indicator.height + 10}
+                    width={indicator.width + 16}
+                    left={indicator.left - 8}
                   />
                 )}
               </nav>
