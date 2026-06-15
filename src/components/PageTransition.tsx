@@ -112,7 +112,7 @@ export default function PageTransition() {
         zIndex: 100,
         display: 'none',
         pointerEvents: 'none',
-        background: 'var(--foreground)',
+        background: 'rgba(10, 10, 12, 0.85)',
       }}
       aria-hidden="true"
     />
