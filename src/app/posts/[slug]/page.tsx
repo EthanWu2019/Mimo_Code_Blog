@@ -124,7 +124,7 @@ export default function PostPage() {
         {headings.length > 0 && (
           <aside className="hidden lg:block w-64 flex-shrink-0 relative">
             <div className="sticky top-20">
-              <p className="text-sm font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-5">Contents</p>
+              <p className="text-sm font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-5">Contents</p>
               <nav ref={navRef} className="relative">
                 {/* TOC links */}
                 <div className="relative z-10 space-y-1">
@@ -145,7 +145,7 @@ export default function PostPage() {
                       className={`block text-[13px] py-2 px-3 rounded-lg transition-colors duration-200 leading-snug ${
                         activeH === h.id
                           ? 'text-zinc-900 dark:text-white font-semibold'
-                          : 'text-zinc-400 dark:text-white/25 hover:text-zinc-600 dark:hover:text-white/50'
+                          : 'text-zinc-500 dark:text-white/40 hover:text-zinc-700 dark:hover:text-white/70'
                       }`}
                     >
                       {h.text.length > 26 ? h.text.slice(0, 26) + '...' : h.text}
@@ -189,13 +189,13 @@ export default function PostPage() {
               const id = `h-${i}`;
               if (level === 1) return <h1 key={i} id={id} className="text-3xl font-bold text-zinc-900 dark:text-white mt-14 mb-6 scroll-mt-20">{text}</h1>;
               if (level === 2) return <h2 key={i} id={id} className="text-xl font-semibold text-zinc-900 dark:text-white mt-12 mb-4 scroll-mt-20">{text}</h2>;
-              return <h3 key={i} id={id} className="text-lg font-semibold text-zinc-800 dark:text-white/90 mt-8 mb-3 scroll-mt-20">{text}</h3>;
+              return <h3 key={i} id={id} className="text-lg font-semibold text-zinc-900 dark:text-white mt-8 mb-3 scroll-mt-20">{text}</h3>;
             }
             // Bold text **text**
             const withBold = trimmed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
             // Inline code `code`
             const withCode = withBold.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-white/10 rounded text-sm font-mono">$1</code>');
-            return <p key={i} className="text-zinc-600 dark:text-white/55 leading-[1.85] mb-5 text-[15px]" dangerouslySetInnerHTML={{ __html: withCode }} />;
+            return <p key={i} className="text-zinc-800 dark:text-white/85 leading-[1.9] mb-5 text-base" dangerouslySetInnerHTML={{ __html: withCode }} />;
           })}</div>
 
           <section className="border-t border-zinc-200/30 dark:border-white/[0.06] pt-10">

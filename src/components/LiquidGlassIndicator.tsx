@@ -33,16 +33,16 @@ function getColors(dark: boolean) {
     };
   }
   return {
-    bodyTop: 'rgba(255,255,255,0.75)',
-    bodyBottom: 'rgba(255,255,255,0.5)',
-    edge: 'rgba(200,200,220,0.6)',
-    specular: 'rgba(255,255,255,0.95)',
-    glow: 'rgba(100,120,200,0.12)',
-    shimmer: 'rgba(255,255,255,0.3)',
-    highlightTop: 'rgba(255,255,255,0.85)',
+    bodyTop: 'rgba(0,0,0,0.12)',
+    bodyBottom: 'rgba(0,0,0,0.06)',
+    edge: 'rgba(0,0,0,0.18)',
+    specular: 'rgba(255,255,255,0.5)',
+    glow: 'rgba(0,0,0,0.10)',
+    shimmer: 'rgba(255,255,255,0.15)',
+    highlightTop: 'rgba(255,255,255,0.25)',
     highlightBottom: 'rgba(255,255,255,0.0)',
-    tintA: 'rgba(180,190,255,0.15)',
-    tintB: 'rgba(220,210,255,0.12)',
+    tintA: 'rgba(80,80,120,0.08)',
+    tintB: 'rgba(100,90,140,0.06)',
   };
 }
 
