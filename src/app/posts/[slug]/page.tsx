@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import gsap from 'gsap';
+import { Vaso } from 'vaso';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CommentType { id: string; content: string; createdAt: string; pinned: boolean; likeCount: number; liked: boolean; author: { id: string; name: string | null; avatar: string | null; role: string }; replies?: CommentType[]; }
@@ -53,6 +54,7 @@ export default function PostPage() {
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]); const [activeH, setActiveH] = useState('');
   const articleRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const glassRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState({ top: 0, height: 0, ready: false });
 
   useEffect(() => {
@@ -86,6 +88,18 @@ export default function PostPage() {
     return () => window.removeEventListener('resize', onResize);
   }, [updateIndicator]);
 
+  // GSAP: continuous glass breathing glow
+  useEffect(() => {
+    if (!glassRef.current || !indicator.ready) return;
+    const tl = gsap.timeline({ repeat: -1, yoyo: true });
+    tl.to(glassRef.current, {
+      boxShadow: '0 0 12px 2px rgba(255,255,255,0.08), inset 0 0 8px 1px rgba(255,255,255,0.04)',
+      duration: 2,
+      ease: 'sine.inOut',
+    });
+    return () => { tl.kill(); };
+  }, [indicator.ready, indicator.top]);
+
   const handleCommentSubmit = async (e: React.FormEvent) => { e.preventDefault(); if (!comment.trim() || !post) return; setSubmitting(true); try { const r = await fetch('/api/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: comment, postId: post.id }) }); if (r.ok) { const c = await r.json(); setPost(p => p ? { ...p, comments: [c, ...p.comments] } : p); setComment(''); } } finally { setSubmitting(false); } };
 
   if (loading) return <div className="min-h-[80vh] flex items-center justify-center"><div className="w-8 h-8 border-2 border-zinc-300 dark:border-white/20 border-t-zinc-600 dark:border-t-white rounded-full animate-spin" /></div>;
@@ -99,6 +113,10 @@ export default function PostPage() {
             <div className="sticky top-20">
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-4">Contents</p>
               <nav ref={navRef} className="relative">
+                {/* Animated background for refraction to distort */}
+                <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+                  <div className="absolute inset-0 bg-gradient-to-b from-zinc-200/30 via-zinc-100/10 to-zinc-200/30 dark:from-white/[0.03] dark:via-white/[0.01] dark:to-white/[0.03] animate-pulse" style={{ animationDuration: '4s' }} />
+                </div>
                 {/* Liquid glass floating indicator */}
                 <AnimatePresence>
                   {indicator.ready && (
@@ -109,23 +127,38 @@ export default function PostPage() {
                       exit={{ opacity: 0, scale: 0.92 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
                     >
-                      {/* Outer glow */}
-                      <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] blur-sm" />
-                      {/* Glass body */}
-                      <div className="relative h-full rounded-[10px] overflow-hidden">
-                        {/* Background with blur */}
-                        <div className="absolute inset-0 bg-white/[0.07] dark:bg-white/[0.05] backdrop-blur-xl" />
-                        {/* Shimmer animation overlay */}
-                        <div className="absolute inset-0 glass-shimmer rounded-[10px]" />
-                        {/* Inner top highlight (simulates light refraction) */}
-                        <div className="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-white/[0.12] to-transparent rounded-t-[10px]" />
-                        {/* Inner bottom subtle shadow */}
-                        <div className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-black/[0.06] to-transparent rounded-b-[10px]" />
-                        {/* Edge highlight ring */}
-                        <div className="absolute inset-0 rounded-[10px] border border-white/[0.12] dark:border-white/[0.08]" />
-                        {/* Specular highlight dot (top-left) */}
-                        <div className="absolute top-1 left-2 w-3 h-1.5 bg-white/[0.15] rounded-full blur-[1px]" />
-                      </div>
+                      {/* Layer 1: Vaso SVG displacement refraction engine */}
+                      <Vaso
+                        width={176}
+                        height={indicator.height}
+                        radius={10}
+                        depth={2.0}
+                        blur={1.2}
+                        dispersion={1.5}
+                        px={6}
+                        py={3}
+                      >
+                        {/* Layer 2: CSS glass material body */}
+                        <div
+                          ref={glassRef}
+                          className="relative rounded-[10px] overflow-hidden"
+                          style={{ width: 176, height: indicator.height }}
+                        >
+                          {/* Translucent glass base */}
+                          <div className="absolute inset-0 bg-white/[0.08] dark:bg-white/[0.05]" />
+                          {/* Animated shimmer (liquid flow) */}
+                          <div className="absolute inset-0 glass-shimmer rounded-[10px]" />
+                          {/* Top light refraction highlight */}
+                          <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-white/[0.15] to-transparent rounded-t-[10px]" />
+                          {/* Bottom depth shadow */}
+                          <div className="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-t from-black/[0.08] to-transparent rounded-b-[10px]" />
+                          {/* Edge rim light */}
+                          <div className="absolute inset-0 rounded-[10px] border border-white/[0.15] dark:border-white/[0.10]" />
+                          {/* Specular highlight (simulates curved glass surface) */}
+                          <div className="absolute top-1 left-3 w-6 h-1.5 bg-white/[0.20] rounded-full blur-[1.5px]" />
+                          <div className="absolute top-2.5 left-5 w-2 h-0.5 bg-white/[0.10] rounded-full blur-[0.5px]" />
+                        </div>
+                      </Vaso>
                     </motion.div>
                   )}
                 </AnimatePresence>
