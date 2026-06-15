@@ -12,7 +12,7 @@ export default function Navbar() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isCompact, setIsCompact] = useState(false);
   const pathname = usePathname();
-  const isPostPage = pathname.startsWith('/posts/');
+  const needsShrink = pathname.startsWith('/posts/') || pathname === '/blog';
 
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
@@ -20,18 +20,18 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (isPostPage) {
-        // 文章详情页：滚动 50px 就缩短
+      if (needsShrink) {
+        // 文章详情页 & 博客列表页：滚动 50px 就缩短
         setIsCompact(window.scrollY > 50);
       } else {
-        // 主页：滚动 90vh 才缩短
-        setIsCompact(window.scrollY > window.innerHeight * 0.9);
+        // 主页：永不缩短
+        setIsCompact(false);
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isPostPage]);
+  }, [needsShrink]);
 
   const userImage = avatar || (session?.user as any)?.image;
 
@@ -45,9 +45,9 @@ export default function Navbar() {
       <div 
         className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
         style={{
-          maxWidth: isPostPage 
-            ? (isCompact ? '72rem' : '80rem')  // 文章页面
-            : (isCompact ? '56rem' : '80rem'),  // 其他页面
+          maxWidth: needsShrink
+            ? (isCompact ? '72rem' : '80rem')  // 文章页面 & 博客列表页
+            : '80rem',  // 主页：始终最大宽度
           transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
@@ -55,7 +55,7 @@ export default function Navbar() {
           Ethan&apos;s Blog
         </Link>
         <nav className="flex items-center gap-1">
-          <Link href="/" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
+          <Link href="/blog" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
             Blog
           </Link>
 

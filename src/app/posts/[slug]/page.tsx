@@ -80,7 +80,7 @@ export default function PostPage() {
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-4">Contents</p>
               <nav className="space-y-0.5">
                 {headings.map(h => (
-                  <a key={h.id} href={`#${h.id}`} className={`block text-[11px] py-1.5 px-2.5 rounded-lg transition-all duration-200 leading-snug ${activeH === h.id ? 'text-zinc-900 dark:text-white font-semibold glass' : 'text-zinc-400 dark:text-white/25 hover:text-zinc-600 dark:hover:text-white/50 hover:bg-black/[0.02] dark:hover:bg-white/[0.03]'}`}>
+                  <a key={h.id} href={`#${h.id}`} className={`block text-[11px] py-1.5 px-2.5 rounded-lg transition-all duration-200 leading-snug border-l-2 ${activeH === h.id ? 'text-zinc-900 dark:text-white font-semibold border-zinc-900 dark:border-white bg-zinc-100/60 dark:bg-white/[0.06]' : 'text-zinc-400 dark:text-white/25 border-transparent hover:text-zinc-600 dark:hover:text-white/50 hover:bg-black/[0.02] dark:hover:bg-white/[0.03]'}`}>
                     {h.text.length > 30 ? h.text.slice(0, 30) + '...' : h.text}
                   </a>
                 ))}
@@ -129,16 +129,15 @@ export default function PostPage() {
         </article>
 
         {related.length > 0 && (
-          <aside className="hidden lg:block w-64 flex-shrink-0">
+          <aside className="hidden lg:block w-52 flex-shrink-0">
             <div className="sticky top-20">
-              <div className="glass rounded-2xl p-6">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-6">Related</p>
-                <div className="space-y-6">
+              <div className="rounded-2xl p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-300 dark:text-white/15 mb-5">Related</p>
+                <div className="space-y-5">
                   {related.map(r => (
                     <Link key={r.id} href={`/posts/${r.slug}`} className="block group">
-                      <p className="text-sm font-bold text-zinc-800 dark:text-white/70 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-snug mb-2">{r.title}</p>
-                      {r.excerpt && <p className="text-[11px] text-zinc-400 dark:text-white/25 line-clamp-2 mb-2.5 ml-1">{r.excerpt}</p>}
-                      <div className="flex gap-1.5 ml-1">{r.tags.slice(0, 2).map(t => <span key={t.id} className="text-[9px] font-medium uppercase text-zinc-400 dark:text-white/20 bg-black/[0.03] dark:bg-white/[0.04] px-1.5 py-0.5 rounded">{t.name}</span>)}</div>
+                      <p className="text-[13px] font-medium text-zinc-500 dark:text-white/40 group-hover:text-zinc-800 dark:group-hover:text-white/70 transition-colors leading-snug mb-1.5">{r.title}</p>
+                      {r.excerpt && <p className="text-[11px] text-zinc-400 dark:text-white/20 line-clamp-2 leading-relaxed">{r.excerpt}</p>}
                     </Link>
                   ))}
                 </div>
