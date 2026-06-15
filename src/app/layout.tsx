@@ -41,6 +41,9 @@ const cookieCleanerScript = `
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t)document.documentElement.classList.add(t);else document.documentElement.classList.add('dark');}catch(e){document.documentElement.classList.add('dark');}})();` }} />
+      </head>
       <body style={{ background: 'var(--background)', margin: 0 }}>
         <script dangerouslySetInnerHTML={{ __html: cookieCleanerScript }} />
         <GlobalBackground />
