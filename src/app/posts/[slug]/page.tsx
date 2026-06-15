@@ -5,8 +5,7 @@ import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import gsap from 'gsap';
-import { Vaso } from 'vaso';
-import { motion, AnimatePresence } from 'framer-motion';
+import LiquidGlassIndicator from '@/components/LiquidGlassIndicator';
 
 interface CommentType { id: string; content: string; createdAt: string; pinned: boolean; likeCount: number; liked: boolean; author: { id: string; name: string | null; avatar: string | null; role: string }; replies?: CommentType[]; }
 interface Post { id: string; title: string; slug: string; content: string; excerpt: string | null; viewCount: number; createdAt: string; author: { id: string; name: string | null; avatar: string | null }; tags: { id: string; name: string }[]; comments: CommentType[]; }
@@ -54,7 +53,6 @@ export default function PostPage() {
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]); const [activeH, setActiveH] = useState('');
   const articleRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
-  const glassRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState({ top: 0, height: 0, ready: false });
 
   useEffect(() => {
@@ -87,18 +85,6 @@ export default function PostPage() {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [updateIndicator]);
-
-  // GSAP: continuous glass breathing glow
-  useEffect(() => {
-    if (!glassRef.current || !indicator.ready) return;
-    const tl = gsap.timeline({ repeat: -1, yoyo: true });
-    tl.to(glassRef.current, {
-      boxShadow: '0 0 12px 2px rgba(255,255,255,0.08), inset 0 0 8px 1px rgba(255,255,255,0.04)',
-      duration: 2,
-      ease: 'sine.inOut',
-    });
-    return () => { tl.kill(); };
-  }, [indicator.ready, indicator.top]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => { e.preventDefault(); if (!comment.trim() || !post) return; setSubmitting(true); try { const r = await fetch('/api/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: comment, postId: post.id }) }); if (r.ok) { const c = await r.json(); setPost(p => p ? { ...p, comments: [c, ...p.comments] } : p); setComment(''); } } finally { setSubmitting(false); } };
 
@@ -137,57 +123,14 @@ export default function PostPage() {
               </nav>
             </div>
 
-            {/* Liquid glass floating bubble — fixed position over article content */}
-            <AnimatePresence>
-              {indicator.ready && navRef.current && (() => {
-                const navRect = navRef.current.getBoundingClientRect();
-                const bubbleTop = navRect.top + indicator.top + 28;
-                const bubbleLeft = navRect.right - 20;
-                return (
-                  <motion.div
-                    className="fixed pointer-events-none z-[60]"
-                    style={{ left: bubbleLeft, width: 220 }}
-                    initial={{ opacity: 0, scale: 0.88 }}
-                    animate={{ opacity: 1, scale: 1, top: bubbleTop }}
-                    exit={{ opacity: 0, scale: 0.88 }}
-                    transition={{ type: 'spring', stiffness: 350, damping: 25, mass: 0.5 }}
-                  >
-                    {/* Vaso SVG displacement refraction — over article text */}
-                    <Vaso
-                      width={220}
-                      height={indicator.height + 8}
-                      radius={12}
-                      depth={3.0}
-                      blur={2.0}
-                      dispersion={2.5}
-                      px={8}
-                      py={4}
-                    >
-                      <div
-                        ref={glassRef}
-                        className="relative rounded-xl overflow-hidden"
-                        style={{ width: 220, height: indicator.height + 8 }}
-                      >
-                        {/* Semi-transparent glass base */}
-                        <div className="absolute inset-0 bg-white/[0.10] dark:bg-white/[0.06]" />
-                        {/* Liquid shimmer animation */}
-                        <div className="absolute inset-0 glass-shimmer rounded-xl" />
-                        {/* Top light refraction band */}
-                        <div className="absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-white/[0.18] to-transparent rounded-t-xl" />
-                        {/* Bottom depth shadow */}
-                        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/[0.10] to-transparent rounded-b-xl" />
-                        {/* Edge rim light (double layer) */}
-                        <div className="absolute inset-0 rounded-xl border border-white/[0.18] dark:border-white/[0.12]" />
-                        <div className="absolute inset-[1px] rounded-[11px] border border-white/[0.06]" />
-                        {/* Specular highlights */}
-                        <div className="absolute top-1.5 left-4 w-8 h-2 bg-white/[0.22] rounded-full blur-[2px]" />
-                        <div className="absolute top-3.5 left-7 w-3 h-0.5 bg-white/[0.12] rounded-full blur-[0.5px]" />
-                      </div>
-                    </Vaso>
-                  </motion.div>
-                );
-              })()}
-            </AnimatePresence>
+            {/* Canvas-based liquid glass indicator */}
+            {indicator.ready && (
+              <LiquidGlassIndicator
+                top={indicator.top + 28}
+                height={indicator.height + 4}
+                width={176}
+              />
+            )}
           </aside>
         )}
 
