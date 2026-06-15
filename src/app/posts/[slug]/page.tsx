@@ -137,51 +137,56 @@ export default function PostPage() {
               </nav>
             </div>
 
-            {/* Liquid glass floating bubble — positioned to overlap article content for refraction */}
+            {/* Liquid glass floating bubble — fixed position over article content */}
             <AnimatePresence>
-              {indicator.ready && (
-                <motion.div
-                  className="absolute pointer-events-none z-20"
-                  style={{ left: -12, width: 200 }}
-                  initial={{ opacity: 0, scale: 0.88 }}
-                  animate={{ opacity: 1, scale: 1, top: indicator.top + 28 }}
-                  exit={{ opacity: 0, scale: 0.88 }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 25, mass: 0.5 }}
-                >
-                  {/* Vaso SVG displacement refraction — over article content */}
-                  <Vaso
-                    width={200}
-                    height={indicator.height + 8}
-                    radius={12}
-                    depth={2.5}
-                    blur={1.5}
-                    dispersion={2.0}
-                    px={8}
-                    py={4}
+              {indicator.ready && navRef.current && (() => {
+                const navRect = navRef.current.getBoundingClientRect();
+                const bubbleTop = navRect.top + indicator.top + 28;
+                const bubbleLeft = navRect.right - 20;
+                return (
+                  <motion.div
+                    className="fixed pointer-events-none z-[60]"
+                    style={{ left: bubbleLeft, width: 220 }}
+                    initial={{ opacity: 0, scale: 0.88 }}
+                    animate={{ opacity: 1, scale: 1, top: bubbleTop }}
+                    exit={{ opacity: 0, scale: 0.88 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 25, mass: 0.5 }}
                   >
-                    <div
-                      ref={glassRef}
-                      className="relative rounded-xl overflow-hidden"
-                      style={{ width: 200, height: indicator.height + 8 }}
+                    {/* Vaso SVG displacement refraction — over article text */}
+                    <Vaso
+                      width={220}
+                      height={indicator.height + 8}
+                      radius={12}
+                      depth={3.0}
+                      blur={2.0}
+                      dispersion={2.5}
+                      px={8}
+                      py={4}
                     >
-                      {/* Semi-transparent glass base */}
-                      <div className="absolute inset-0 bg-white/[0.10] dark:bg-white/[0.06]" />
-                      {/* Liquid shimmer animation */}
-                      <div className="absolute inset-0 glass-shimmer rounded-xl" />
-                      {/* Top light refraction band */}
-                      <div className="absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-white/[0.18] to-transparent rounded-t-xl" />
-                      {/* Bottom depth shadow */}
-                      <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/[0.10] to-transparent rounded-b-xl" />
-                      {/* Edge rim light (double layer for realism) */}
-                      <div className="absolute inset-0 rounded-xl border border-white/[0.18] dark:border-white/[0.12]" />
-                      <div className="absolute inset-[1px] rounded-[11px] border border-white/[0.06]" />
-                      {/* Specular highlights (curved glass surface) */}
-                      <div className="absolute top-1.5 left-4 w-8 h-2 bg-white/[0.22] rounded-full blur-[2px]" />
-                      <div className="absolute top-3.5 left-7 w-3 h-0.5 bg-white/[0.12] rounded-full blur-[0.5px]" />
-                    </div>
-                  </Vaso>
-                </motion.div>
-              )}
+                      <div
+                        ref={glassRef}
+                        className="relative rounded-xl overflow-hidden"
+                        style={{ width: 220, height: indicator.height + 8 }}
+                      >
+                        {/* Semi-transparent glass base */}
+                        <div className="absolute inset-0 bg-white/[0.10] dark:bg-white/[0.06]" />
+                        {/* Liquid shimmer animation */}
+                        <div className="absolute inset-0 glass-shimmer rounded-xl" />
+                        {/* Top light refraction band */}
+                        <div className="absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-white/[0.18] to-transparent rounded-t-xl" />
+                        {/* Bottom depth shadow */}
+                        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/[0.10] to-transparent rounded-b-xl" />
+                        {/* Edge rim light (double layer) */}
+                        <div className="absolute inset-0 rounded-xl border border-white/[0.18] dark:border-white/[0.12]" />
+                        <div className="absolute inset-[1px] rounded-[11px] border border-white/[0.06]" />
+                        {/* Specular highlights */}
+                        <div className="absolute top-1.5 left-4 w-8 h-2 bg-white/[0.22] rounded-full blur-[2px]" />
+                        <div className="absolute top-3.5 left-7 w-3 h-0.5 bg-white/[0.12] rounded-full blur-[0.5px]" />
+                      </div>
+                    </Vaso>
+                  </motion.div>
+                );
+              })()}
             </AnimatePresence>
           </aside>
         )}
