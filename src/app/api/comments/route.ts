@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       replies: c.replies?.map(formatComment),
     });
 
-    const sorted = comments.map(formatComment).sort((a, b) => {
+    const sorted = comments.map(formatComment).sort((a: any, b: any) => {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
       const scoreA = a.likeCount * 3 + (Date.now() - new Date(a.createdAt).getTime() / 3600000);

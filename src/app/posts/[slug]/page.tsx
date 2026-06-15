@@ -55,7 +55,7 @@ export default function PostPage() {
   useEffect(() => {
     Promise.all([fetch(`/api/posts/${slug}`).then(r => r.json()), fetch(`/api/posts/${slug}/related`).then(r => r.json())])
       .then(([pd, rd]) => { setPost(pd); setRelated(rd); setLoading(false); if (articleRef.current) gsap.fromTo(articleRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' });
-        const h: { id: string; text: string }[] = []; pd.content.split('\n\n').forEach((p: string, i: number) => { const t = p.trim(); if (t.length > 0 && t.length < 150 && !t.endsWith('.') && !t.endsWith('!') && !t.endsWith('?')) h.push({ id: `h-${i}`, text: t }); }); setHeadings(h.slice(0, 10));
+        const h: { id: string; text: string }[] = []; pd.content.split('\n').forEach((line: string, i: number) => { const t = line.trim(); const m = t.match(/^(#{1,3})\s+(.+)/); if (m) h.push({ id: `h-${i}`, text: m[2] }); }); setHeadings(h.slice(0, 15));
       }).catch(() => setLoading(false));
   }, [slug]);
 
@@ -72,10 +72,10 @@ export default function PostPage() {
   if (!post) return <div className="min-h-[80vh] flex items-center justify-center"><div className="text-center"><h1 className="text-6xl font-bold text-zinc-100 dark:text-white/10 mb-4">404</h1><Link href="/" className="glass px-4 py-2 text-sm rounded-lg text-zinc-600 dark:text-white/60">Back</Link></div></div>;
 
   return (
-    <div className="max-w-[1500px] mx-auto px-6 py-10">
-      <div className="flex gap-12 justify-center">
+    <div className="max-w-[1600px] mx-auto px-6 py-10">
+      <div className="flex gap-6 justify-center">
         {headings.length > 0 && (
-          <aside className="hidden lg:block w-48 flex-shrink-0">
+          <aside className="hidden lg:block w-40 flex-shrink-0">
             <div className="sticky top-20">
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-4">Contents</p>
               <nav className="space-y-0.5">
@@ -89,7 +89,7 @@ export default function PostPage() {
           </aside>
         )}
 
-        <article ref={articleRef} className="flex-1 min-w-0 max-w-2xl">
+        <article ref={articleRef} className="flex-1 min-w-0 max-w-4xl">
           <header className="mb-12 pb-8 border-b border-zinc-200/30 dark:border-white/[0.06]">
             <div className="flex flex-wrap gap-2 mb-4">{post.tags.map(t => <span key={t.id} className="px-2.5 py-0.5 text-[11px] font-medium text-zinc-500 dark:text-white/40 glass rounded-full">{t.name}</span>)}</div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4 leading-tight">{post.title}</h1>
@@ -101,7 +101,24 @@ export default function PostPage() {
             </div>
           </header>
 
-          <div className="mb-16">{post.content.split('\n\n').map((p, i) => { const isH = headings.find(h => h.id === `h-${i}`); if (isH) return <h2 key={i} id={`h-${i}`} className="text-xl font-semibold text-zinc-900 dark:text-white mt-12 mb-4 scroll-mt-20">{p}</h2>; return <p key={i} className="text-zinc-600 dark:text-white/55 leading-[1.85] mb-5 text-[15px]">{p}</p>; })}</div>
+          <div className="mb-16">{post.content.split('\n').map((line, i) => {
+            const trimmed = line.trim();
+            if (!trimmed) return null;
+            const mdMatch = trimmed.match(/^(#{1,3})\s+(.+)/);
+            if (mdMatch) {
+              const level = mdMatch[1].length;
+              const text = mdMatch[2];
+              const id = `h-${i}`;
+              if (level === 1) return <h1 key={i} id={id} className="text-3xl font-bold text-zinc-900 dark:text-white mt-14 mb-6 scroll-mt-20">{text}</h1>;
+              if (level === 2) return <h2 key={i} id={id} className="text-xl font-semibold text-zinc-900 dark:text-white mt-12 mb-4 scroll-mt-20">{text}</h2>;
+              return <h3 key={i} id={id} className="text-lg font-semibold text-zinc-800 dark:text-white/90 mt-8 mb-3 scroll-mt-20">{text}</h3>;
+            }
+            // Bold text **text**
+            const withBold = trimmed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            // Inline code `code`
+            const withCode = withBold.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-white/10 rounded text-sm font-mono">$1</code>');
+            return <p key={i} className="text-zinc-600 dark:text-white/55 leading-[1.85] mb-5 text-[15px]" dangerouslySetInnerHTML={{ __html: withCode }} />;
+          })}</div>
 
           <section className="border-t border-zinc-200/30 dark:border-white/[0.06] pt-10">
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-6">Comments ({post.comments.length})</h2>
@@ -112,7 +129,7 @@ export default function PostPage() {
         </article>
 
         {related.length > 0 && (
-          <aside className="hidden xl:block w-80 flex-shrink-0">
+          <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="sticky top-20">
               <div className="glass rounded-2xl p-6">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-6">Related</p>
