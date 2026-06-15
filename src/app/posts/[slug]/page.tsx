@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import gsap from 'gsap';
+import { Vaso } from 'vaso';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CommentType { id: string; content: string; createdAt: string; pinned: boolean; likeCount: number; liked: boolean; author: { id: string; name: string | null; avatar: string | null; role: string }; replies?: CommentType[]; }
 interface Post { id: string; title: string; slug: string; content: string; excerpt: string | null; viewCount: number; createdAt: string; author: { id: string; name: string | null; avatar: string | null }; tags: { id: string; name: string }[]; comments: CommentType[]; }
@@ -51,6 +53,8 @@ export default function PostPage() {
   const [loading, setLoading] = useState(true); const [comment, setComment] = useState(''); const [submitting, setSubmitting] = useState(false);
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]); const [activeH, setActiveH] = useState('');
   const articleRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const [indicator, setIndicator] = useState({ top: 0, height: 0, ready: false });
 
   useEffect(() => {
     Promise.all([fetch(`/api/posts/${slug}`).then(r => r.json()), fetch(`/api/posts/${slug}/related`).then(r => r.json())])
@@ -66,6 +70,23 @@ export default function PostPage() {
     return () => obs.disconnect();
   }, [headings]);
 
+  const updateIndicator = useCallback(() => {
+    if (!navRef.current || !activeH) return;
+    const link = navRef.current.querySelector(`a[href="#${activeH}"]`);
+    if (link) {
+      const navRect = navRef.current.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      setIndicator({ top: linkRect.top - navRect.top, height: linkRect.height, ready: true });
+    }
+  }, [activeH]);
+
+  useEffect(() => { updateIndicator(); }, [updateIndicator]);
+  useEffect(() => {
+    const onResize = () => updateIndicator();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [updateIndicator]);
+
   const handleCommentSubmit = async (e: React.FormEvent) => { e.preventDefault(); if (!comment.trim() || !post) return; setSubmitting(true); try { const r = await fetch('/api/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: comment, postId: post.id }) }); if (r.ok) { const c = await r.json(); setPost(p => p ? { ...p, comments: [c, ...p.comments] } : p); setComment(''); } } finally { setSubmitting(false); } };
 
   if (loading) return <div className="min-h-[80vh] flex items-center justify-center"><div className="w-8 h-8 border-2 border-zinc-300 dark:border-white/20 border-t-zinc-600 dark:border-t-white rounded-full animate-spin" /></div>;
@@ -75,15 +96,56 @@ export default function PostPage() {
     <div className="max-w-[1600px] mx-auto px-6 py-10">
       <div className="flex gap-6 justify-center">
         {headings.length > 0 && (
-          <aside className="hidden lg:block w-40 flex-shrink-0">
+          <aside className="hidden lg:block w-44 flex-shrink-0">
             <div className="sticky top-20">
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/20 mb-4">Contents</p>
-              <nav className="space-y-0.5">
-                {headings.map(h => (
-                  <a key={h.id} href={`#${h.id}`} className={`block text-[11px] py-1.5 px-2.5 rounded-lg transition-all duration-200 leading-snug border-l-2 ${activeH === h.id ? 'text-zinc-900 dark:text-white font-semibold border-zinc-900 dark:border-white bg-zinc-100/60 dark:bg-white/[0.06]' : 'text-zinc-400 dark:text-white/25 border-transparent hover:text-zinc-600 dark:hover:text-white/50 hover:bg-black/[0.02] dark:hover:bg-white/[0.03]'}`}>
-                    {h.text.length > 30 ? h.text.slice(0, 30) + '...' : h.text}
-                  </a>
-                ))}
+              <nav ref={navRef} className="relative">
+                {/* Liquid glass floating indicator */}
+                <AnimatePresence>
+                  {indicator.ready && (
+                    <motion.div
+                      className="absolute left-0 right-0 pointer-events-none z-0"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1, top: indicator.top, height: indicator.height }}
+                      transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                    >
+                      <Vaso
+                        width={176}
+                        height={indicator.height}
+                        radius={10}
+                        depth={0.8}
+                        blur={0.4}
+                        dispersion={0.6}
+                        px={2}
+                        py={1}
+                      >
+                        <div style={{ width: 176, height: indicator.height }} />
+                      </Vaso>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* TOC links */}
+                <div className="relative z-10 space-y-0.5">
+                  {headings.map(h => (
+                    <a
+                      key={h.id}
+                      href={`#${h.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });
+                        setActiveH(h.id);
+                      }}
+                      className={`block text-[11px] py-1.5 px-2.5 rounded-lg transition-colors duration-200 leading-snug ${
+                        activeH === h.id
+                          ? 'text-zinc-900 dark:text-white font-semibold'
+                          : 'text-zinc-400 dark:text-white/25 hover:text-zinc-600 dark:hover:text-white/50'
+                      }`}
+                    >
+                      {h.text.length > 28 ? h.text.slice(0, 28) + '...' : h.text}
+                    </a>
+                  ))}
+                </div>
               </nav>
             </div>
           </aside>
