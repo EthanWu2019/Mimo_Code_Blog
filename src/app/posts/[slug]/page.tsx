@@ -156,10 +156,10 @@ export default function PostPage() {
                 {/* Canvas-based liquid glass indicator */}
                 {indicator.ready && (
                   <LiquidGlassIndicator
-                    top={indicator.top - 5}
-                    height={indicator.height + 10}
-                    width={indicator.width + 16}
-                    left={indicator.left - 8}
+                    top={indicator.top - 6}
+                    height={indicator.height + 12}
+                    width={indicator.width + 24}
+                    left={indicator.left - 12}
                   />
                 )}
               </nav>

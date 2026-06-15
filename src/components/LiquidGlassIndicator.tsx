@@ -10,7 +10,7 @@ interface LiquidGlassIndicatorProps {
   left?: number;
 }
 
-const PILL_RADIUS = 999;
+const PILL_RADIUS = 10; // Adaptive radius, not full pill
 
 function isDark(): boolean {
   if (typeof document === 'undefined') return true;
@@ -207,8 +207,8 @@ export default function LiquidGlassIndicator({
     if (!container) return;
     gsap.to(animState.current, {
       currentTop: top,
-      duration: 0.5,
-      ease: 'elastic.out(1, 0.75)',
+      duration: 0.6,
+      ease: 'back.out(1.2)',
       overwrite: true,
       onUpdate: () => {
         container.style.top = `${animState.current.currentTop}px`;
@@ -221,8 +221,8 @@ export default function LiquidGlassIndicator({
     if (!container) return;
     gsap.to(animState.current, {
       currentLeft: left,
-      duration: 0.5,
-      ease: 'elastic.out(1, 0.75)',
+      duration: 0.6,
+      ease: 'back.out(1.2)',
       overwrite: true,
       onUpdate: () => {
         container.style.left = `${animState.current.currentLeft}px`;
