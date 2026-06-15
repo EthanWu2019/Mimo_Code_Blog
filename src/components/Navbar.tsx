@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from './ThemeProvider';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import gsap from 'gsap';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -16,84 +15,20 @@ export default function Navbar() {
   const isBlog = pathname === '/blog';
   const isPost = pathname.startsWith('/posts/');
 
-  const headerRef = useRef<HTMLElement>(null);
-  const bounceRef = useRef<gsap.core.Tween | null>(null);
-  const pullActive = useRef(false);
-  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
   }, [session]);
 
-  // Compact mode via scroll
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
       if (isPost) setIsCompact(y > 30);
-      else if (isBlog) setIsCompact(y > window.innerHeight * 0.85);
+      else if (isBlog) setIsCompact(y > window.innerHeight * 0.8);
       else setIsCompact(false);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isPost, isBlog]);
-
-  // Pull-down elastic: uses wheel event (works with trackpad overscroll)
-  useEffect(() => {
-    const el = headerRef.current;
-    if (!el) return;
-
-    const onWheel = (e: WheelEvent) => {
-      // Scrolling UP while at the very top = trackpad overscroll
-      if (window.scrollY <= 0 && e.deltaY < 0) {
-        if (settleTimer.current) { clearTimeout(settleTimer.current); settleTimer.current = null; }
-
-        if (!pullActive.current) {
-          pullActive.current = true;
-          if (bounceRef.current) bounceRef.current.kill();
-          gsap.set(el, { y: 16, scale: 1.035 });
-        }
-      }
-      // Scrolling DOWN while pulled = release, bounce back
-      else if (pullActive.current && e.deltaY > 0) {
-        doBounceBack(el);
-      }
-    };
-
-    const onScroll = () => {
-      // scrollY became positive while pulled = also release
-      if (pullActive.current && window.scrollY > 0) {
-        doBounceBack(el);
-      }
-      // At top, not pulled, not bouncing: schedule settle in case overscroll ends silently
-      if (window.scrollY <= 0 && !pullActive.current) {
-        if (settleTimer.current) clearTimeout(settleTimer.current);
-        settleTimer.current = setTimeout(() => {
-          if (pullActive.current) doBounceBack(el);
-        }, 400);
-      }
-    };
-
-    const doBounceBack = (target: HTMLElement) => {
-      if (!pullActive.current) return;
-      pullActive.current = false;
-      if (settleTimer.current) { clearTimeout(settleTimer.current); settleTimer.current = null; }
-      if (bounceRef.current) bounceRef.current.kill();
-      bounceRef.current = gsap.to(target, {
-        y: 0,
-        scale: 1,
-        duration: 0.9,
-        ease: 'elastic.out(1.2, 0.3)',
-      });
-    };
-
-    window.addEventListener('wheel', onWheel, { passive: true });
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('wheel', onWheel);
-      window.removeEventListener('scroll', onScroll);
-      if (settleTimer.current) clearTimeout(settleTimer.current);
-    };
-  }, []);
 
   const userImage = avatar || (session?.user as any)?.image;
 
@@ -106,11 +41,7 @@ export default function Navbar() {
   return (
     <>
       <div className="h-[72px]" />
-      <header
-        ref={headerRef}
-        className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3"
-        style={{ transformOrigin: 'center top' }}
-      >
+      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3">
         <div
           className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
           style={{
