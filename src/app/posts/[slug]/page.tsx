@@ -132,17 +132,17 @@ export default function PostPage() {
                     </a>
                   ))}
                 </div>
-              </nav>
 
-              {/* Canvas-based liquid glass indicator */}
-              {indicator.ready && (
-                <LiquidGlassIndicator
-                  top={indicator.top}
-                  height={indicator.height}
-                  width={indicator.width}
-                  left={indicator.left}
-                />
-              )}
+                {/* Canvas-based liquid glass indicator */}
+                {indicator.ready && (
+                  <LiquidGlassIndicator
+                    top={indicator.top - 2}
+                    height={indicator.height + 4}
+                    width={indicator.width + 8}
+                    left={indicator.left - 4}
+                  />
+                )}
+              </nav>
             </div>
           </aside>
         )}
