@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import gsap from 'gsap';
-import { Vaso } from 'vaso';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CommentType { id: string; content: string; createdAt: string; pinned: boolean; likeCount: number; liked: boolean; author: { id: string; name: string | null; avatar: string | null; role: string }; replies?: CommentType[]; }
@@ -105,25 +104,28 @@ export default function PostPage() {
                   {indicator.ready && (
                     <motion.div
                       className="absolute left-0 right-0 pointer-events-none z-0"
-                      initial={{ opacity: 0, scale: 0.95 }}
+                      initial={{ opacity: 0, scale: 0.92 }}
                       animate={{ opacity: 1, scale: 1, top: indicator.top, height: indicator.height }}
-                      transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                      exit={{ opacity: 0, scale: 0.92 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
                     >
-                      <Vaso
-                        width={176}
-                        height={indicator.height}
-                        radius={10}
-                        depth={1.5}
-                        blur={0.8}
-                        dispersion={1.0}
-                        px={4}
-                        py={2}
-                      >
-                        <div
-                          style={{ width: 176, height: indicator.height }}
-                          className="rounded-[10px] bg-white/[0.06] dark:bg-white/[0.04] border border-white/[0.08] dark:border-white/[0.06]"
-                        />
-                      </Vaso>
+                      {/* Outer glow */}
+                      <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] blur-sm" />
+                      {/* Glass body */}
+                      <div className="relative h-full rounded-[10px] overflow-hidden">
+                        {/* Background with blur */}
+                        <div className="absolute inset-0 bg-white/[0.07] dark:bg-white/[0.05] backdrop-blur-xl" />
+                        {/* Shimmer animation overlay */}
+                        <div className="absolute inset-0 glass-shimmer rounded-[10px]" />
+                        {/* Inner top highlight (simulates light refraction) */}
+                        <div className="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-white/[0.12] to-transparent rounded-t-[10px]" />
+                        {/* Inner bottom subtle shadow */}
+                        <div className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-black/[0.06] to-transparent rounded-b-[10px]" />
+                        {/* Edge highlight ring */}
+                        <div className="absolute inset-0 rounded-[10px] border border-white/[0.12] dark:border-white/[0.08]" />
+                        {/* Specular highlight dot (top-left) */}
+                        <div className="absolute top-1 left-2 w-3 h-1.5 bg-white/[0.15] rounded-full blur-[1px]" />
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
