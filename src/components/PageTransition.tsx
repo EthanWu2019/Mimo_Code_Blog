@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import gsap from 'gsap';
 
@@ -8,36 +8,86 @@ export default function PageTransition() {
   const pathname = usePathname();
   const prevPath = useRef(pathname);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const revealRef = useRef<HTMLDivElement>(null);
   const isAnimating = useRef(false);
 
-  useEffect(() => {
-    if (pathname === prevPath.current) return;
-    if (isAnimating.current) return;
-
+  const playTransition = useCallback((originX: number, originY: number) => {
     const overlay = overlayRef.current;
-    if (!overlay) return;
+    const reveal = revealRef.current;
+    if (!overlay || !reveal || isAnimating.current) return;
 
     isAnimating.current = true;
-    prevPath.current = pathname;
 
-    // Transition: overlay slides in from left, then slides out to right
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    // Radius needed to cover entire viewport from origin
+    const maxR = Math.ceil(Math.sqrt(
+      Math.max(originX, vw - originX) ** 2 +
+      Math.max(originY, vh - originY) ** 2
+    ));
+
     const tl = gsap.timeline({
-      onComplete: () => { isAnimating.current = false; },
+      onComplete: () => {
+        gsap.set(overlay, { display: 'none' });
+        gsap.set(reveal, { display: 'none' });
+        isAnimating.current = false;
+      },
     });
 
-    tl.set(overlay, { x: '-100%', opacity: 1, display: 'block' })
+    // Phase 1: Dark circle expands from click point to cover screen
+    tl.set(overlay, { display: 'block', opacity: 1 })
+      .fromTo(overlay,
+        { clipPath: `circle(0px at ${originX}px ${originY}px)` },
+        {
+          clipPath: `circle(${maxR}px at ${originX}px ${originY}px)`,
+          duration: 0.45,
+          ease: 'power3.in',
+        }
+      )
+      // Phase 2: Hold briefly while page content swaps underneath
+      .to({}, { duration: 0.08 })
+      // Phase 3: Overlay fades out to reveal new page
       .to(overlay, {
-        x: '0%',
-        duration: 0.25,
-        ease: 'power2.in',
-      })
-      .to(overlay, {
-        x: '100%',
-        duration: 0.25,
+        opacity: 0,
+        duration: 0.3,
         ease: 'power2.out',
-        delay: 0.05,
-      })
-      .set(overlay, { display: 'none', x: '-100%' });
+      });
+  }, []);
+
+  // Listen for clicks on internal links
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (isAnimating.current) return;
+      const target = (e.target as HTMLElement).closest('a');
+      if (!target) return;
+      const href = target.getAttribute('href');
+      if (!href || !href.startsWith('/') || href === pathname) return;
+
+      // Check if it's within the same origin
+      const url = new URL(href, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+
+      const rect = target.getBoundingClientRect();
+      playTransition(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2
+      );
+    };
+
+    document.addEventListener('click', handleClick, true);
+    return () => document.removeEventListener('click', handleClick, true);
+  }, [pathname, playTransition]);
+
+  // Safety timeout: if animation finishes before path changes, force complete
+  useEffect(() => {
+    if (pathname !== prevPath.current) {
+      prevPath.current = pathname;
+      // Path changed — if overlay is still visible, let the fade-out play
+      const overlay = overlayRef.current;
+      if (overlay && isAnimating.current) {
+        // The timeline is already running, it will fade out on its own
+      }
+    }
   }, [pathname]);
 
   return (
@@ -46,10 +96,7 @@ export default function PageTransition() {
       className="fixed inset-0 z-[100] pointer-events-none"
       style={{ display: 'none' }}
     >
-      {/* Gradient overlay with glass effect */}
-      <div className="absolute inset-0 bg-zinc-900/95 dark:bg-white/95 backdrop-blur-sm" />
-      {/* Subtle decorative line */}
-      <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 dark:via-black/20 to-transparent" />
+      <div className="absolute inset-0 bg-zinc-900 dark:bg-white" />
     </div>
   );
 }
