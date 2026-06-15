@@ -113,13 +113,16 @@ export default function PostPage() {
                         width={176}
                         height={indicator.height}
                         radius={10}
-                        depth={0.8}
-                        blur={0.4}
-                        dispersion={0.6}
-                        px={2}
-                        py={1}
+                        depth={1.5}
+                        blur={0.8}
+                        dispersion={1.0}
+                        px={4}
+                        py={2}
                       >
-                        <div style={{ width: 176, height: indicator.height }} />
+                        <div
+                          style={{ width: 176, height: indicator.height }}
+                          className="rounded-[10px] bg-white/[0.06] dark:bg-white/[0.04] border border-white/[0.08] dark:border-white/[0.06]"
+                        />
                       </Vaso>
                     </motion.div>
                   )}
