@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useTheme } from './ThemeProvider';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import gsap from 'gsap';
 
@@ -13,63 +13,73 @@ export default function Navbar() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isCompact, setIsCompact] = useState(false);
   const pathname = usePathname();
-  const needsShrink = pathname.startsWith('/posts/') || pathname === '/blog';
+  const isBlog = pathname === '/blog';
+  const isPost = pathname.startsWith('/posts/');
+  const isHome = pathname === '/';
 
   const headerRef = useRef<HTMLElement>(null);
-  const lastScrollY = useRef(0);
-  const lastTime = useRef(0);
   const bounceRef = useRef<gsap.core.Tween | null>(null);
+  const isBouncing = useRef(false);
+  const pullActive = useRef(false);
 
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
   }, [session]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      const now = performance.now();
-      const dt = Math.max(now - lastTime.current, 1);
-      const velocity = (currentY - lastScrollY.current) / dt; // px/ms
-      lastScrollY.current = currentY;
-      lastTime.current = now;
+  const handleScroll = useCallback(() => {
+    const y = window.scrollY;
+    const el = headerRef.current;
+    if (!el) return;
 
-      // Compact mode
-      if (needsShrink) {
-        setIsCompact(currentY > 50);
-      } else {
-        setIsCompact(false);
-      }
+    // --- Compact mode ---
+    if (isPost) {
+      setIsCompact(y > 30);
+    } else if (isBlog) {
+      setIsCompact(y > window.innerHeight * 0.85);
+    } else {
+      setIsCompact(false);
+    }
 
-      // Pull-down elastic effect when overscrolling at top
-      if (currentY <= 0 && velocity < -0.5) {
-        const pullAmount = Math.min(Math.abs(velocity) * 8, 30);
-        const scale = 1 + Math.min(Math.abs(velocity) * 0.008, 0.06);
-
+    // --- Pull-down elastic bounce ---
+    // Overscroll at top: pull navbar down
+    if (y <= 0) {
+      if (!pullActive.current && !isBouncing.current) {
+        pullActive.current = true;
         if (bounceRef.current) bounceRef.current.kill();
-        gsap.set(headerRef.current, { y: pullAmount, scale });
-      } else if (currentY <= 5 && headerRef.current) {
-        const currentTransform = headerRef.current.style.transform;
-        if (currentTransform && currentTransform !== 'none') {
-          if (bounceRef.current) bounceRef.current.kill();
-          bounceRef.current = gsap.to(headerRef.current, {
-            y: 0,
-            scale: 1,
-            duration: 0.6,
-            ease: 'elastic.out(1, 0.4)',
-          });
-        }
+        // Snap to pulled state
+        gsap.to(el, { y: 16, scale: 1.035, duration: 0.15, ease: 'power2.out' });
       }
-    };
+    } else if (pullActive.current) {
+      // Released from overscroll: bounce back with elastic
+      pullActive.current = false;
+      isBouncing.current = true;
+      if (bounceRef.current) bounceRef.current.kill();
+      bounceRef.current = gsap.to(el, {
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        ease: 'elastic.out(1.2, 0.35)',
+        onComplete: () => { isBouncing.current = false; },
+      });
+    }
+  }, [isPost, isBlog]);
 
+  useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [needsShrink]);
+  }, [handleScroll]);
 
   const userImage = avatar || (session?.user as any)?.image;
 
+  // Navbar width: blog page has dramatic shrink, post page has moderate shrink
+  const getMaxWidth = () => {
+    if (isPost) return isCompact ? '64rem' : '80rem';
+    if (isBlog) return isCompact ? '52rem' : '80rem';
+    return '80rem';
+  };
+
   return (
     <>
-      {/* Spacer for fixed navbar */}
       <div className="h-[72px]" />
       <header
         ref={headerRef}
@@ -79,10 +89,8 @@ export default function Navbar() {
         <div
           className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
           style={{
-            maxWidth: needsShrink
-              ? (isCompact ? '72rem' : '80rem')
-              : '80rem',
-            transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+            maxWidth: getMaxWidth(),
+            transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           <Link href="/" className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
