@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
+import BlogSkeleton from '@/components/BlogSkeleton';
 
 interface Post {
   id: string; title: string; slug: string; excerpt: string | null; viewCount: number; createdAt: string;
@@ -108,6 +109,7 @@ export default function BlogPage() {
       {/* Posts section */}
       <main className="max-w-4xl mx-auto px-6 py-16">
         {/* Tags */}
+        {!loading && (
         <div className="flex flex-wrap gap-2 mb-8">
           <button
             onClick={() => setSelectedTag(null)}
@@ -133,6 +135,7 @@ export default function BlogPage() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Post list */}
         <div className="divide-y divide-zinc-100 dark:divide-white/[0.06]">
@@ -184,12 +187,14 @@ export default function BlogPage() {
           ))}
         </div>
 
-        {/* Empty state */}
-        {filteredPosts.length === 0 && (
+        {/* Post list or loading skeleton */}
+        {loading ? (
+          <BlogSkeleton />
+        ) : filteredPosts.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-zinc-400 dark:text-zinc-500">No posts found.</p>
           </div>
-        )}
+        ) : null}
       </main>
 
       {/* Footer */}
