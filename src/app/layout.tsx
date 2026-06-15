@@ -4,7 +4,6 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import GlobalBackground from "@/components/GlobalBackground";
 import BackToTop from "@/components/BackToTop";
-import PageTransition from "@/components/PageTransition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,7 +48,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: cookieCleanerScript }} />
         <GlobalBackground />
         <Providers>
-          <PageTransition />
           {children}
         </Providers>
         <BackToTop />
