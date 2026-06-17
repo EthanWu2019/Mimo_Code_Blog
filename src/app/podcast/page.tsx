@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import FloatingPlayer from '@/components/FloatingPlayer';
 
 const categories = ['All', 'Engineering', 'Design', 'Career', 'AI & Tech', 'Open Source'];
 
@@ -111,7 +112,6 @@ export default function PodcastPage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [playingId, setPlayingId] = useState<number | null>(1);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [playerExpanded, setPlayerExpanded] = useState(false);
 
   const featured = episodes.find((e) => e.featured)!;
   const filtered = episodes
@@ -299,101 +299,13 @@ export default function PodcastPage() {
         </div>
       </section>
 
-      {/* Floating Corner Player Widget */}
+      {/* Floating Corner Player */}
       {playingEpisode && (
-        <motion.div
-          className="fixed bottom-6 right-20 z-50"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        >
-          <motion.div
-            className="bg-white/[0.08] dark:bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] dark:border-white/[0.08] shadow-lg dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] overflow-hidden"
-            animate={{
-              width: playerExpanded ? 280 : 56,
-              height: playerExpanded ? 'auto' : 56,
-              borderRadius: playerExpanded ? 16 : 999,
-            }}
-            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-            style={{ originX: 1, originY: 1 }}
-          >
-            {playerExpanded ? (
-              /* Expanded view */
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-violet-500 dark:text-violet-400">Now Playing</span>
-                  <button
-                    onClick={() => setPlayerExpanded(false)}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <p className="text-sm font-medium text-zinc-900 dark:text-white truncate mb-0.5">
-                  {playingEpisode.title}
-                </p>
-                <p className="text-[11px] text-zinc-500 dark:text-white/40 mb-3">
-                  EP {playingEpisode.number} · {playingEpisode.duration}
-                </p>
-                {/* Progress bar */}
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] text-zinc-400 dark:text-white/30 tabular-nums">12:34</span>
-                  <div className="flex-1 h-1 rounded-full bg-white/[0.1] overflow-hidden">
-                    <div className="h-full w-[35%] rounded-full bg-violet-500" />
-                  </div>
-                  <span className="text-[10px] text-zinc-400 dark:text-white/30 tabular-nums">{playingEpisode.duration}</span>
-                </div>
-                {/* Controls */}
-                <div className="flex items-center justify-center gap-4">
-                  <button className="text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="19 20 9 12 19 4 19 20" /><line x1="5" y1="19" x2="5" y2="5" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center hover:bg-violet-500 transition-colors"
-                  >
-                    {isPlaying ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
-                        <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" />
-                        <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" />
-                      </svg>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white ml-0.5">
-                        <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
-                      </svg>
-                    )}
-                  </button>
-                  <button className="text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="5 4 15 12 5 20 5 4" /><line x1="19" y1="5" x2="19" y2="19" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Collapsed: play button */
-              <button
-                onClick={() => setPlayerExpanded(true)}
-                className="w-full h-full flex items-center justify-center"
-              >
-                {isPlaying ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-violet-500 dark:text-violet-400">
-                    <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" />
-                    <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" />
-                  </svg>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-violet-500 dark:text-violet-400 ml-0.5">
-                    <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
-                  </svg>
-                )}
-              </button>
-            )}
-          </motion.div>
-        </motion.div>
+        <FloatingPlayer
+          episode={playingEpisode}
+          isPlaying={isPlaying}
+          onTogglePlay={() => setIsPlaying(!isPlaying)}
+        />
       )}
     </main>
   );
