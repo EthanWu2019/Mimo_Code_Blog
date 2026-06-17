@@ -8,10 +8,8 @@ import gsap from 'gsap';
 import { TransitionRouter } from 'next-transition-router';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const layerRef = useRef<HTMLDivElement | null>(null);
-  const logoRef = useRef<HTMLSpanElement | null>(null);
-  const lineRef = useRef<HTMLDivElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <SessionProvider>
@@ -19,76 +17,54 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <TransitionRouter
           auto={true}
           leave={(next) => {
-            const w = wrapperRef.current;
-            const l = layerRef.current;
-            const logo = logoRef.current;
-            const line = lineRef.current;
-            if (!w || !l) { next(); return; }
+            const ov = overlayRef.current;
+            const ct = contentRef.current;
+            if (!ov) { next(); return; }
 
-            gsap.set(w, { display: 'block', clipPath: 'inset(100% 0 0 0)' });
-            gsap.set(l, { y: '100%' });
-            gsap.set(logo, { opacity: 0, y: 15, scale: 0.9 });
-            gsap.set(line, { scaleX: 0 });
+            gsap.set(ov, { display: 'block', y: '100%' });
+            gsap.set(ct, { opacity: 0 });
 
             const tl = gsap.timeline({ onComplete: next });
 
-            tl.to(w, {
-              clipPath: 'inset(0% 0 0 0)',
-              duration: 0.5,
-              ease: 'expo.inOut',
-            })
-            .to(l, {
+            // Overlay slides up smoothly
+            tl.to(ov, {
               y: '0%',
-              duration: 0.45,
-              ease: 'expo.inOut',
-            }, '-=0.3')
-            .to(logo, {
-              opacity: 1, y: 0, scale: 1,
-              duration: 0.35,
-              ease: 'back.out(1.5)',
-            }, '-=0.2')
-            .to(line, {
-              scaleX: 1,
-              duration: 0.4,
-              ease: 'expo.out',
-            }, '-=0.25');
+              duration: 0.55,
+              ease: 'power3.out',
+            })
+            // Logo fades in while overlay is settling
+            .to(ct, {
+              opacity: 1,
+              duration: 0.3,
+              ease: 'power2.out',
+            }, '-=0.2');
 
             return () => { tl.kill(); };
           }}
           enter={(next) => {
-            const w = wrapperRef.current;
-            const l = layerRef.current;
-            const logo = logoRef.current;
-            const line = lineRef.current;
-            if (!w || !l) { next(); return; }
+            const ov = overlayRef.current;
+            const ct = contentRef.current;
+            if (!ov) { next(); return; }
 
             const tl = gsap.timeline({
               onComplete: () => {
-                gsap.set(w, { display: 'none' });
+                gsap.set(ov, { display: 'none' });
                 next();
               },
             });
 
-            tl.to(logo, {
-              opacity: 0, y: -12, scale: 0.92,
+            // Logo fades out first
+            tl.to(ct, {
+              opacity: 0,
               duration: 0.2,
-              ease: 'expo.in',
+              ease: 'power2.in',
             })
-            .to(line, {
-              scaleX: 0,
-              duration: 0.18,
-              ease: 'expo.in',
-            }, '-=0.12')
-            .to(l, {
+            // Overlay slides up and away
+            .to(ov, {
               y: '-100%',
-              duration: 0.5,
-              ease: 'expo.inOut',
-            }, '-=0.08')
-            .to(w, {
-              clipPath: 'inset(0% 0 100% 0)',
-              duration: 0.5,
-              ease: 'expo.inOut',
-            }, '-=0.35');
+              duration: 0.55,
+              ease: 'power3.inOut',
+            }, '-=0.05');
 
             return () => { tl.kill(); };
           }}
@@ -96,37 +72,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <Navbar />
           <main>{children}</main>
 
-          {/* Transition overlay */}
+          {/* Single-layer transition overlay */}
           <div
-            ref={wrapperRef}
-            className="fixed inset-0 z-[100] pointer-events-none"
-            style={{ display: 'none', clipPath: 'inset(100% 0 0 0)' }}
+            ref={overlayRef}
+            className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center transition-overlay"
+            style={{ display: 'none', transform: 'translateY(100%)' }}
           >
-            {/* Background layer — light: dark, dark: muted warm grey */}
-            <div className="absolute inset-0 transition-overlay-bg" />
-            {/* Foreground accent layer */}
-            <div
-              ref={layerRef}
-              className="absolute inset-0 flex flex-col items-center justify-center transition-overlay-fg"
-              style={{ transform: 'translateY(100%)' }}
-            >
-              <span
-                ref={logoRef}
-                className="text-2xl font-semibold tracking-tight select-none"
-                style={{ color: 'var(--background)', opacity: 0 }}
-              >
+            <div ref={contentRef} className="flex flex-col items-center" style={{ opacity: 0 }}>
+              <span className="text-xl font-medium tracking-tight select-none transition-overlay-text">
                 Ethan&apos;s Blog
               </span>
-              <div
-                ref={lineRef}
-                className="mt-4 h-px w-16"
-                style={{
-                  background: 'var(--background)',
-                  opacity: 0.25,
-                  transform: 'scaleX(0)',
-                  transformOrigin: 'center',
-                }}
-              />
+              <div className="mt-3 h-px w-12 transition-overlay-line" />
             </div>
           </div>
         </TransitionRouter>
