@@ -120,6 +120,14 @@ body {
 }
 
 
+/* Custom cursor: hide default in dark mode */
+.dark * {
+  cursor: none !important;
+}
+.dark a, .dark button, .dark input, .dark textarea, .dark select {
+  cursor: none !important;
+}
+
 /* View Transitions API - theme toggle */
 @keyframes glass-shimmer {
   0% { background-position: -200% 0; }

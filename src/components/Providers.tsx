@@ -11,6 +11,7 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
   const isAnimating = useRef(false);
   const pendingHref = useRef<string | null>(null);
   const pendingPageName = useRef<string>("Ethan's Blog");
@@ -64,10 +65,10 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
       pendingHref.current = href;
       // Determine overlay text based on destination
       if (href === '/') pendingPageName.current = "Ethan's Blog";
-      else if (href === '/blog') pendingPageName.current = 'Blog';
-      else if (href === '/podcast') pendingPageName.current = 'Podcast';
-      else if (href === '/profile') pendingPageName.current = 'Profile';
-      else if (href.startsWith('/posts/')) pendingPageName.current = 'Article';
+      else if (href === '/blog') pendingPageName.current = "Ethan's Blog | Blog";
+      else if (href === '/podcast') pendingPageName.current = "Ethan's Blog | Podcast";
+      else if (href === '/profile') pendingPageName.current = "Ethan's Blog | Profile";
+      else if (href.startsWith('/posts/')) pendingPageName.current = "Ethan's Blog | Article";
       else pendingPageName.current = "Ethan's Blog";
 
       const ov = overlayRef.current;
@@ -78,6 +79,8 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
       ov.style.display = 'flex';
       ov.style.opacity = '0';
       if (ct) ct.style.opacity = '0';
+      if (textRef.current) textRef.current.textContent = pendingPageName.current;
+
 
       const anim = ov.animate([
         { opacity: 0 },
@@ -115,8 +118,8 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
         style={{ display: 'none', background: 'var(--background)' }}
       >
         <div ref={contentRef} className="flex flex-col items-center" style={{ opacity: 0 }}>
-          <span className="text-xl font-medium tracking-tight select-none" style={{ color: 'var(--foreground)' }}>
-            {pendingPageName.current}
+          <span ref={textRef} className="text-xl font-medium tracking-tight select-none" style={{ color: 'var(--foreground)' }}>
+            Ethan's Blog
           </span>
           <div className="mt-3 h-px w-10" style={{ background: 'var(--foreground)', opacity: 0.2 }} />
         </div>

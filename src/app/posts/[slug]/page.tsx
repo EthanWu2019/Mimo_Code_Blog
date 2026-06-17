@@ -115,12 +115,27 @@ export default function PostPage() {
 
   const handleCommentSubmit = async (e: React.FormEvent) => { e.preventDefault(); if (!comment.trim() || !post) return; setSubmitting(true); try { const r = await fetch('/api/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: comment, postId: post.id }) }); if (r.ok) { const c = await r.json(); setPost(p => p ? { ...p, comments: [c, ...p.comments] } : p); setComment(''); } } finally { setSubmitting(false); } };
 
-  if (loading) return <div className="min-h-[80vh] flex items-center justify-center"><div className="w-8 h-8 border-2 border-zinc-300 dark:border-white/20 border-t-zinc-600 dark:border-t-white rounded-full animate-spin" /></div>;
+  if (loading) return (
+    <div className="max-w-[1600px] mx-auto px-6 py-10">
+      <div className="flex gap-4">
+        <aside className="hidden lg:block w-64 flex-shrink-0"><div className="fixed top-24 w-64"><div className="h-3 w-20 rounded bg-zinc-200 dark:bg-white/10 mb-5 animate-pulse" /><div className="space-y-1">{Array.from({length:6}).map((_,i)=><div key={i} className="h-3 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse" style={{width:`${60+Math.random()*35}%`}} />)}</div></div></aside>
+        <article className="flex-1 min-w-0 max-w-4xl">
+          <header className="mb-12 pb-8 border-b border-zinc-300/70 dark:border-white/15">
+            <div className="flex gap-2 mb-4"><div className="h-5 w-16 rounded-full bg-zinc-100 dark:bg-white/[0.06] animate-pulse" /><div className="h-5 w-20 rounded-full bg-zinc-100 dark:bg-white/[0.06] animate-pulse" /></div>
+            <div className="h-9 w-3/4 rounded-lg bg-zinc-200 dark:bg-white/10 mb-4 animate-pulse" />
+            <div className="flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-white/10 animate-pulse" /><div className="h-3 w-24 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse" /><div className="h-3 w-28 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse" /></div>
+          </header>
+          <div className="space-y-4">{Array.from({length:8}).map((_,i)=><div key={i} className="h-3 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse" style={{width:`${55+Math.random()*40}%`}} />)}</div>
+        </article>
+        <aside className="hidden lg:block w-52 flex-shrink-0"><div className="sticky top-24 border-l border-zinc-300/70 dark:border-white/15 pl-6"><div className="h-2.5 w-14 rounded bg-zinc-200 dark:bg-white/10 mb-5 animate-pulse" /><div className="space-y-5">{Array.from({length:3}).map((_,i)=><div key={i} className="space-y-1.5"><div className="h-3 rounded bg-zinc-100 dark:bg-white/[0.06] animate-pulse" style={{width:`${65+Math.random()*30}%`}} /><div className="h-2.5 rounded bg-zinc-100 dark:bg-white/[0.05] animate-pulse" style={{width:`${40+Math.random()*30}%`}} /></div>)}</div></div></aside>
+      </div>
+    </div>
+  );
   if (!post) return <div className="min-h-[80vh] flex items-center justify-center"><div className="text-center"><h1 className="text-6xl font-bold text-zinc-100 dark:text-white/10 mb-4">404</h1><Link href="/" className="glass px-4 py-2 text-sm rounded-lg text-zinc-600 dark:text-white/60">Back</Link></div></div>;
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-10">
-      <div className="flex gap-8">
+      <div className="flex gap-4">
         {/* Left sidebar — fixed position, doesn't scroll */}
         {headings.length > 0 && (
           <aside className="hidden lg:block w-64 flex-shrink-0">

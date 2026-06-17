@@ -23,7 +23,7 @@ export default function Home() {
               >
                 <div className="w-8 h-[1px] bg-zinc-300 dark:bg-zinc-700" />
                 <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
-                  Software Engineer & Writer
+                  Software Engineer & Sharing Enthusiast
                 </span>
               </motion.div>
 

@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import GlobalBackground from "@/components/GlobalBackground";
 import BackToTop from "@/components/BackToTop";
+import CursorGlow from "@/components/CursorGlow";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </Providers>
         <BackToTop />
+        <CursorGlow />
       </body>
     </html>
   );

@@ -120,7 +120,7 @@ export default function PodcastPage() {
   const playingEpisode = episodes.find((e) => e.id === playingId);
 
   return (
-    <main className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+    <main className="min-h-screen">
       {/* Hero */}
       <section className="relative pt-32 pb-16 px-6">
         <div className="max-w-4xl mx-auto text-center">

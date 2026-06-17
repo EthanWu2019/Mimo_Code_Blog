@@ -35,15 +35,15 @@ function getColors(dark: boolean) {
   return {
     bodyTop: 'rgba(0,0,0,0.0)',
     bodyBottom: 'rgba(0,0,0,0.0)',
-    edge: 'rgba(180,140,220,0.35)',
+    edge: 'rgba(255,140,40,0.35)',
     specular: 'rgba(255,255,255,0.7)',
-    glow: 'rgba(180,140,220,0.18)',
+    glow: 'rgba(255,140,40,0.18)',
     shimmer: 'rgba(255,255,255,0.2)',
     highlightTop: 'rgba(255,255,255,0.3)',
     highlightBottom: 'rgba(255,255,255,0.0)',
-    tintA: 'rgba(255,180,220,0.35)',   // pink
-    tintB: 'rgba(160,200,255,0.35)',   // light blue
-    tintC: 'rgba(200,170,255,0.35)',   // purple
+    tintA: 'rgba(255,160,50,0.35)',   // warm orange
+    tintB: 'rgba(255,120,30,0.35)',   // deeper orange
+    tintC: 'rgba(255,190,80,0.35)',   // light amber
     isColorful: true,
   };
 }
@@ -117,12 +117,12 @@ export default function LiquidGlassIndicator({
     ctx.restore();
 
     // Glass body with animated gradient
-    const gradShift = Math.sin(t * 0.8) * 0.15;
+    const gradShift = Math.sin(t * 0.32) * 0.15;
     const bodyGrad = ctx.createLinearGradient(0, 0, w, h);
 
     if ('isColorful' in c && c.isColorful) {
       // Colorful animated gradient for light mode
-      const phase = t * 0.4;
+      const phase = t * 0.16;
       const shift1 = 0.2 + Math.sin(phase) * 0.15;
       const shift2 = 0.5 + Math.sin(phase + 2) * 0.15;
       bodyGrad.addColorStop(0, (c as any).tintA);
@@ -141,7 +141,7 @@ export default function LiquidGlassIndicator({
 
     // Color tint overlay (animated)
     const tintGrad = ctx.createLinearGradient(0, 0, w, h);
-    const tintPhase = t * 0.5;
+    const tintPhase = t * 0.2;
     tintGrad.addColorStop(0, c.tintA);
     tintGrad.addColorStop(0.5 + Math.sin(tintPhase) * 0.3, c.tintB);
     tintGrad.addColorStop(1, c.tintA);
@@ -157,12 +157,13 @@ export default function LiquidGlassIndicator({
     ctx.fillStyle = highlightGrad;
     ctx.fill();
 
-    // Shimmer lines (diagonal, scrolling)
+    // Shimmer lines (diagonal, scrolling) — very subtle
     ctx.save();
     drawRoundedRect(ctx, 1, 1, w - 2, h - 2, r);
     ctx.clip();
-    const lineSpacing = 8;
-    const scrollOffset = (t * 30) % (lineSpacing * 2);
+    const lineSpacing = 12;
+    const scrollOffset = (t * 12) % (lineSpacing * 2);
+    ctx.globalAlpha = 0.15;
     ctx.strokeStyle = c.shimmer;
     ctx.lineWidth = 0.5;
     for (let i = -h; i < w + h; i += lineSpacing) {
@@ -180,8 +181,8 @@ export default function LiquidGlassIndicator({
     ctx.stroke();
 
     // Specular highlight (moving bright spot)
-    const specX = w * 0.3 + Math.sin(t * 1.2) * w * 0.15;
-    const specY = h * 0.25 + Math.cos(t * 0.9) * h * 0.1;
+    const specX = w * 0.3 + Math.sin(t * 0.48) * w * 0.15;
+    const specY = h * 0.25 + Math.cos(t * 0.36) * h * 0.1;
     const specRadX = w * 0.18;
     const specRadY = h * 0.2;
     const specGrad = ctx.createRadialGradient(
