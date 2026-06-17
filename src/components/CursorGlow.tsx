@@ -3,6 +3,24 @@
 import { useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 
+function getBgColor(x: number, y: number): string {
+  const el = document.elementFromPoint(x, y);
+  if (!el) return '#000000';
+  let node: Element | null = el;
+  while (node) {
+    const bg = window.getComputedStyle(node).backgroundColor;
+    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') return bg;
+    node = node.parentElement;
+  }
+  return '#000000';
+}
+
+function luminance(bg: string): number {
+  const m = bg.match(/[\d.]+/g);
+  if (!m || m.length < 3) return 0;
+  return 0.299 * parseFloat(m[0]) + 0.587 * parseFloat(m[1]) + 0.114 * parseFloat(m[2]);
+}
+
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
@@ -10,7 +28,8 @@ export default function CursorGlow() {
   const scaleRef = useRef({ value: 1 });
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
-  const trackRef = useRef<number | null>(null);
+  const colorRef = useRef<'dark' | 'light'>('dark');
+  const debounceRef = useRef<number>(0);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
@@ -24,105 +43,50 @@ export default function CursorGlow() {
   }, []);
 
   useEffect(() => {
-    const el = document.documentElement;
-
-    const setDotColor = (dark: boolean) => {
-      if (!dotRef.current) return;
-      dotRef.current.style.backgroundColor = dark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
-      dotRef.current.style.boxShadow = dark
-        ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
-    };
-
-    const setGlow = (dark: boolean) => {
-      if (glowRef.current) glowRef.current.style.opacity = dark ? '1' : '0';
-    };
-
-    // Initial
-    const initDark = el.classList.contains('dark');
-    setDotColor(initDark);
-    setGlow(initDark);
-
-    // Theme toggle event from ThemeProvider
-    const onThemeToggle = () => {
-      const dot = dotRef.current;
-      if (!dot) return;
-
-      // Step 1: Hide for 0.1s (kills the stuck dot on the button)
-      dot.style.opacity = '0';
-
-      // The click position is where the overlay circle starts
-      const cx = posRef.current.x;
-      const cy = posRef.current.y;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const maxR = Math.sqrt(vw * vw + vh * vh);
-      const start = performance.now();
-
-      // Step 2: After 0.1s, show and start position-based color tracking
-      setTimeout(() => {
-        dot.style.opacity = '1';
-        // Turn on glow immediately for dark mode
-        if (glowRef.current) glowRef.current.style.opacity = '1';
-
-        // Cubic-bezier(0.76, 0, 0.24, 1) approximation
-        const ease = (t: number) => {
-          if (t < 0.5) return 4 * t * t * t;
-          return 1 - Math.pow(-2 * t + 2, 3) / 2;
-        };
-
-        const tick = () => {
-          const elapsed = performance.now() - start;
-          const raw = Math.min(elapsed / 600, 1);
-          const t = ease(raw);
-          // Overlay shrinks from maxR to 0
-          const r = maxR * (1 - t);
-
-          const { x, y } = posRef.current;
-          const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
-
-          if (dist < r) {
-            // Inside shrinking light overlay → black cursor
-            dot.style.backgroundColor = 'rgba(0,0,0,0.6)';
-            dot.style.boxShadow = '0 0 4px rgba(0,0,0,0.15)';
-          } else {
-            // Outside, in dark theme → white cursor
-            dot.style.backgroundColor = 'rgba(255,255,255,0.95)';
-            dot.style.boxShadow = '0 0 8px 2px rgba(255,255,255,0.3)';
-          }
-
-          if (raw < 1) {
-            trackRef.current = requestAnimationFrame(tick);
-          } else {
-            // Animation done → lock to dark mode
-            setDotColor(true);
-            trackRef.current = null;
-          }
-        };
-
-        trackRef.current = requestAnimationFrame(tick);
-      }, 100);
-    };
-
-    document.addEventListener('hermes:theme-toggle', onThemeToggle);
-
-    // Fallback for non-View-Transition browsers
-    const observer = new MutationObserver(() => {
-      if (typeof document.startViewTransition !== 'function') {
-        const dark = el.classList.contains('dark');
-        setDotColor(dark);
-        setGlow(dark);
+    // Initial color
+    const isDark = document.documentElement.classList.contains('dark');
+    colorRef.current = isDark ? 'light' : 'dark';
+    const applyColor = () => {
+      const light = colorRef.current === 'light';
+      if (dotRef.current) {
+        dotRef.current.style.backgroundColor = light ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
+        dotRef.current.style.boxShadow = light
+          ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
       }
-    });
-    observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+      if (glowRef.current) glowRef.current.style.opacity = light ? '1' : '0';
+    };
+    applyColor();
+
+    // Sample background color at cursor position, with debounce
+    const sample = () => {
+      const { x, y } = posRef.current;
+      if (x < 0 || y < 0) return;
+      const bg = getBgColor(x, y);
+      const lum = luminance(bg);
+      const shouldBe = lum > 128 ? 'dark' : 'light'; // dark cursor on light bg, light cursor on dark bg
+      if (shouldBe !== colorRef.current) {
+        colorRef.current = shouldBe;
+        applyColor();
+      }
+    };
 
     const handleMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
       scheduleUpdate();
+
+      // Debounced color sampling (every 300ms)
+      const now = Date.now();
+      if (now - debounceRef.current > 300) {
+        debounceRef.current = now;
+        sample();
+      }
     };
+
     const handleDown = () => {
       isDownRef.current = true;
       gsap.to(scaleRef.current, { value: 2, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
+
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
@@ -136,10 +100,7 @@ export default function CursorGlow() {
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mousedown', handleDown);
       document.removeEventListener('mouseup', handleUp);
-      document.removeEventListener('hermes:theme-toggle', onThemeToggle);
-      observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (trackRef.current) cancelAnimationFrame(trackRef.current);
     };
   }, [scheduleUpdate]);
 
@@ -158,6 +119,7 @@ export default function CursorGlow() {
         willChange: 'transform', backgroundColor: 'rgba(0,0,0,0.6)',
         transform: 'translate(-100px, -100px) scale(1)', transformOrigin: 'center center',
         boxShadow: '0 0 4px rgba(0,0,0,0.15)',
+        transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
       }} />
     </>
   );
