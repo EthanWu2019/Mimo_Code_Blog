@@ -93,8 +93,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
               ],
             },
             {
-              duration: 500,
-              easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              duration: 600,
+              easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
               pseudoElement: '::view-transition-new(root)',
             }
           );
