@@ -7,18 +7,19 @@ export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: -100, y: -100 });
+  const scaleRef = useRef(1);
   const rafRef = useRef<number>(0);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       const { x, y } = posRef.current;
+      const s = scaleRef.current;
       if (glowRef.current) {
         glowRef.current.style.transform = `translate(${x - 50}px, ${y - 50}px)`;
       }
       if (dotRef.current) {
-        dotRef.current.style.left = `${x}px`;
-        dotRef.current.style.top = `${y}px`;
+        dotRef.current.style.transform = `translate(${x - 5}px, ${y - 5}px) scale(${s})`;
       }
       rafRef.current = 0;
     });
@@ -52,20 +53,20 @@ export default function CursorGlow() {
     };
 
     const handleDown = () => {
-      if (!dotRef.current) return;
-      gsap.to(dotRef.current, {
-        scale: 2,
+      gsap.to(scaleRef, {
+        current: 2,
         duration: 0.15,
         ease: 'power2.out',
+        onUpdate: scheduleUpdate,
       });
     };
 
     const handleUp = () => {
-      if (!dotRef.current) return;
-      gsap.to(dotRef.current, {
-        scale: 1,
+      gsap.to(scaleRef, {
+        current: 1,
         duration: 0.6,
         ease: 'elastic.out(1.2, 0.3)',
+        onUpdate: scheduleUpdate,
       });
     };
 
@@ -84,7 +85,6 @@ export default function CursorGlow() {
 
   return (
     <>
-      {/* Glow — small focused light */}
       <div
         ref={glowRef}
         aria-hidden
@@ -106,23 +106,22 @@ export default function CursorGlow() {
           transform: 'translate(-100px, -100px)',
         }}
       />
-
-      {/* Cursor dot — GSAP elastic click */}
       <div
         ref={dotRef}
         aria-hidden
         style={{
           position: 'fixed',
+          top: 0,
+          left: 0,
           width: 10,
           height: 10,
-          marginTop: -5,
-          marginLeft: -5,
           borderRadius: '50%',
           pointerEvents: 'none',
           zIndex: 51,
-          willChange: 'transform, left, top',
+          willChange: 'transform',
           backgroundColor: 'rgba(0,0,0,0.6)',
           transform: 'translate(-100px, -100px) scale(1)',
+          transformOrigin: 'center center',
           boxShadow: '0 0 4px rgba(0,0,0,0.15)',
         }}
       />
