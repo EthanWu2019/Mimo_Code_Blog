@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import FloatingPlayer from '@/components/FloatingPlayer';
 
 const categories = ['All', 'Engineering', 'Design', 'Career', 'AI & Tech', 'Open Source'];
