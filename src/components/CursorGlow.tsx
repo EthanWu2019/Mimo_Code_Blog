@@ -1,70 +1,87 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: -100, y: -100 });
   const rafRef = useRef<number>(0);
-  const [isDark, setIsDark] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const isDarkRef = useRef(false);
+  const pressingRef = useRef(false);
 
-  // Detect dark mode and observe changes
-  useEffect(() => {
-    const el = document.documentElement;
-    setIsDark(el.classList.contains('dark'));
-
-    const observer = new MutationObserver(() => {
-      setIsDark(el.classList.contains('dark'));
-    });
-    observer.observe(el, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
-  // Sync cursor position via rAF
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       const { x, y } = posRef.current;
       if (glowRef.current) {
-        glowRef.current.style.transform = `translate(${x - 200}px, ${y - 200}px)`;
+        glowRef.current.style.transform = `translate(${x - 120}px, ${y - 120}px)`;
       }
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${x}px, ${y}px)`;
+        const scale = pressingRef.current ? 1.8 : 1;
+        dotRef.current.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
       }
       rafRef.current = 0;
     });
   }, []);
 
   useEffect(() => {
+    const el = document.documentElement;
+    isDarkRef.current = el.classList.contains('dark');
+
+    const observer = new MutationObserver(() => {
+      isDarkRef.current = el.classList.contains('dark');
+      // Update visibility
+      if (glowRef.current) {
+        glowRef.current.style.opacity = isDarkRef.current ? '1' : '0';
+      }
+      if (dotRef.current) {
+        dotRef.current.style.backgroundColor = isDarkRef.current
+          ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.5)';
+        dotRef.current.style.boxShadow = isDarkRef.current
+          ? '0 0 8px 2px rgba(255,255,255,0.3), 0 0 20px rgba(255,255,255,0.1)'
+          : '0 0 4px rgba(0,0,0,0.15)';
+      }
+    });
+    observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+
     const handleMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
-      if (!visible) setVisible(true);
       scheduleUpdate();
     };
 
-    const handleLeave = () => setVisible(false);
-    const handleEnter = () => setVisible(true);
+    const handleDown = () => {
+      pressingRef.current = true;
+      if (dotRef.current) {
+        dotRef.current.style.transition = 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease, background-color 0.3s ease';
+      }
+      scheduleUpdate();
+    };
+
+    const handleUp = () => {
+      pressingRef.current = false;
+      if (dotRef.current) {
+        dotRef.current.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease, background-color 0.3s ease';
+      }
+      scheduleUpdate();
+    };
 
     document.addEventListener('mousemove', handleMove, { passive: true });
-    document.addEventListener('mouseleave', handleLeave);
-    document.addEventListener('mouseenter', handleEnter);
+    document.addEventListener('mousedown', handleDown);
+    document.addEventListener('mouseup', handleUp);
 
     return () => {
       document.removeEventListener('mousemove', handleMove);
-      document.removeEventListener('mouseleave', handleLeave);
-      document.removeEventListener('mouseenter', handleEnter);
+      document.removeEventListener('mousedown', handleDown);
+      document.removeEventListener('mouseup', handleUp);
+      observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [visible, scheduleUpdate]);
-
-  const glowOpacity = isDark && visible ? 1 : 0;
-  const dotOpacity = visible ? 1 : 0;
+  }, [scheduleUpdate]);
 
   return (
     <>
-      {/* Glow – dark mode only */}
+      {/* Glow — dark mode light source */}
       <div
         ref={glowRef}
         aria-hidden
@@ -72,22 +89,22 @@ export default function CursorGlow() {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: 400,
-          height: 400,
+          width: 240,
+          height: 240,
           borderRadius: '50%',
           pointerEvents: 'none',
           zIndex: 50,
           willChange: 'transform',
           mixBlendMode: 'screen',
           background:
-            'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 40%, transparent 70%)',
-          opacity: glowOpacity,
-          transition: 'opacity 0.25s ease',
+            'radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.02) 60%, transparent 80%)',
+          opacity: 0,
+          transition: 'opacity 0.3s ease',
           transform: 'translate(-100px, -100px)',
         }}
       />
 
-      {/* Cursor dot */}
+      {/* Cursor dot with click animation */}
       <div
         ref={dotRef}
         aria-hidden
@@ -95,21 +112,18 @@ export default function CursorGlow() {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: isDark ? 6 : 4,
-          height: isDark ? 6 : 4,
-          marginTop: isDark ? -3 : -2,
-          marginLeft: isDark ? -3 : -2,
+          width: 10,
+          height: 10,
+          marginTop: -5,
+          marginLeft: -5,
           borderRadius: '50%',
           pointerEvents: 'none',
           zIndex: 51,
           willChange: 'transform',
-          backgroundColor: isDark
-            ? 'rgba(255,255,255,0.9)'
-            : 'rgba(0,0,0,0.4)',
-          opacity: dotOpacity,
-          transition: 'opacity 0.2s ease, background-color 0.3s ease, width 0.3s ease, height 0.3s ease',
-          transform: 'translate(-100px, -100px)',
-          boxShadow: isDark ? '0 0 6px rgba(255,255,255,0.4)' : 'none',
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease, background-color 0.3s ease',
+          transform: 'translate(-100px, -100px) scale(1)',
+          boxShadow: '0 0 4px rgba(0,0,0,0.15)',
         }}
       />
     </>

@@ -120,11 +120,8 @@ body {
 }
 
 
-/* Custom cursor: hide default in dark mode */
-.dark * {
-  cursor: none !important;
-}
-.dark a, .dark button, .dark input, .dark textarea, .dark select {
+/* Custom cursor: hide system cursor in all themes */
+*, *::before, *::after {
   cursor: none !important;
 }
 
