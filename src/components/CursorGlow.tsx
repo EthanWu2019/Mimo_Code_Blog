@@ -53,7 +53,7 @@ export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: -100, y: -100 });
-  const scaleRef = useRef({ value: 1 });
+  const scaleRef = useRef({ value: 0.5 });
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
   const colorRef = useRef<'dark' | 'light'>('dark');
@@ -65,7 +65,7 @@ export default function CursorGlow() {
       const { x, y } = posRef.current;
       const s = scaleRef.current.value;
       if (glowRef.current) glowRef.current.style.transform = `translate(${x - 25}px, ${y - 25}px)`;
-      if (dotRef.current) dotRef.current.style.transform = `translate(${x - 5}px, ${y - 5}px) scale(${s})`;
+      if (dotRef.current) dotRef.current.style.transform = `translate(${x - 10}px, ${y - 10}px) scale(${s})`;
       rafRef.current = 0;
     });
   }, []);
@@ -126,12 +126,12 @@ export default function CursorGlow() {
 
     const handleDown = () => {
       isDownRef.current = true;
-      gsap.to(scaleRef.current, { value: 2, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
+      gsap.to(scaleRef.current, { value: 1, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
-      gsap.to(scaleRef.current, { value: 1, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
+      gsap.to(scaleRef.current, { value: 0.5, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
     };
 
     document.addEventListener('mousemove', handleMove, { passive: true });
@@ -157,10 +157,10 @@ export default function CursorGlow() {
         opacity: 0, transition: 'opacity 0.3s ease', transform: 'translate(-100px, -100px)',
       }} />
       <div ref={dotRef} aria-hidden className="cursor-dot" style={{
-        position: 'fixed', top: 0, left: 0, width: 10, height: 10,
+        position: 'fixed', top: 0, left: 0, width: 20, height: 20,
         borderRadius: '50%', pointerEvents: 'none', zIndex: 201,
         willChange: 'transform', backgroundColor: 'rgba(0,0,0,0.6)',
-        transform: 'translate(-100px, -100px) scale(1)', transformOrigin: 'center center',
+        transform: 'translate(-100px, -100px) scale(0.5)', transformOrigin: 'center center',
         boxShadow: '0 0 4px rgba(0,0,0,0.15)',
         transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
       }} />
