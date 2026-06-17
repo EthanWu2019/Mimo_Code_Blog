@@ -32,10 +32,19 @@ export default function CursorGlow() {
     const applyTheme = () => {
       const dark = el.classList.contains('dark');
       if (glowRef.current) glowRef.current.style.opacity = dark ? '1' : '0';
+
+      // Hide cursor during theme transition, reveal after animation
       if (dotRef.current) {
-        dotRef.current.style.backgroundColor = dark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
-        dotRef.current.style.boxShadow = dark
-          ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
+        dotRef.current.style.opacity = '0';
+        // Wait for View Transition to finish, then show cursor with new colors
+        const revealDelay = document.startViewTransition ? 700 : 50;
+        setTimeout(() => {
+          if (!dotRef.current) return;
+          dotRef.current.style.backgroundColor = dark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
+          dotRef.current.style.boxShadow = dark
+            ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
+          dotRef.current.style.opacity = '1';
+        }, revealDelay);
       }
     };
 
