@@ -19,85 +19,76 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <TransitionRouter
           auto={true}
           leave={(next) => {
-            const wrapper = wrapperRef.current;
-            const layer = layerRef.current;
+            const w = wrapperRef.current;
+            const l = layerRef.current;
             const logo = logoRef.current;
             const line = lineRef.current;
-            if (!wrapper || !layer) { next(); return; }
+            if (!w || !l) { next(); return; }
 
-            // Show wrapper, reset positions
-            gsap.set(wrapper, { display: 'block' });
-            gsap.set(layer, { y: '100%' });
-            gsap.set(logo, { opacity: 0, y: 10 });
+            gsap.set(w, { display: 'block', clipPath: 'inset(100% 0 0 0)' });
+            gsap.set(l, { y: '100%' });
+            gsap.set(logo, { opacity: 0, y: 15, scale: 0.9 });
             gsap.set(line, { scaleX: 0 });
 
             const tl = gsap.timeline({ onComplete: next });
 
-            // Layer 1 (background) slides up
-            tl.to(wrapper, {
-              clipPath: 'inset(0 0 0 0)',
-              duration: 0.45,
-              ease: 'power3.inOut',
+            tl.to(w, {
+              clipPath: 'inset(0% 0 0 0)',
+              duration: 0.5,
+              ease: 'expo.inOut',
             })
-            // Layer 2 (foreground) slides up
-            .to(layer, {
+            .to(l, {
               y: '0%',
-              duration: 0.4,
-              ease: 'power3.inOut',
-            }, '-=0.25')
-            // Logo appears
+              duration: 0.45,
+              ease: 'expo.inOut',
+            }, '-=0.3')
             .to(logo, {
-              opacity: 1, y: 0,
-              duration: 0.25,
-              ease: 'power2.out',
-            }, '-=0.15')
-            // Line expands
+              opacity: 1, y: 0, scale: 1,
+              duration: 0.35,
+              ease: 'back.out(1.5)',
+            }, '-=0.2')
             .to(line, {
               scaleX: 1,
-              duration: 0.3,
-              ease: 'power2.inOut',
-            }, '-=0.15');
+              duration: 0.4,
+              ease: 'expo.out',
+            }, '-=0.25');
 
             return () => { tl.kill(); };
           }}
           enter={(next) => {
-            const wrapper = wrapperRef.current;
-            const layer = layerRef.current;
+            const w = wrapperRef.current;
+            const l = layerRef.current;
             const logo = logoRef.current;
             const line = lineRef.current;
-            if (!wrapper || !layer) { next(); return; }
+            if (!w || !l) { next(); return; }
 
             const tl = gsap.timeline({
               onComplete: () => {
-                gsap.set(wrapper, { display: 'none' });
+                gsap.set(w, { display: 'none' });
                 next();
               },
             });
 
-            // Logo fades out
             tl.to(logo, {
-              opacity: 0, y: -10,
+              opacity: 0, y: -12, scale: 0.92,
               duration: 0.2,
-              ease: 'power2.in',
+              ease: 'expo.in',
             })
-            // Line shrinks
             .to(line, {
               scaleX: 0,
-              duration: 0.15,
-              ease: 'power2.in',
-            }, '-=0.1')
-            // Layer 2 slides up and away
-            .to(layer, {
+              duration: 0.18,
+              ease: 'expo.in',
+            }, '-=0.12')
+            .to(l, {
               y: '-100%',
-              duration: 0.4,
-              ease: 'power3.inOut',
-            }, '-=0.05')
-            // Layer 1 follows
-            .to(wrapper, {
-              clipPath: 'inset(0 0 100% 0)',
-              duration: 0.4,
-              ease: 'power3.inOut',
-            }, '-=0.25');
+              duration: 0.5,
+              ease: 'expo.inOut',
+            }, '-=0.08')
+            .to(w, {
+              clipPath: 'inset(0% 0 100% 0)',
+              duration: 0.5,
+              ease: 'expo.inOut',
+            }, '-=0.35');
 
             return () => { tl.kill(); };
           }}
@@ -105,16 +96,19 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <Navbar />
           <main>{children}</main>
 
-          {/* Transition overlay — hidden by default */}
+          {/* Transition overlay */}
           <div
             ref={wrapperRef}
             className="fixed inset-0 z-[100] pointer-events-none"
-            style={{ display: 'none', clipPath: 'inset(0 0 100% 0)', background: 'var(--background)' }}
+            style={{ display: 'none', clipPath: 'inset(100% 0 0 0)' }}
           >
+            {/* Background layer — light: dark, dark: muted warm grey */}
+            <div className="absolute inset-0 transition-overlay-bg" />
+            {/* Foreground accent layer */}
             <div
               ref={layerRef}
-              className="absolute inset-0 flex flex-col items-center justify-center"
-              style={{ background: 'var(--foreground)', transform: 'translateY(100%)' }}
+              className="absolute inset-0 flex flex-col items-center justify-center transition-overlay-fg"
+              style={{ transform: 'translateY(100%)' }}
             >
               <span
                 ref={logoRef}
@@ -126,7 +120,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               <div
                 ref={lineRef}
                 className="mt-4 h-px w-16"
-                style={{ background: 'var(--background)', opacity: 0.3, transform: 'scaleX(0)', transformOrigin: 'center' }}
+                style={{
+                  background: 'var(--background)',
+                  opacity: 0.25,
+                  transform: 'scaleX(0)',
+                  transformOrigin: 'center',
+                }}
               />
             </div>
           </div>

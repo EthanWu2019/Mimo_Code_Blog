@@ -119,6 +119,20 @@ body {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* Transition overlay colors */
+.transition-overlay-bg {
+  background: #09090b;
+}
+.dark .transition-overlay-bg {
+  background: #18181c;
+}
+.transition-overlay-fg {
+  background: var(--foreground);
+}
+.dark .transition-overlay-fg {
+  background: #222226;
+}
+
 /* View Transitions API - theme toggle */
 @keyframes glass-shimmer {
   0% { background-position: -200% 0; }
