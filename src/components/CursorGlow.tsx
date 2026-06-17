@@ -10,6 +10,7 @@ export default function CursorGlow() {
   const scaleRef = useRef({ value: 1 });
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
+  const prevDarkRef = useRef<boolean | null>(null);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
@@ -28,28 +29,43 @@ export default function CursorGlow() {
 
   useEffect(() => {
     const el = document.documentElement;
+    prevDarkRef.current = el.classList.contains('dark');
 
-    const applyTheme = () => {
-      const dark = el.classList.contains('dark');
+    // Set initial colors
+    const setColors = (dark: boolean) => {
       if (glowRef.current) glowRef.current.style.opacity = dark ? '1' : '0';
-
-      // Hide cursor during theme transition, reveal after animation
       if (dotRef.current) {
-        dotRef.current.style.opacity = '0';
-        // Wait for View Transition to finish, then show cursor with new colors
-        const revealDelay = typeof document.startViewTransition === 'function' ? 700 : 50;
-        setTimeout(() => {
-          if (!dotRef.current) return;
-          dotRef.current.style.backgroundColor = dark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
-          dotRef.current.style.boxShadow = dark
-            ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
-          dotRef.current.style.opacity = '1';
-        }, revealDelay);
+        dotRef.current.style.backgroundColor = dark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
+        dotRef.current.style.boxShadow = dark
+          ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
       }
     };
+    setColors(prevDarkRef.current!);
 
-    applyTheme();
-    const observer = new MutationObserver(applyTheme);
+    const observer = new MutationObserver(() => {
+      const dark = el.classList.contains('dark');
+      const wasDark = prevDarkRef.current;
+      if (dark === wasDark) return;
+      prevDarkRef.current = dark;
+
+      if (!wasDark && dark) {
+        // LIGHT → DARK: brief hide then show as white
+        if (dotRef.current) {
+          dotRef.current.style.opacity = '0';
+        }
+        // Next frame: show as white cursor for dark mode
+        requestAnimationFrame(() => {
+          if (!dotRef.current) return;
+          dotRef.current.style.backgroundColor = 'rgba(255,255,255,0.95)';
+          dotRef.current.style.boxShadow = '0 0 8px 2px rgba(255,255,255,0.3)';
+          dotRef.current.style.opacity = '1';
+        });
+        if (glowRef.current) glowRef.current.style.opacity = '1';
+      } else {
+        // DARK → LIGHT: instant switch (works fine already)
+        setColors(dark);
+      }
+    });
     observer.observe(el, { attributes: true, attributeFilter: ['class'] });
 
     const handleMove = (e: MouseEvent) => {
