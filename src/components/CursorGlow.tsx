@@ -3,22 +3,50 @@
 import { useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 
-function getBgColor(x: number, y: number): string {
+function getVisualBrightness(x: number, y: number): number {
   const el = document.elementFromPoint(x, y);
-  if (!el) return '#000000';
+  if (!el) return 0;
+  const isDarkMode = document.documentElement.classList.contains('dark');
+
   let node: Element | null = el;
   while (node) {
-    const bg = window.getComputedStyle(node).backgroundColor;
-    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') return bg;
+    const cs = window.getComputedStyle(node);
+    const bg = cs.backgroundColor;
+    const hasGlass = cs.backdropFilter !== 'none' && cs.backdropFilter !== '';
+
+    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+      const m = bg.match(/[\d.]+/g);
+      if (m && m.length >= 4) {
+        const r = parseFloat(m[0]);
+        const g = parseFloat(m[1]);
+        const b = parseFloat(m[2]);
+        const a = parseFloat(m[3]);
+
+        // Glass element with low alpha — its visual color depends on the theme
+        if (hasGlass && a < 0.15) {
+          // Dark mode: glass over dark bg → appears dark
+          // Light mode: glass over light bg → appears light
+          return isDarkMode ? 20 : 220;
+        }
+
+        // Composite over the theme background
+        const bgR = isDarkMode ? 10 : 250;
+        const bgG = isDarkMode ? 10 : 250;
+        const bgB = isDarkMode ? 12 : 250;
+        const finalR = r * a + bgR * (1 - a);
+        const finalG = g * a + bgG * (1 - a);
+        const finalB = b * a + bgB * (1 - a);
+        return 0.299 * finalR + 0.587 * finalG + 0.114 * finalB;
+      }
+      // Opaque color
+      if (m && m.length >= 3) {
+        return 0.299 * parseFloat(m[0]) + 0.587 * parseFloat(m[1]) + 0.114 * parseFloat(m[2]);
+      }
+    }
     node = node.parentElement;
   }
-  return '#000000';
-}
-
-function luminance(bg: string): number {
-  const m = bg.match(/[\d.]+/g);
-  if (!m || m.length < 3) return 0;
-  return 0.299 * parseFloat(m[0]) + 0.587 * parseFloat(m[1]) + 0.114 * parseFloat(m[2]);
+  // No background found — use theme
+  return isDarkMode ? 10 : 240;
 }
 
 export default function CursorGlow() {
@@ -43,9 +71,6 @@ export default function CursorGlow() {
   }, []);
 
   useEffect(() => {
-    // Initial color
-    const isDark = document.documentElement.classList.contains('dark');
-    colorRef.current = isDark ? 'light' : 'dark';
     const applyColor = () => {
       const light = colorRef.current === 'light';
       if (dotRef.current) {
@@ -55,42 +80,47 @@ export default function CursorGlow() {
       }
       if (glowRef.current) glowRef.current.style.opacity = light ? '1' : '0';
     };
+
+    // Initial
+    colorRef.current = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
     applyColor();
 
-    // Brief hide on light→dark to kill the black dot on the toggle button
+    // Brief hide on light→dark transition
     const onThemeToggle = () => {
       if (!document.documentElement.classList.contains('dark')) {
-        // Currently light, switching to dark — briefly hide
         if (dotRef.current) dotRef.current.style.opacity = '0';
-        setTimeout(() => {
-          if (dotRef.current) dotRef.current.style.opacity = '1';
-        }, 80);
+        setTimeout(() => { if (dotRef.current) dotRef.current.style.opacity = '1'; }, 80);
       }
     };
     document.addEventListener('hermes:theme-toggle', onThemeToggle);
 
-    // Sample background color at cursor position, with debounce
-    const sample = () => {
-      const { x, y } = posRef.current;
-      if (x < 0 || y < 0) return;
-      const bg = getBgColor(x, y);
-      const lum = luminance(bg);
-      const shouldBe = lum > 128 ? 'dark' : 'light'; // dark cursor on light bg, light cursor on dark bg
-      if (shouldBe !== colorRef.current) {
-        colorRef.current = shouldBe;
-        applyColor();
-      }
-    };
+    // Re-sample on theme change
+    const observer = new MutationObserver(() => {
+      setTimeout(() => {
+        const { x, y } = posRef.current;
+        if (x > 0 && y > 0) {
+          const lum = getVisualBrightness(x, y);
+          colorRef.current = lum > 128 ? 'dark' : 'light';
+          applyColor();
+        }
+      }, 100);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
+    // Real-time sampling
     const handleMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
       scheduleUpdate();
 
-      // Debounced color sampling (every 300ms)
       const now = Date.now();
       if (now - debounceRef.current > 300) {
         debounceRef.current = now;
-        sample();
+        const lum = getVisualBrightness(e.clientX, e.clientY);
+        const shouldBe = lum > 128 ? 'dark' : 'light';
+        if (shouldBe !== colorRef.current) {
+          colorRef.current = shouldBe;
+          applyColor();
+        }
       }
     };
 
@@ -98,7 +128,6 @@ export default function CursorGlow() {
       isDownRef.current = true;
       gsap.to(scaleRef.current, { value: 2, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
-
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
@@ -113,6 +142,7 @@ export default function CursorGlow() {
       document.removeEventListener('mousedown', handleDown);
       document.removeEventListener('mouseup', handleUp);
       document.removeEventListener('hermes:theme-toggle', onThemeToggle);
+      observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [scheduleUpdate]);
