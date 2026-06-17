@@ -53,6 +53,9 @@ export default function Navbar() {
             Ethan&apos;s Blog
           </Link>
           <nav className="flex items-center gap-1">
+            <Link href="/podcast" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
+              Podcast
+            </Link>
             <Link href="/blog" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
               Blog
             </Link>

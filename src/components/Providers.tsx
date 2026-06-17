@@ -13,6 +13,7 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const isAnimating = useRef(false);
   const pendingHref = useRef<string | null>(null);
+  const pendingPageName = useRef<string>("Ethan's Blog");
   const prevPath = useRef(pathname);
 
   // Handle route change after animation
@@ -61,6 +62,13 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
       e.preventDefault();
       isAnimating.current = true;
       pendingHref.current = href;
+      // Determine overlay text based on destination
+      if (href === '/') pendingPageName.current = "Ethan's Blog";
+      else if (href === '/blog') pendingPageName.current = 'Blog';
+      else if (href === '/podcast') pendingPageName.current = 'Podcast';
+      else if (href === '/profile') pendingPageName.current = 'Profile';
+      else if (href.startsWith('/posts/')) pendingPageName.current = 'Article';
+      else pendingPageName.current = "Ethan's Blog";
 
       const ov = overlayRef.current;
       const ct = contentRef.current;
@@ -108,7 +116,7 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
       >
         <div ref={contentRef} className="flex flex-col items-center" style={{ opacity: 0 }}>
           <span className="text-xl font-medium tracking-tight select-none" style={{ color: 'var(--foreground)' }}>
-            Ethan&apos;s Blog
+            {pendingPageName.current}
           </span>
           <div className="mt-3 h-px w-10" style={{ background: 'var(--foreground)', opacity: 0.2 }} />
         </div>
