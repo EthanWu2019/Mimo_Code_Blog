@@ -19,23 +19,28 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (pathname !== prevPath.current) {
       prevPath.current = pathname;
-      // New page loaded — play enter animation
       const ov = overlayRef.current;
       const ct = contentRef.current;
       if (!ov || !isAnimating.current) return;
 
-      // Fade out overlay
-      const anim = ov.animate([
-        { opacity: 1 },
-        { opacity: 0 },
-      ], { duration: 350, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
+      // First hide logo, THEN fade out overlay
+      const hideLogo = ct ? ct.animate([
+        { opacity: 1, transform: 'translateY(0)' },
+        { opacity: 0, transform: 'translateY(-6px)' },
+      ], { duration: 180, easing: 'ease-in', fill: 'forwards' }).finished : Promise.resolve();
 
-      anim.onfinish = () => {
-        ov.style.display = 'none';
-        ov.style.opacity = '1';
-        if (ct) ct.style.opacity = '0';
-        isAnimating.current = false;
-      };
+      hideLogo.then(() => {
+        const anim = ov.animate([
+          { opacity: 1 },
+          { opacity: 0 },
+        ], { duration: 300, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
+        anim.onfinish = () => {
+          ov.style.display = 'none';
+          ov.style.opacity = '1';
+          if (ct) ct.style.opacity = '0';
+          isAnimating.current = false;
+        };
+      });
     }
   }, [pathname]);
 
