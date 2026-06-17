@@ -10,7 +10,6 @@ export default function CursorGlow() {
   const scaleRef = useRef({ value: 1 });
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
-  const prevDarkRef = useRef<boolean | null>(null);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
@@ -29,7 +28,6 @@ export default function CursorGlow() {
 
   useEffect(() => {
     const el = document.documentElement;
-    prevDarkRef.current = el.classList.contains('dark');
 
     const setColors = (dark: boolean) => {
       if (glowRef.current) glowRef.current.style.opacity = dark ? '1' : '0';
@@ -39,22 +37,30 @@ export default function CursorGlow() {
           ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
       }
     };
-    setColors(prevDarkRef.current!);
 
-    const observer = new MutationObserver(() => {
-      const dark = el.classList.contains('dark');
-      const wasDark = prevDarkRef.current;
-      if (dark === wasDark) return;
-      prevDarkRef.current = dark;
+    // Set initial colors
+    setColors(el.classList.contains('dark'));
 
-      // Hide cursor during transition
+    // Listen for pre-transition event from ThemeProvider
+    const onThemeToggle = () => {
+      // Hide cursor IMMEDIATELY — before View Transition snapshot
       if (dotRef.current) dotRef.current.style.opacity = '0';
 
-      // Wait for View Transition to finish, then show with new colors
+      // After transition ends, show cursor with new theme colors
       setTimeout(() => {
+        const dark = el.classList.contains('dark');
         setColors(dark);
         if (dotRef.current) dotRef.current.style.opacity = '1';
       }, 700);
+    };
+    document.addEventListener('hermes:theme-toggle', onThemeToggle);
+
+    // Also update colors on class change (for non-View-Transition cases)
+    const observer = new MutationObserver(() => {
+      // Only if not in a view transition (the event handler handles that)
+      if (!document.startViewTransition) {
+        setColors(el.classList.contains('dark'));
+      }
     });
     observer.observe(el, { attributes: true, attributeFilter: ['class'] });
 
@@ -79,6 +85,7 @@ export default function CursorGlow() {
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mousedown', handleDown);
       document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('hermes:theme-toggle', onThemeToggle);
       observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };

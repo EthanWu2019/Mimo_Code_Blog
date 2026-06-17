@@ -51,6 +51,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (document.startViewTransition) {
       isAnimatingRef.current = true;
 
+      // Notify cursor to hide BEFORE snapshot is taken
+      document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
+
       // 白切黑时添加反转类
       if (isLightToDark) {
         document.documentElement.classList.add('theme-toggle-reverse');
