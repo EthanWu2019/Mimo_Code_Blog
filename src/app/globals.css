@@ -124,6 +124,10 @@ body {
 *, *::before, *::after {
   cursor: none !important;
 }
+/* Cursor dot must not be captured by View Transitions */
+.cursor-dot {
+  view-transition-name: none !important;
+}
 
 /* View Transitions API - theme toggle */
 @keyframes glass-shimmer {

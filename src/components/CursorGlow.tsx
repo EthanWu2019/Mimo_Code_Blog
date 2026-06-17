@@ -7,14 +7,15 @@ export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: -100, y: -100 });
-  const scaleRef = useRef(1);
+  const scaleRef = useRef({ value: 1 });
   const rafRef = useRef<number>(0);
+  const isDownRef = useRef(false);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       const { x, y } = posRef.current;
-      const s = scaleRef.current;
+      const s = scaleRef.current.value;
       if (glowRef.current) {
         glowRef.current.style.transform = `translate(${x - 50}px, ${y - 50}px)`;
       }
@@ -27,10 +28,9 @@ export default function CursorGlow() {
 
   useEffect(() => {
     const el = document.documentElement;
-    const isDark = () => el.classList.contains('dark');
 
     const applyTheme = () => {
-      const dark = isDark();
+      const dark = el.classList.contains('dark');
       if (glowRef.current) {
         glowRef.current.style.opacity = dark ? '1' : '0';
       }
@@ -53,19 +53,24 @@ export default function CursorGlow() {
     };
 
     const handleDown = () => {
-      gsap.to(scaleRef, {
-        current: 2,
+      isDownRef.current = true;
+      gsap.to(scaleRef.current, {
+        value: 2,
         duration: 0.15,
         ease: 'power2.out',
+        overwrite: true,
         onUpdate: scheduleUpdate,
       });
     };
 
     const handleUp = () => {
-      gsap.to(scaleRef, {
-        current: 1,
+      if (!isDownRef.current) return;
+      isDownRef.current = false;
+      gsap.to(scaleRef.current, {
+        value: 1,
         duration: 0.6,
         ease: 'elastic.out(1.2, 0.3)',
+        overwrite: true,
         onUpdate: scheduleUpdate,
       });
     };
@@ -109,6 +114,7 @@ export default function CursorGlow() {
       <div
         ref={dotRef}
         aria-hidden
+        className="cursor-dot"
         style={{
           position: 'fixed',
           top: 0,
@@ -123,6 +129,7 @@ export default function CursorGlow() {
           transform: 'translate(-100px, -100px) scale(1)',
           transformOrigin: 'center center',
           boxShadow: '0 0 4px rgba(0,0,0,0.15)',
+          // NO transition — instant color change on theme switch
         }}
       />
     </>
