@@ -11,7 +11,6 @@ export default function CursorGlow() {
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
   const prevDarkRef = useRef<boolean | null>(null);
-  const trackingRef = useRef<number | null>(null);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
@@ -48,68 +47,14 @@ export default function CursorGlow() {
       if (dark === wasDark) return;
       prevDarkRef.current = dark;
 
-      if (!wasDark && dark) {
-        // === LIGHT → DARK ===
-        // 1. Hide cursor immediately (kill the black dot on the button)
-        if (dotRef.current) dotRef.current.style.opacity = '0';
-        if (glowRef.current) glowRef.current.style.opacity = '1';
+      // Hide cursor during transition
+      if (dotRef.current) dotRef.current.style.opacity = '0';
 
-        // 2. After one frame, start position-based tracking
-        requestAnimationFrame(() => {
-          if (!dotRef.current) return;
-
-          const cx = posRef.current.x;
-          const cy = posRef.current.y;
-          const vw = window.innerWidth;
-          const vh = window.innerHeight;
-          const maxR = Math.sqrt(vw * vw + vh * vh);
-          const start = performance.now();
-          const DURATION = 600;
-
-          // Easing: cubic-bezier(0.76, 0, 0.24, 1) — approximated
-          const ease = (t: number) => {
-            if (t < 0.5) return 4 * t * t * t;
-            return 1 - Math.pow(-2 * t + 2, 3) / 2;
-          };
-
-          const tick = () => {
-            const elapsed = performance.now() - start;
-            const raw = Math.min(elapsed / DURATION, 1);
-            const t = ease(raw);
-            // Circle shrinks: full screen → 0
-            const r = maxR * (1 - t);
-
-            const { x, y } = posRef.current;
-            const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
-            const inside = dist < r;
-
-            if (dotRef.current) {
-              dotRef.current.style.opacity = '1';
-              if (inside) {
-                // Inside shrinking light overlay → black cursor
-                dotRef.current.style.backgroundColor = 'rgba(0,0,0,0.6)';
-                dotRef.current.style.boxShadow = '0 0 4px rgba(0,0,0,0.15)';
-              } else {
-                // Outside, in dark theme → white cursor
-                dotRef.current.style.backgroundColor = 'rgba(255,255,255,0.95)';
-                dotRef.current.style.boxShadow = '0 0 8px 2px rgba(255,255,255,0.3)';
-              }
-            }
-
-            if (raw < 1) {
-              trackingRef.current = requestAnimationFrame(tick);
-            } else {
-              // Done — lock to dark mode colors
-              setColors(true);
-              trackingRef.current = null;
-            }
-          };
-          trackingRef.current = requestAnimationFrame(tick);
-        });
-      } else {
-        // DARK → LIGHT: instant (works fine)
+      // Wait for View Transition to finish, then show with new colors
+      setTimeout(() => {
         setColors(dark);
-      }
+        if (dotRef.current) dotRef.current.style.opacity = '1';
+      }, 700);
     });
     observer.observe(el, { attributes: true, attributeFilter: ['class'] });
 
@@ -136,7 +81,6 @@ export default function CursorGlow() {
       document.removeEventListener('mouseup', handleUp);
       observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (trackingRef.current) cancelAnimationFrame(trackingRef.current);
     };
   }, [scheduleUpdate]);
 
