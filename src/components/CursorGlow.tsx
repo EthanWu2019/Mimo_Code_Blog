@@ -37,7 +37,7 @@ export default function CursorGlow() {
       if (dotRef.current) {
         dotRef.current.style.opacity = '0';
         // Wait for View Transition to finish, then show cursor with new colors
-        const revealDelay = document.startViewTransition ? 700 : 50;
+        const revealDelay = typeof document.startViewTransition === 'function' ? 700 : 50;
         setTimeout(() => {
           if (!dotRef.current) return;
           dotRef.current.style.backgroundColor = dark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
