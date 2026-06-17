@@ -39,7 +39,7 @@ const episodes: Episode[] = [
     date: 'Jun 3, 2026',
     category: 'AI & Tech',
     thumbnail: 'from-cyan-500 to-blue-600',
-    featured: false,
+    featured: true,
   },
   {
     id: 3,
@@ -50,7 +50,7 @@ const episodes: Episode[] = [
     date: 'May 27, 2026',
     category: 'Design',
     thumbnail: 'from-pink-500 to-rose-600',
-    featured: false,
+    featured: true,
   },
   {
     id: 4,
@@ -108,122 +108,168 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+const heroFadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  show: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  }),
+};
+
 export default function PodcastPage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [playingId, setPlayingId] = useState<number | null>(1);
   const [isPlaying, setIsPlaying] = useState(true);
 
-  const featured = episodes.find((e) => e.featured)!;
-  const filtered = episodes
-    .filter((e) => !e.featured)
-    .filter((e) => activeCategory === 'All' || e.category === activeCategory);
+  const featuredEpisodes = episodes.filter((e) => e.featured);
+  const nonFeatured = episodes.filter((e) => !e.featured);
+  const filtered =
+    activeCategory === 'All'
+      ? nonFeatured
+      : nonFeatured.filter((e) => e.category === activeCategory);
 
   const playingEpisode = episodes.find((e) => e.id === playingId);
 
   return (
     <main className="min-h-screen">
-      {/* Hero */}
-      <section className="relative pt-32 pb-16 px-6">
-        <div className="max-w-4xl mx-auto text-center">
+      {/* ───────── Hero Section (80vh) ───────── */}
+      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Vertical lines */}
+          <div className="absolute top-16 left-[12%] w-px h-32 bg-gradient-to-b from-transparent via-zinc-200 dark:via-zinc-800 to-transparent" />
+          <div className="absolute top-24 right-[18%] w-px h-20 bg-gradient-to-b from-transparent via-zinc-200 dark:via-zinc-800 to-transparent" />
+          <div className="absolute bottom-28 left-[22%] w-px h-16 bg-gradient-to-b from-transparent via-violet-300/30 dark:via-violet-700/30 to-transparent" />
+          {/* Horizontal lines */}
+          <div className="absolute bottom-24 left-[18%] w-20 h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent" />
+          <div className="absolute top-1/3 right-[14%] w-16 h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent" />
+          {/* Dots */}
+          <div className="absolute top-1/4 left-[10%] w-2 h-2 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+          <div className="absolute bottom-1/3 right-[11%] w-1.5 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+          <div className="absolute top-[60%] left-[35%] w-1 h-1 rounded-full bg-violet-300/40 dark:bg-violet-700/40" />
+          {/* Gradient glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-violet-500/[0.04] dark:bg-violet-500/[0.06] blur-3xl" />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-6 w-full relative z-10 text-center">
+          {/* Label */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="mx-auto mb-6 w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="flex items-center justify-center gap-3 mb-6"
           >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-white ml-1">
-              <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
-            </svg>
+            <div className="w-8 h-[1px] bg-zinc-300 dark:bg-zinc-700" />
+            <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
+              Conversations &amp; Insights
+            </span>
+            <div className="w-8 h-[1px] bg-zinc-300 dark:bg-zinc-700" />
           </motion.div>
 
+          {/* Title */}
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white tracking-tight font-[family-name:var(--font-geist-sans)]"
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="text-6xl md:text-7xl lg:text-[96px] font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.9] mb-6"
           >
             Podcast
           </motion.h1>
 
+          {/* Subtitle */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-4 text-lg text-zinc-600 dark:text-white/60 max-w-xl mx-auto"
+            transition={{ duration: 0.5, delay: 0.2, ease: 'easeOut' }}
+            className="text-base md:text-lg text-zinc-500 dark:text-zinc-400 max-w-lg mx-auto leading-relaxed"
           >
             Conversations on engineering, design, and building products.
           </motion.p>
-        </div>
-      </section>
 
-      {/* Featured Episode */}
-      <section className="px-6 pb-12">
-        <div className="max-w-4xl mx-auto">
+          {/* Decorative geometric element — concentric circles (different from blog's diamond) */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="rounded-2xl bg-white/[0.05] dark:bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] overflow-hidden"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+            className="mt-10 flex justify-center"
           >
-            {/* Video placeholder */}
-            <div className="relative aspect-video bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-900 dark:to-zinc-800 flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 to-indigo-600/20" />
-              <button
-                onClick={() => { setPlayingId(featured.id); setIsPlaying(true); }}
-                className="relative z-10 w-20 h-20 rounded-full bg-white/90 dark:bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:scale-110 transition-transform"
-              >
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-zinc-900 dark:text-white ml-1">
-                  <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
-                </svg>
-              </button>
-              <span className="absolute top-4 left-4 px-3 py-1 text-xs font-medium rounded-full bg-violet-500/90 text-white">
-                Featured
-              </span>
+            <div className="relative w-14 h-14">
+              <div className="absolute inset-0 rounded-full border border-zinc-200 dark:border-zinc-800" />
+              <div className="absolute inset-2 rounded-full border border-zinc-200 dark:border-zinc-800" />
+              <div className="absolute inset-[18px] rounded-full bg-violet-500/20 dark:bg-violet-500/30" />
             </div>
+          </motion.div>
 
-            {/* Info */}
-            <div className="p-6 md:p-8">
-              <div className="flex flex-wrap items-center gap-3 mb-3 text-sm text-zinc-500 dark:text-white/50">
-                <span>EP {featured.number}</span>
-                <span>·</span>
-                <span>{featured.duration}</span>
-                <span>·</span>
-                <span>{featured.date}</span>
-                <span className="px-2 py-0.5 rounded-full text-xs bg-white/[0.08] border border-white/[0.08]">
-                  {featured.category}
-                </span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white mb-3">
-                {featured.title}
-              </h2>
-              <p className="text-zinc-600 dark:text-white/60 leading-relaxed mb-5">
-                {featured.description}
-              </p>
-              <button
-                onClick={() => { setPlayingId(featured.id); setIsPlaying(true); }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-600 text-white font-medium text-sm hover:bg-violet-500 transition-colors"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
-                </svg>
-                Play Episode
-              </button>
+          {/* Recent Picks */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-16"
+          >
+            <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-6">
+              Recent Picks
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+              {featuredEpisodes.slice(0, 3).map((ep, i) => (
+                <motion.div
+                  key={ep.id}
+                  custom={0.6 + i * 0.12}
+                  variants={heroFadeUp}
+                  initial="hidden"
+                  animate="show"
+                  className="group relative rounded-xl bg-white/[0.05] dark:bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] p-5 text-left hover:bg-white/[0.08] dark:hover:bg-white/[0.06] transition-all duration-300 hover:scale-[1.03] cursor-pointer"
+                  onClick={() => { setPlayingId(ep.id); setIsPlaying(true); }}
+                >
+                  {/* Gradient accent top */}
+                  <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-gradient-to-r ${ep.thumbnail}`} />
+
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-mono font-medium text-zinc-400 dark:text-zinc-500">
+                      EP {ep.number}
+                    </span>
+                    <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                      {ep.duration}
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-2 line-clamp-2 leading-snug">
+                    {ep.title}
+                  </h3>
+
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
+                      {ep.category}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setPlayingId(ep.id); setIsPlaying(true); }}
+                      className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white hover:bg-violet-500 transition-colors hover:scale-110"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="ml-0.5">
+                        <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
+                      </svg>
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Category Filters */}
-      <section className="px-6 pb-8">
+      {/* ───────── Category Filter Bar ───────── */}
+      <section className="sticky top-16 z-30 px-6 py-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-200/50 dark:border-zinc-800/50">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                   activeCategory === cat
-                    ? 'bg-violet-600 text-white'
+                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'
                     : 'bg-white/[0.05] dark:bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] text-zinc-700 dark:text-white/70 hover:bg-white/[0.1] dark:hover:bg-white/[0.06]'
                 }`}
               >
@@ -234,39 +280,41 @@ export default function PodcastPage() {
         </div>
       </section>
 
-      {/* Episode Grid */}
-      <section className="px-6 pb-32">
+      {/* ───────── Episode Grid ───────── */}
+      <section className="px-6 py-16 pb-32">
         <div className="max-w-4xl mx-auto">
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            animate="show"
-            key={activeCategory}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeCategory}
+              variants={stagger}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
               {filtered.map((ep) => (
                 <motion.article
                   key={ep.id}
                   variants={fadeUp}
                   layout
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="group rounded-xl bg-white/[0.05] dark:bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] overflow-hidden hover:scale-[1.02] hover:bg-white/[0.08] dark:hover:bg-white/[0.06] transition-all duration-300"
+                  className="group rounded-xl bg-white/[0.05] dark:bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] overflow-hidden hover:scale-[1.02] hover:bg-white/[0.08] dark:hover:bg-white/[0.06] transition-all duration-300 cursor-pointer"
+                  onClick={() => { setPlayingId(ep.id); setIsPlaying(true); }}
                 >
                   {/* Thumbnail */}
                   <div className={`relative aspect-video bg-gradient-to-br ${ep.thumbnail} flex items-center justify-center`}>
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
                     <button
-                      onClick={() => { setPlayingId(ep.id); setIsPlaying(true); }}
-                      className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+                      onClick={(e) => { e.stopPropagation(); setPlayingId(ep.id); setIsPlaying(true); }}
+                      className="relative z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-violet-600/80"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white ml-0.5">
                         <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
                       </svg>
                     </button>
-                    <span className="absolute top-3 left-3 px-2 py-0.5 text-[11px] font-medium rounded-full bg-black/40 backdrop-blur-sm text-white">
+                    <span className="absolute top-3 left-3 px-2.5 py-0.5 text-[11px] font-mono font-medium rounded-full bg-black/40 backdrop-blur-sm text-white">
                       EP {ep.number}
                     </span>
-                    <span className="absolute top-3 right-3 px-2 py-0.5 text-[11px] font-medium rounded-full bg-black/40 backdrop-blur-sm text-white">
+                    <span className="absolute top-3 right-3 px-2.5 py-0.5 text-[11px] font-medium rounded-full bg-black/40 backdrop-blur-sm text-white">
                       {ep.duration}
                     </span>
                   </div>
@@ -274,10 +322,10 @@ export default function PodcastPage() {
                   {/* Info */}
                   <div className="p-5">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/[0.08] text-zinc-600 dark:text-white/60">
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
                         {ep.category}
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-white/40">{ep.date}</span>
+                      <span className="text-[11px] text-zinc-500 dark:text-white/40">{ep.date}</span>
                     </div>
                     <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1.5 line-clamp-1">
                       {ep.title}
@@ -288,18 +336,22 @@ export default function PodcastPage() {
                   </div>
                 </motion.article>
               ))}
-            </AnimatePresence>
-          </motion.div>
+            </motion.div>
+          </AnimatePresence>
 
           {filtered.length === 0 && (
-            <p className="text-center text-zinc-500 dark:text-white/40 py-16">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center text-zinc-500 dark:text-white/40 py-16"
+            >
               No episodes in this category yet.
-            </p>
+            </motion.p>
           )}
         </div>
       </section>
 
-      {/* Floating Corner Player */}
+      {/* ───────── Floating Player ───────── */}
       {playingEpisode && (
         <FloatingPlayer
           episode={playingEpisode}
