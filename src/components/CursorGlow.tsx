@@ -57,6 +57,18 @@ export default function CursorGlow() {
     };
     applyColor();
 
+    // Brief hide on light→dark to kill the black dot on the toggle button
+    const onThemeToggle = () => {
+      if (!document.documentElement.classList.contains('dark')) {
+        // Currently light, switching to dark — briefly hide
+        if (dotRef.current) dotRef.current.style.opacity = '0';
+        setTimeout(() => {
+          if (dotRef.current) dotRef.current.style.opacity = '1';
+        }, 80);
+      }
+    };
+    document.addEventListener('hermes:theme-toggle', onThemeToggle);
+
     // Sample background color at cursor position, with debounce
     const sample = () => {
       const { x, y } = posRef.current;
@@ -100,6 +112,7 @@ export default function CursorGlow() {
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mousedown', handleDown);
       document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('hermes:theme-toggle', onThemeToggle);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [scheduleUpdate]);
