@@ -54,7 +54,7 @@ export default function CursorGlow() {
   const debounceRef = useRef<number>(0);
   const particlesRef = useRef<Particle[]>([]);
   const particleRafRef = useRef<number>(0);
-  const heartbeatRef = useRef<gsap.core.Tween | null>(null);
+  const heartbeatRef = useRef<gsap.core.Timeline | null>(null);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
