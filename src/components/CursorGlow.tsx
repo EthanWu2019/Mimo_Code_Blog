@@ -3,11 +3,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 
-interface Particle {
-  x: number; y: number; vx: number; vy: number;
-  life: number; maxLife: number; size: number;
-}
-
 function getVisualBrightness(x: number, y: number): number {
   const el = document.elementFromPoint(x, y);
   if (!el) return 0;
@@ -44,7 +39,7 @@ function isClickable(el: Element | null): boolean {
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: -100, y: -100 });
   const scaleRef = useRef({ value: 0.5 });
   const rafRef = useRef<number>(0);
@@ -52,9 +47,7 @@ export default function CursorGlow() {
   const colorRef = useRef<'dark' | 'light'>('dark');
   const clickableRef = useRef(false);
   const debounceRef = useRef<number>(0);
-  const particlesRef = useRef<Particle[]>([]);
-  const particleRafRef = useRef<number>(0);
-  const heartbeatRef = useRef<gsap.core.Timeline | null>(null);
+  const ringAnimRef = useRef<gsap.core.Timeline | null>(null);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
@@ -63,109 +56,44 @@ export default function CursorGlow() {
       const s = scaleRef.current.value;
       if (glowRef.current) glowRef.current.style.transform = `translate(${x - 25}px, ${y - 25}px)`;
       if (dotRef.current) dotRef.current.style.transform = `translate(${x - 10}px, ${y - 10}px) scale(${s})`;
-      if (canvasRef.current) canvasRef.current.style.transform = `translate(${x - 30}px, ${y - 30}px)`;
+      if (ringRef.current) ringRef.current.style.transform = `translate(${x - 16}px, ${y - 16}px)`;
       rafRef.current = 0;
     });
-  }, []);
-
-  // Particle animation loop
-  const startParticles = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const spawnParticle = () => {
-      const { x, y } = posRef.current;
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 0.3 + Math.random() * 0.8;
-      particlesRef.current.push({
-        x: 30, y: 30, // center of canvas (relative)
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 0,
-        maxLife: 30 + Math.random() * 20,
-        size: 1 + Math.random() * 1.5,
-      });
-    };
-
-    let frameCount = 0;
-    const draw = () => {
-      if (!clickableRef.current && particlesRef.current.length === 0) {
-        particleRafRef.current = 0;
-        ctx.clearRect(0, 0, 60, 60);
-        return;
-      }
-
-      frameCount++;
-      if (clickableRef.current && frameCount % 3 === 0) {
-        spawnParticle();
-      }
-
-      ctx.clearRect(0, 0, 60, 60);
-      const particles = particlesRef.current;
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life++;
-        p.x += p.vx;
-        p.y += p.vy;
-        const progress = p.life / p.maxLife;
-        const alpha = progress < 0.3 ? progress / 0.3 : 1 - (progress - 0.3) / 0.7;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * (1 - progress * 0.5), 0, Math.PI * 2);
-        ctx.fillStyle = colorRef.current === 'light'
-          ? `rgba(255, 255, 255, ${alpha * 0.6})`
-          : `rgba(139, 92, 246, ${alpha * 0.7})`;
-        ctx.fill();
-        if (p.life >= p.maxLife) particles.splice(i, 1);
-      }
-
-      particleRafRef.current = requestAnimationFrame(draw);
-    };
-
-    if (!particleRafRef.current) {
-      particleRafRef.current = requestAnimationFrame(draw);
-    }
-  }, []);
-
-  const stopParticles = useCallback(() => {
-    // Let existing particles fade out naturally, just stop spawning
   }, []);
 
   useEffect(() => {
     const applyColor = () => {
       if (!dotRef.current) return;
+      const light = colorRef.current === 'light';
       if (clickableRef.current) {
-        dotRef.current.style.backgroundColor = colorRef.current === 'light'
-          ? 'rgba(255,255,255,0.95)' : 'rgba(139, 92, 246, 0.9)';
-        dotRef.current.style.boxShadow = colorRef.current === 'light'
-          ? '0 0 10px 3px rgba(255,255,255,0.4)' : '0 0 10px 3px rgba(139, 92, 246, 0.5)';
+        // Warm amber on clickable
+        dotRef.current.style.backgroundColor = 'rgba(245, 158, 11, 0.9)';
+        dotRef.current.style.boxShadow = '0 0 10px 2px rgba(245, 158, 11, 0.3)';
       } else {
-        const light = colorRef.current === 'light';
         dotRef.current.style.backgroundColor = light ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
         dotRef.current.style.boxShadow = light
           ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
       }
-      if (glowRef.current) glowRef.current.style.opacity = colorRef.current === 'light' && !clickableRef.current ? '1' : '0';
+      if (glowRef.current) glowRef.current.style.opacity = light && !clickableRef.current ? '1' : '0';
     };
 
-    // Heartbeat pulse
-    const startHeartbeat = () => {
-      if (heartbeatRef.current) heartbeatRef.current.kill();
-      const tl = gsap.timeline({ repeat: -1 });
-      tl.to(scaleRef.current, { value: 0.7, duration: 0.15, ease: 'power2.out', onUpdate: scheduleUpdate })
-        .to(scaleRef.current, { value: 0.5, duration: 0.15, ease: 'power2.in', onUpdate: scheduleUpdate })
-        .to(scaleRef.current, { value: 0.65, duration: 0.12, ease: 'power2.out', onUpdate: scheduleUpdate })
-        .to(scaleRef.current, { value: 0.5, duration: 0.18, ease: 'power2.in', onUpdate: scheduleUpdate })
-        .to({}, { duration: 0.4 }); // pause between beats
-      heartbeatRef.current = tl;
+    // Soft ripple ring animation
+    const startRing = () => {
+      if (!ringRef.current) return;
+      stopRing();
+      const tl = gsap.timeline({ repeat: -1, delay: 0.2 });
+      tl.fromTo(ringRef.current,
+        { scale: 0.6, opacity: 0.6 },
+        { scale: 1.8, opacity: 0, duration: 1.2, ease: 'power2.out' }
+      );
+      ringAnimRef.current = tl;
+      // Enlarge dot slightly
+      gsap.to(scaleRef.current, { value: 0.65, duration: 0.3, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
 
-    const stopHeartbeat = () => {
-      if (heartbeatRef.current) {
-        heartbeatRef.current.kill();
-        heartbeatRef.current = null;
-      }
+    const stopRing = () => {
+      if (ringAnimRef.current) { ringAnimRef.current.kill(); ringAnimRef.current = null; }
+      if (ringRef.current) { ringRef.current.style.opacity = '0'; ringRef.current.style.transform = 'translate(-100px,-100px) scale(0.6)'; }
       gsap.to(scaleRef.current, { value: 0.5, duration: 0.3, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
 
@@ -173,7 +101,6 @@ export default function CursorGlow() {
     colorRef.current = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
     applyColor();
 
-    // Brief hide on light→dark transition
     const onThemeToggle = () => {
       if (!document.documentElement.classList.contains('dark')) {
         if (dotRef.current) dotRef.current.style.opacity = '0';
@@ -182,38 +109,28 @@ export default function CursorGlow() {
     };
     document.addEventListener('hermes:theme-toggle', onThemeToggle);
 
-    // Re-sample on theme change
     const observer = new MutationObserver(() => {
       setTimeout(() => {
         const { x, y } = posRef.current;
         if (x > 0 && y > 0) {
-          const lum = getVisualBrightness(x, y);
-          colorRef.current = lum > 128 ? 'dark' : 'light';
+          colorRef.current = getVisualBrightness(x, y) > 128 ? 'dark' : 'light';
           applyColor();
         }
       }, 100);
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    // Clickable hover detection
     const handleOver = (e: MouseEvent) => {
       const target = e.target as Element;
       const clickable = isClickable(target) || isClickable(target.closest('a, button, [role="button"]'));
       if (clickable !== clickableRef.current) {
         clickableRef.current = clickable;
         applyColor();
-        if (clickable) {
-          startHeartbeat();
-          startParticles();
-        } else {
-          stopHeartbeat();
-          stopParticles();
-        }
+        clickable ? startRing() : stopRing();
       }
     };
     document.addEventListener('mouseover', handleOver, { passive: true });
 
-    // Background color sampling
     const handleMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
       scheduleUpdate();
@@ -221,28 +138,20 @@ export default function CursorGlow() {
       if (now - debounceRef.current > 300) {
         debounceRef.current = now;
         if (!clickableRef.current) {
-          const lum = getVisualBrightness(e.clientX, e.clientY);
-          const shouldBe = lum > 128 ? 'dark' : 'light';
-          if (shouldBe !== colorRef.current) {
-            colorRef.current = shouldBe;
-            applyColor();
-          }
+          colorRef.current = getVisualBrightness(e.clientX, e.clientY) > 128 ? 'dark' : 'light';
+          applyColor();
         }
       }
     };
 
     const handleDown = () => {
       isDownRef.current = true;
-      if (!clickableRef.current) {
-        gsap.to(scaleRef.current, { value: 1, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
-      }
+      if (!clickableRef.current) gsap.to(scaleRef.current, { value: 1, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
-      if (!clickableRef.current) {
-        gsap.to(scaleRef.current, { value: 0.5, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
-      }
+      if (!clickableRef.current) gsap.to(scaleRef.current, { value: 0.5, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
     };
 
     document.addEventListener('mousemove', handleMove, { passive: true });
@@ -256,10 +165,9 @@ export default function CursorGlow() {
       document.removeEventListener('mouseover', handleOver);
       observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (particleRafRef.current) cancelAnimationFrame(particleRafRef.current);
-      if (heartbeatRef.current) heartbeatRef.current.kill();
+      if (ringAnimRef.current) ringAnimRef.current.kill();
     };
-  }, [scheduleUpdate, startParticles, stopParticles]);
+  }, [scheduleUpdate]);
 
   return (
     <>
@@ -270,11 +178,13 @@ export default function CursorGlow() {
         background: 'radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 40%, transparent 70%)',
         opacity: 0, transition: 'opacity 0.3s ease', transform: 'translate(-100px, -100px)',
       }} />
-      {/* Particle canvas */}
-      <canvas ref={canvasRef} width={60} height={60} aria-hidden style={{
-        position: 'fixed', top: 0, left: 0, width: 60, height: 60,
-        pointerEvents: 'none', zIndex: 200,
-        willChange: 'transform', transform: 'translate(-100px, -100px)',
+      {/* Ripple ring */}
+      <div ref={ringRef} aria-hidden style={{
+        position: 'fixed', top: 0, left: 0, width: 32, height: 32,
+        borderRadius: '50%', pointerEvents: 'none', zIndex: 200,
+        willChange: 'transform, opacity',
+        border: '1.5px solid rgba(245, 158, 11, 0.5)',
+        opacity: 0, transform: 'translate(-100px, -100px) scale(0.6)',
       }} />
       <div ref={dotRef} aria-hidden className="cursor-dot" style={{
         position: 'fixed', top: 0, left: 0, width: 20, height: 20,
