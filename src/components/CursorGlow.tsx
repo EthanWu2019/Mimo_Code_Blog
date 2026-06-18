@@ -57,6 +57,7 @@ export default function CursorGlow() {
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
   const colorRef = useRef<'dark' | 'light'>('dark');
+  const clickableRef = useRef(false);
   const debounceRef = useRef<number>(0);
 
   const scheduleUpdate = useCallback(() => {
@@ -72,14 +73,40 @@ export default function CursorGlow() {
 
   useEffect(() => {
     const applyColor = () => {
-      const light = colorRef.current === 'light';
-      if (dotRef.current) {
+      if (!dotRef.current) return;
+      if (clickableRef.current) {
+        // Clickable element: violet accent
+        dotRef.current.style.backgroundColor = 'rgba(139, 92, 246, 0.9)';
+        dotRef.current.style.boxShadow = '0 0 8px 2px rgba(139, 92, 246, 0.4)';
+      } else {
+        const light = colorRef.current === 'light';
         dotRef.current.style.backgroundColor = light ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
         dotRef.current.style.boxShadow = light
           ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
       }
-      if (glowRef.current) glowRef.current.style.opacity = light ? '1' : '0';
+      if (glowRef.current) glowRef.current.style.opacity = colorRef.current === 'light' && !clickableRef.current ? '1' : '0';
     };
+
+    // Detect clickable elements
+    const isClickable = (el: Element | null): boolean => {
+      if (!el) return false;
+      const tag = el.tagName;
+      if (tag === 'A' || tag === 'BUTTON' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return true;
+      if (el.getAttribute('role') === 'button' || el.getAttribute('onclick')) return true;
+      if (window.getComputedStyle(el).cursor === 'pointer') return true;
+      return false;
+    };
+
+    const handleOver = (e: MouseEvent) => {
+      const target = e.target as Element;
+      const clickable = isClickable(target) || isClickable(target.closest('a, button, [role="button"]'));
+      if (clickable !== clickableRef.current) {
+        clickableRef.current = clickable;
+        applyColor();
+      }
+    };
+
+    document.addEventListener('mouseover', handleOver, { passive: true });
 
     // Initial
     colorRef.current = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
@@ -142,6 +169,7 @@ export default function CursorGlow() {
       document.removeEventListener('mousedown', handleDown);
       document.removeEventListener('mouseup', handleUp);
       document.removeEventListener('hermes:theme-toggle', onThemeToggle);
+      document.removeEventListener('mouseover', handleOver);
       observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
