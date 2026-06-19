@@ -202,7 +202,7 @@ export default function GalleryPage() {
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-black/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-black/70 dark:to-black/40 pointer-events-none" />
 
         {/* Featured images grid with auto-rotation */}
         <AnimatePresence mode="wait">
