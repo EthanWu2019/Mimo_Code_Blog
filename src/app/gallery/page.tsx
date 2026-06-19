@@ -212,22 +212,40 @@ export default function GalleryPage() {
             animate={{ opacity: 0.4 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
-            className="absolute inset-0 grid grid-cols-4 grid-rows-2 gap-3 p-8"
+            className="absolute inset-0 gap-3 p-8"
           >
-            {currentGroup.map((item, i) => (
-              <div
-                key={item.id}
-                className={`relative rounded-xl overflow-hidden ${i === 0 ? 'col-span-2 row-span-2' : ''}`}
-                onContextMenu={(e) => e.preventDefault()}
-              >
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  draggable={false}
-                  className="w-full h-full object-cover select-none pointer-events-none"
-                />
-              </div>
-            ))}
+            {(() => {
+              // 4 different hero layouts, randomly picked per slide
+              const layouts = [
+                // Layout 0: Big left (4col×2row, first spans 2×2)
+                { grid: 'grid grid-cols-4 grid-rows-2', classes: ['col-span-2 row-span-2', '', '', '', ''] },
+                // Layout 1: Big right (4col×2row, last big)
+                { grid: 'grid grid-cols-4 grid-rows-2', classes: ['', '', '', 'col-start-3 col-span-2 row-span-2', ''] },
+                // Layout 2: Top hero + bottom 3 (4col×2row)
+                { grid: 'grid grid-cols-4 grid-rows-2', classes: ['col-span-2 row-span-2', 'col-start-3', 'col-start-4', 'col-start-3 row-start-2', 'col-start-4 row-start-2'] },
+                // Layout 3: Center big (5col×2row)
+                { grid: 'grid grid-cols-5 grid-rows-2', classes: ['', '', 'col-start-2 col-span-2 row-span-2', '', ''] },
+              ];
+              const layout = layouts[currentSlide % layouts.length];
+              return (
+                <div className={layout.grid + ' w-full h-full'}>
+                  {currentGroup.slice(0, 5).map((item, i) => (
+                    <div
+                      key={item.id}
+                      className={`relative rounded-xl overflow-hidden ${layout.classes[i] || ''}`}
+                      onContextMenu={(e) => e.preventDefault()}
+                    >
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        draggable={false}
+                        className="w-full h-full object-cover select-none pointer-events-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </motion.div>
         </AnimatePresence>
 
