@@ -34,7 +34,7 @@ function isOverText(x: number, y: number): boolean {
     const pos = (document as any).caretPositionFromPoint(x, y);
     if (pos) node = pos.offsetNode;
   } else if ('caretRangeFromPoint' in document) {
-    const range = document.caretRangeFromPoint(x, y);
+    const range = (document as any).caretRangeFromPoint(x, y);
     if (range) node = range.startContainer;
   }
   if (!node) return false;
