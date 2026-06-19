@@ -198,18 +198,17 @@ export default function CursorGlow() {
 
     const handleDown = () => {
       isDownRef.current = true;
-      pressRef.current = 1.4;
-      renderCursor();
+      gsap.to(pressRef, {
+        current: 1.4, duration: 0.12, ease: 'power2.out',
+        overwrite: true, onUpdate: renderCursor,
+      });
     };
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
       gsap.to(pressRef, {
-        current: 1,
-        duration: 0.6,
-        ease: 'elastic.out(1.2, 0.3)',
-        overwrite: true,
-        onUpdate: renderCursor,
+        current: 1, duration: 0.5, ease: 'elastic.out(1.2, 0.3)',
+        overwrite: true, onUpdate: renderCursor,
       });
     };
 
