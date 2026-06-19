@@ -198,11 +198,11 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section
-        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-zinc-950"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-black/70 dark:to-black/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50 pointer-events-none" />
 
         {/* Featured images grid with auto-rotation */}
         <AnimatePresence mode="wait">
@@ -285,7 +285,7 @@ export default function GalleryPage() {
       </section>
 
       {/* Sticky Filter Bar */}
-      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-white/[0.02] border-b border-white/[0.06]">
+      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-zinc-950/90 border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             <button
