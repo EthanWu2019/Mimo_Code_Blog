@@ -57,14 +57,13 @@ function isTextElement(el: Element | null): boolean {
   return false;
 }
 
-// Sizes
-const DOT_SIZE = 22;       // dot diameter in px
-const IBEAM_W = 5;         // I-beam pill width
-const IBEAM_H = 34;        // I-beam pill height
+const DOT_SIZE = 22;
+const IBEAM_W = 5;
+const IBEAM_H = 34;
 const GLOW_SIZE = 64;
 
-// GSAP-animated shape values (direct pixel dimensions, no scaling)
-interface Shape { w: number; h: number; }
+// All animated values live in one mutable object — GSAP animates these directly
+const anim = { w: DOT_SIZE, h: DOT_SIZE, press: 1 };
 
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
@@ -75,22 +74,19 @@ export default function CursorGlow() {
   const colorRef = useRef<'dark' | 'light'>('dark');
   const debounceRef = useRef<number>(0);
   const isTextRef = useRef(false);
-  // Click press scale: 1 = normal, >1 = pressed
-  const pressRef = useRef(1);
-  // Current animated shape
-  const shapeRef = useRef<Shape>({ w: DOT_SIZE, h: DOT_SIZE });
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       const { x, y } = posRef.current;
-      const { w, h } = shapeRef.current;
-      const p = pressRef.current;
+      const { w, h, press } = anim;
+      const vw = w * press;
+      const vh = h * press;
       if (glowRef.current) glowRef.current.style.transform = `translate(${x - GLOW_SIZE / 2}px, ${y - GLOW_SIZE / 2}px)`;
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${x - (w * p) / 2}px, ${y - (h * p) / 2}px) scale(${p})`;
-        dotRef.current.style.width = `${w}px`;
-        dotRef.current.style.height = `${h}px`;
+        dotRef.current.style.transform = `translate(${x - vw / 2}px, ${y - vh / 2}px)`;
+        dotRef.current.style.width = `${vw}px`;
+        dotRef.current.style.height = `${vh}px`;
       }
       rafRef.current = 0;
     });
@@ -118,7 +114,7 @@ export default function CursorGlow() {
       if (isTextRef.current) return;
       isTextRef.current = true;
       applyColor();
-      gsap.to(shapeRef.current, {
+      gsap.to(anim, {
         w: IBEAM_W, h: IBEAM_H,
         duration: 0.35, ease: 'elastic.out(1, 0.5)', overwrite: true,
         onUpdate: scheduleUpdate,
@@ -129,7 +125,7 @@ export default function CursorGlow() {
       if (!isTextRef.current) return;
       isTextRef.current = false;
       applyColor();
-      gsap.to(shapeRef.current, {
+      gsap.to(anim, {
         w: DOT_SIZE, h: DOT_SIZE,
         duration: 0.4, ease: 'elastic.out(1.2, 0.4)', overwrite: true,
         onUpdate: scheduleUpdate,
@@ -181,12 +177,12 @@ export default function CursorGlow() {
 
     const handleDown = () => {
       isDownRef.current = true;
-      gsap.to(pressRef, { current: 1.3, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
+      gsap.to(anim, { press: 1.3, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
-      gsap.to(pressRef, { current: 1, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
+      gsap.to(anim, { press: 1, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
     };
 
     document.addEventListener('mousemove', handleMove, { passive: true });
@@ -217,7 +213,7 @@ export default function CursorGlow() {
         borderRadius: '50%', pointerEvents: 'none', zIndex: 201,
         willChange: 'transform, width, height',
         backgroundColor: 'rgba(0,0,0,0.8)',
-        transform: 'translate(-100px, -100px) scale(1)', transformOrigin: 'center center',
+        transform: 'translate(-100px, -100px)',
         boxShadow: '0 0 8px 3px rgba(0,0,0,0.15), 0 0 2px 1px rgba(0,0,0,0.1)',
         transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
       }} />
