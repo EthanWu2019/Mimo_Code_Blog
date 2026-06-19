@@ -198,11 +198,11 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section
-        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-zinc-950"
+        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-zinc-100 dark:bg-zinc-950"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/60 dark:from-black/20 dark:via-transparent dark:to-black/50 pointer-events-none" />
 
         {/* Featured images grid with auto-rotation */}
         <AnimatePresence mode="wait">
@@ -271,21 +271,21 @@ export default function GalleryPage() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="relative z-10 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/[0.1] mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/60 dark:bg-white/[0.08] backdrop-blur-xl border border-zinc-200 dark:border-white/[0.1] mb-6">
             <div className="w-2 h-2 rounded-full bg-[#bf5af2] animate-pulse" />
-            <span className="text-sm text-zinc-300">AI-Generated Collection</span>
+            <span className="text-sm text-zinc-600 dark:text-zinc-300">AI-Generated Collection</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold text-white tracking-tight">
+          <h1 className="text-6xl md:text-8xl font-bold text-zinc-900 dark:text-white tracking-tight">
             AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#bf5af2] to-purple-300">Gallery</span>
           </h1>
-          <p className="mt-4 text-lg text-zinc-400 max-w-2xl mx-auto px-4">
+          <p className="mt-4 text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto px-4">
             Exploring the intersection of artificial intelligence and artistic expression
           </p>
         </motion.div>
       </section>
 
       {/* Sticky Filter Bar */}
-      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-zinc-950/90 border-b border-white/[0.06]">
+      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-white/80 dark:bg-zinc-950/90 border-b border-zinc-200 dark:border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             <button
@@ -293,7 +293,7 @@ export default function GalleryPage() {
               className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
                 activeTag === null
                   ? 'bg-[#bf5af2] text-white shadow-lg shadow-[#bf5af2]/20'
-                  : 'bg-white/[0.06] text-zinc-400 hover:bg-white/[0.1] hover:text-zinc-200'
+                  : 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               All
@@ -305,7 +305,7 @@ export default function GalleryPage() {
                 className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
                   activeTag === tag
                     ? 'bg-[#bf5af2] text-white shadow-lg shadow-[#bf5af2]/20'
-                    : 'bg-white/[0.06] text-zinc-400 hover:bg-white/[0.1] hover:text-zinc-200'
+                    : 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-zinc-200'
                 }`}
               >
                 {tag}
@@ -318,8 +318,8 @@ export default function GalleryPage() {
               onClick={() => setSortBy('date')}
               className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
                 sortBy === 'date'
-                  ? 'bg-white/[0.1] text-zinc-200'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                  ? 'bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-zinc-200'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'
               }`}
             >
               Date
@@ -328,8 +328,8 @@ export default function GalleryPage() {
               onClick={() => setSortBy('category')}
               className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
                 sortBy === 'category'
-                  ? 'bg-white/[0.1] text-zinc-200'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                  ? 'bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-zinc-200'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'
               }`}
             >
               Category
