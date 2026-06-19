@@ -212,7 +212,7 @@ export default function GalleryPage() {
             animate={{ opacity: 0.4 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
-            className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-3 p-8"
+            className="absolute inset-0 grid grid-cols-4 grid-rows-2 gap-3 p-8"
           >
             {currentGroup.map((item, i) => (
               <div
