@@ -30,15 +30,35 @@ function getVisualBrightness(x: number, y: number): number {
 function isTextElement(el: Element | null): boolean {
   if (!el) return false;
   const tag = el.tagName;
+  // Form inputs (excluding buttons/checkboxes/radio)
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
     const input = el as HTMLInputElement;
     if (input.type === 'button' || input.type === 'submit' || input.type === 'checkbox' || input.type === 'radio') return false;
     return true;
   }
+  // Contenteditable
   if (el.getAttribute('contenteditable') === 'true') return true;
-  // Check computed cursor style
-  const cs = window.getComputedStyle(el);
-  if (cs.cursor === 'text') return true;
+  // Check parent chain for contenteditable
+  let p: Element | null = el;
+  while (p) {
+    if (p.getAttribute('contenteditable') === 'true') return true;
+    p = p.parentElement;
+  }
+  // Text-bearing elements
+  if (tag === 'P' || tag === 'SPAN' || tag === 'LI' || tag === 'TD' || tag === 'TH' ||
+      tag === 'LABEL' || tag === 'CODE' || tag === 'PRE' || tag === 'BLOCKQUOTE' ||
+      tag === 'H1' || tag === 'H2' || tag === 'H3' || tag === 'H4' || tag === 'H5' || tag === 'H6') {
+    // Only if it has text content and is not inside a link/button
+    if (el.textContent && el.textContent.trim().length > 0) {
+      let parent = el.parentElement;
+      while (parent) {
+        const ptag = parent.tagName;
+        if (ptag === 'A' || ptag === 'BUTTON') return false;
+        parent = parent.parentElement;
+      }
+      return true;
+    }
+  }
   return false;
 }
 
