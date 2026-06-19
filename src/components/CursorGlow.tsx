@@ -27,6 +27,22 @@ function getVisualBrightness(x: number, y: number): number {
   return isDarkMode ? 10 : 240;
 }
 
+function isOverText(x: number, y: number): boolean {
+  // Use browser's native caret detection — only returns a position if actually over text
+  let node: Node | null = null;
+  if ('caretPositionFromPoint' in document) {
+    const pos = (document as any).caretPositionFromPoint(x, y);
+    if (pos) node = pos.offsetNode;
+  } else if ('caretRangeFromPoint' in document) {
+    const range = document.caretRangeFromPoint(x, y);
+    if (range) node = range.startContainer;
+  }
+  if (!node) return false;
+  // Must be a text node (actual characters) or an element containing text
+  const el = node.nodeType === 3 ? node.parentElement : node as Element;
+  return isTextElement(el);
+}
+
 function isTextElement(el: Element | null): boolean {
   if (!el) return false;
   const tag = el.tagName;
@@ -219,16 +235,26 @@ export default function CursorGlow() {
         }
       }
       const target = e.target as Element;
-      const textEl = isTextElement(target) || isTextElement(target.closest('input, textarea, select, [contenteditable]'));
-      if (textEl) {
+      // Precise detection: only trigger on actual text characters, not empty container space
+      const overText = isOverText(e.clientX, e.clientY);
+      if (overText) {
+        // Get the element at cursor for font-size detection
+        let caretEl: Element | null = null;
+        if ('caretPositionFromPoint' in document) {
+          const pos = (document as any).caretPositionFromPoint(e.clientX, e.clientY);
+          if (pos) caretEl = pos.offsetNode?.nodeType === 3 ? pos.offsetNode.parentElement : pos.offsetNode;
+        } else if ('caretRangeFromPoint' in document) {
+          const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+          if (range) caretEl = range.startContainer?.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+        }
+        if (!caretEl) caretEl = target;
         if (!isTextRef.current) {
-          morphToText(getFontSize(target));
+          morphToText(getFontSize(caretEl));
         } else {
-          // Already in text mode — check if font size changed
-          const fs = getFontSize(target);
+          const fs = getFontSize(caretEl);
           const scale = fs / FONT_BASE;
-          const expectedW = Math.max(3, IBEAM_BASE_W * scale);
-          if (Math.abs(shape.w - expectedW) > 1) resizeText(fs);
+          const expectedW = Math.max(2, IBEAM_BASE_W * scale);
+          if (Math.abs(shape.w - expectedW) > 0.5) resizeText(fs);
         }
       } else if (isTextRef.current) {
         morphToDot();
