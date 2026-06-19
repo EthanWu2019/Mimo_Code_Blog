@@ -58,8 +58,15 @@ function isTextElement(el: Element | null): boolean {
 }
 
 const DOT_SIZE = 22;
-const IBEAM_W = 5;
-const IBEAM_H = 28;
+const IBEAM_BASE_W = 5;
+const IBEAM_BASE_H = 28;
+const FONT_BASE = 16; // reference font size in px
+
+function getFontSize(el: Element | null): number {
+  if (!el) return FONT_BASE;
+  const cs = window.getComputedStyle(el);
+  return parseFloat(cs.fontSize) || FONT_BASE;
+}
 
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
@@ -118,14 +125,35 @@ export default function CursorGlow() {
     // Animate w and h via GSAP — these are plain numbers on a plain object
     const shape = { w: DOT_SIZE, h: DOT_SIZE };
 
-    const morphToText = () => {
+    const morphToText = (fontSize: number) => {
       if (isTextRef.current) return;
       isTextRef.current = true;
       applyColor();
+      const scale = fontSize / FONT_BASE;
+      const tw = Math.max(3, IBEAM_BASE_W * scale);
+      const th = Math.max(16, IBEAM_BASE_H * scale);
       gsap.to(shape, {
-        w: IBEAM_W, h: IBEAM_H,
+        w: tw, h: th,
         duration: 0.25,
         ease: 'back.out(2)',
+        overwrite: true,
+        onUpdate() {
+          wRef.current = shape.w;
+          hRef.current = shape.h;
+          renderCursor();
+        },
+      });
+    };
+
+    // Already in text mode — resize to new font size
+    const resizeText = (fontSize: number) => {
+      const scale = fontSize / FONT_BASE;
+      const tw = Math.max(3, IBEAM_BASE_W * scale);
+      const th = Math.max(16, IBEAM_BASE_H * scale);
+      gsap.to(shape, {
+        w: tw, h: th,
+        duration: 0.2,
+        ease: 'power2.out',
         overwrite: true,
         onUpdate() {
           wRef.current = shape.w;
@@ -192,8 +220,19 @@ export default function CursorGlow() {
       }
       const target = e.target as Element;
       const textEl = isTextElement(target) || isTextElement(target.closest('input, textarea, select, [contenteditable]'));
-      if (textEl && !isTextRef.current) morphToText();
-      else if (!textEl && isTextRef.current) morphToDot();
+      if (textEl) {
+        if (!isTextRef.current) {
+          morphToText(getFontSize(target));
+        } else {
+          // Already in text mode — check if font size changed
+          const fs = getFontSize(target);
+          const scale = fs / FONT_BASE;
+          const expectedW = Math.max(3, IBEAM_BASE_W * scale);
+          if (Math.abs(shape.w - expectedW) > 1) resizeText(fs);
+        }
+      } else if (isTextRef.current) {
+        morphToDot();
+      }
     };
 
     const handleDown = () => {
