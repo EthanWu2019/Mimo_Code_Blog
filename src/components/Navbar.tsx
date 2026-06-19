@@ -14,6 +14,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const isBlog = pathname === '/blog';
   const isPost = pathname.startsWith('/posts/');
+  const isGallery = pathname === '/gallery';
 
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
@@ -23,7 +24,7 @@ export default function Navbar() {
     const onScroll = () => {
       const y = window.scrollY;
       if (isPost) setIsCompact(y > 30);
-      else if (isBlog) setIsCompact(y > window.innerHeight * 0.8);
+      else if (isBlog || isGallery) setIsCompact(y > window.innerHeight * 0.8);
       else setIsCompact(false);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -55,6 +56,9 @@ export default function Navbar() {
           <nav className="flex items-center gap-1">
             <Link href="/podcast" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
               Podcast
+            </Link>
+            <Link href="/gallery" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
+              Gallery
             </Link>
             <Link href="/blog" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
               Blog
