@@ -81,22 +81,23 @@ export default function CursorGlow() {
   useEffect(() => {
     const applyColor = () => {
       if (!dotRef.current) return;
-      const light = colorRef.current === 'light';
+      const light = colorRef.current === 'light'; // true = cursor should be light (on dark bg)
       if (isTextRef.current) {
-        // I-beam style
-        dotRef.current.style.backgroundColor = light ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)';
+        // I-beam: contrast with background
+        dotRef.current.style.backgroundColor = light ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)';
         dotRef.current.style.boxShadow = light
-          ? '0 0 4px 1px rgba(0,0,0,0.15)' : '0 0 4px 1px rgba(255,255,255,0.15)';
+          ? '0 0 4px 1px rgba(255,255,255,0.15)' : '0 0 4px 1px rgba(0,0,0,0.15)';
       } else if (light) {
-        // Light mode dot — soft glow halo
-        dotRef.current.style.backgroundColor = 'rgba(0,0,0,0.8)';
-        dotRef.current.style.boxShadow = '0 0 8px 3px rgba(0,0,0,0.15), 0 0 2px 1px rgba(0,0,0,0.1)';
-      } else {
-        // Dark mode dot — existing white glow
+        // Dark background → white cursor + white glow
         dotRef.current.style.backgroundColor = 'rgba(255,255,255,0.95)';
         dotRef.current.style.boxShadow = '0 0 8px 2px rgba(255,255,255,0.3)';
+      } else {
+        // Light background → black cursor + soft glow
+        dotRef.current.style.backgroundColor = 'rgba(0,0,0,0.8)';
+        dotRef.current.style.boxShadow = '0 0 8px 3px rgba(0,0,0,0.15), 0 0 2px 1px rgba(0,0,0,0.1)';
       }
-      if (glowRef.current) glowRef.current.style.opacity = (light && !isTextRef.current) ? '0' : '1';
+      // Glow halo only on dark bg (white glow looks good), hide on light bg
+      if (glowRef.current) glowRef.current.style.opacity = light ? '1' : '0';
     };
 
     // Morph between dot and I-beam
