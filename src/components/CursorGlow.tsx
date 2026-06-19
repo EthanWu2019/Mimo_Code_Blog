@@ -121,7 +121,6 @@ export default function CursorGlow() {
       if (isTextRef.current) return;
       isTextRef.current = true;
       applyColor();
-      console.log('[CURSOR] morphToText: animating to', IBEAM_W, 'x', IBEAM_H);
       gsap.to(shape, {
         w: IBEAM_W, h: IBEAM_H,
         duration: 0.25,
@@ -130,7 +129,6 @@ export default function CursorGlow() {
         onUpdate() {
           wRef.current = shape.w;
           hRef.current = shape.h;
-          console.log('[CURSOR] onUpdate w=', shape.w.toFixed(1), 'h=', shape.h.toFixed(1));
           renderCursor();
         },
       });
@@ -140,7 +138,6 @@ export default function CursorGlow() {
       if (!isTextRef.current) return;
       isTextRef.current = false;
       applyColor();
-      console.log('[CURSOR] morphToDot: animating to', DOT_SIZE, 'x', DOT_SIZE);
       gsap.to(shape, {
         w: DOT_SIZE, h: DOT_SIZE,
         duration: 0.2,
