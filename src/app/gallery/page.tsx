@@ -312,28 +312,30 @@ export default function GalleryPage() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-500">Sort:</span>
-            <button
-              onClick={() => setSortBy('date')}
-              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
-                sortBy === 'date'
-                  ? 'bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-zinc-200'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'
-              }`}
-            >
-              Date
-            </button>
-            <button
-              onClick={() => setSortBy('category')}
-              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
-                sortBy === 'category'
-                  ? 'bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-zinc-200'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'
-              }`}
-            >
-              Category
-            </button>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-zinc-400 dark:text-zinc-500">Sort by</span>
+            <div className="flex rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.08]">
+              <button
+                onClick={() => setSortBy('date')}
+                className={`px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
+                  sortBy === 'date'
+                    ? 'bg-[#bf5af2] text-white'
+                    : 'bg-transparent text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.04]'
+                }`}
+              >
+                📅 Date
+              </button>
+              <button
+                onClick={() => setSortBy('category')}
+                className={`px-4 py-1.5 text-xs font-medium transition-all duration-200 border-l border-zinc-200 dark:border-white/[0.08] ${
+                  sortBy === 'category'
+                    ? 'bg-[#bf5af2] text-white'
+                    : 'bg-transparent text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.04]'
+                }`}
+              >
+                🏷️ Category
+              </button>
+            </div>
           </div>
         </div>
       </div>
