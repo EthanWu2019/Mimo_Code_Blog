@@ -57,7 +57,9 @@ function isTextElement(el: Element | null): boolean {
   return false;
 }
 
-const GLOW_SIZE = 64;
+const DOT_SIZE = 22;
+const IBEAM_W = 5;
+const IBEAM_H = 34;
 
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
@@ -68,22 +70,27 @@ export default function CursorGlow() {
   const colorRef = useRef<'dark' | 'light'>('dark');
   const debounceRef = useRef<number>(0);
   const isTextRef = useRef(false);
-  // GSAP-animated values: press scale and shape transform
-  const animRef = useRef({ press: 1, sx: 1, sy: 1 });
 
-  const scheduleUpdate = useCallback(() => {
+  // Current shape — directly written to DOM, no GSAP
+  const wRef = useRef(DOT_SIZE);
+  const hRef = useRef(DOT_SIZE);
+  // Click press scale
+  const pressRef = useRef(1);
+
+  const renderCursor = useCallback(() => {
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       const { x, y } = posRef.current;
-      const { press, sx, sy } = animRef.current;
-      const totalSx = press * sx;
-      const totalSy = press * sy;
-      // Base div is always 22x22, centered at cursor
-      const halfW = (22 * totalSx) / 2;
-      const halfH = (22 * totalSy) / 2;
-      if (glowRef.current) glowRef.current.style.transform = `translate(${x - GLOW_SIZE / 2}px, ${y - GLOW_SIZE / 2}px)`;
+      const w = wRef.current;
+      const h = hRef.current;
+      const p = pressRef.current;
+      const vw = w * p;
+      const vh = h * p;
+      if (glowRef.current) glowRef.current.style.transform = `translate(${x - 32}px, ${y - 32}px)`;
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${x - halfW}px, ${y - halfH}px) scale(${totalSx}, ${totalSy})`;
+        dotRef.current.style.transform = `translate(${x - vw / 2}px, ${y - vh / 2}px)`;
+        dotRef.current.style.width = `${vw}px`;
+        dotRef.current.style.height = `${vh}px`;
       }
       rafRef.current = 0;
     });
@@ -107,19 +114,23 @@ export default function CursorGlow() {
       if (glowRef.current) glowRef.current.style.opacity = light ? '1' : '0';
     };
 
-    // I-beam: 5x34 pill from 22x22 circle
-    // sx = 5/22 ≈ 0.227, sy = 34/22 ≈ 1.545
-    const IBEAM_SX = 5 / 22;
-    const IBEAM_SY = 34 / 22;
+    // Animate w and h via GSAP — these are plain numbers on a plain object
+    const shape = { w: DOT_SIZE, h: DOT_SIZE };
 
     const morphToText = () => {
       if (isTextRef.current) return;
       isTextRef.current = true;
       applyColor();
-      gsap.to(animRef.current, {
-        sx: IBEAM_SX, sy: IBEAM_SY,
-        duration: 0.35, ease: 'elastic.out(1, 0.5)', overwrite: true,
-        onUpdate: scheduleUpdate,
+      gsap.to(shape, {
+        w: IBEAM_W, h: IBEAM_H,
+        duration: 0.35,
+        ease: 'elastic.out(1, 0.5)',
+        overwrite: true,
+        onUpdate() {
+          wRef.current = shape.w;
+          hRef.current = shape.h;
+          renderCursor();
+        },
       });
     };
 
@@ -127,16 +138,22 @@ export default function CursorGlow() {
       if (!isTextRef.current) return;
       isTextRef.current = false;
       applyColor();
-      gsap.to(animRef.current, {
-        sx: 1, sy: 1,
-        duration: 0.4, ease: 'elastic.out(1.2, 0.4)', overwrite: true,
-        onUpdate: scheduleUpdate,
+      gsap.to(shape, {
+        w: DOT_SIZE, h: DOT_SIZE,
+        duration: 0.4,
+        ease: 'elastic.out(1.2, 0.4)',
+        overwrite: true,
+        onUpdate() {
+          wRef.current = shape.w;
+          hRef.current = shape.h;
+          renderCursor();
+        },
       });
     };
 
     colorRef.current = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
     applyColor();
-    scheduleUpdate();
+    renderCursor();
 
     const onThemeToggle = () => {
       if (!document.documentElement.classList.contains('dark')) {
@@ -159,7 +176,7 @@ export default function CursorGlow() {
 
     const handleMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
-      scheduleUpdate();
+      renderCursor();
       const now = Date.now();
       if (now - debounceRef.current > 300) {
         debounceRef.current = now;
@@ -180,12 +197,19 @@ export default function CursorGlow() {
 
     const handleDown = () => {
       isDownRef.current = true;
-      gsap.to(animRef.current, { press: 1.4, duration: 0.15, ease: 'power2.out', overwrite: false, onUpdate: scheduleUpdate });
+      pressRef.current = 1.4;
+      renderCursor();
     };
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
-      gsap.to(animRef.current, { press: 1, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: false, onUpdate: scheduleUpdate });
+      gsap.to(pressRef, {
+        current: 1,
+        duration: 0.6,
+        ease: 'elastic.out(1.2, 0.3)',
+        overwrite: true,
+        onUpdate: renderCursor,
+      });
     };
 
     document.addEventListener('mousemove', handleMove, { passive: true });
@@ -199,12 +223,12 @@ export default function CursorGlow() {
       observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [scheduleUpdate]);
+  }, [renderCursor]);
 
   return (
     <>
       <div ref={glowRef} aria-hidden style={{
-        position: 'fixed', top: 0, left: 0, width: GLOW_SIZE, height: GLOW_SIZE,
+        position: 'fixed', top: 0, left: 0, width: 64, height: 64,
         borderRadius: '50%', pointerEvents: 'none', zIndex: 200,
         willChange: 'transform', mixBlendMode: 'screen',
         background: 'radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 40%, transparent 70%)',
@@ -212,14 +236,13 @@ export default function CursorGlow() {
       }} />
       <div ref={dotRef} aria-hidden className="cursor-dot" style={{
         position: 'fixed', top: 0, left: 0,
-        width: 22, height: 22,
-        borderRadius: '50%', pointerEvents: 'none', zIndex: 201,
-        willChange: 'transform',
+        width: DOT_SIZE, height: DOT_SIZE,
+        borderRadius: '50%',
+        pointerEvents: 'none', zIndex: 201,
+        willChange: 'transform, width, height',
         backgroundColor: 'rgba(0,0,0,0.8)',
-        transform: 'translate(-100px, -100px) scale(1, 1)',
-        transformOrigin: 'top left',
+        transform: 'translate(-100px, -100px)',
         boxShadow: '0 0 8px 3px rgba(0,0,0,0.15), 0 0 2px 1px rgba(0,0,0,0.1)',
-        transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
       }} />
     </>
   );
