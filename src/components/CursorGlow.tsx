@@ -58,8 +58,8 @@ function isTextElement(el: Element | null): boolean {
 }
 
 const DOT_SIZE = 22;
-const IBEAM_W = 8;
-const IBEAM_H = 38;
+const IBEAM_W = 5;
+const IBEAM_H = 28;
 
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
@@ -101,9 +101,10 @@ export default function CursorGlow() {
       if (!dotRef.current) return;
       const light = colorRef.current === 'light';
       if (isTextRef.current) {
-        dotRef.current.style.backgroundColor = light ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)';
+        // I-beam: match the TEXT color (light text on dark bg → white, dark text on light bg → black)
+        dotRef.current.style.backgroundColor = light ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)';
         dotRef.current.style.boxShadow = light
-          ? '0 0 4px 1px rgba(0,0,0,0.15)' : '0 0 4px 1px rgba(255,255,255,0.15)';
+          ? '0 0 4px 1px rgba(255,255,255,0.15)' : '0 0 4px 1px rgba(0,0,0,0.15)';
       } else if (light) {
         dotRef.current.style.backgroundColor = 'rgba(255,255,255,0.95)';
         dotRef.current.style.boxShadow = '0 0 8px 2px rgba(255,255,255,0.3)';
