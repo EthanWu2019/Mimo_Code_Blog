@@ -30,25 +30,20 @@ function getVisualBrightness(x: number, y: number): number {
 function isTextElement(el: Element | null): boolean {
   if (!el) return false;
   const tag = el.tagName;
-  // Form inputs (excluding buttons/checkboxes/radio)
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
     const input = el as HTMLInputElement;
     if (input.type === 'button' || input.type === 'submit' || input.type === 'checkbox' || input.type === 'radio') return false;
     return true;
   }
-  // Contenteditable
   if (el.getAttribute('contenteditable') === 'true') return true;
-  // Check parent chain for contenteditable
   let p: Element | null = el;
   while (p) {
     if (p.getAttribute('contenteditable') === 'true') return true;
     p = p.parentElement;
   }
-  // Text-bearing elements
   if (tag === 'P' || tag === 'SPAN' || tag === 'LI' || tag === 'TD' || tag === 'TH' ||
       tag === 'LABEL' || tag === 'CODE' || tag === 'PRE' || tag === 'BLOCKQUOTE' ||
       tag === 'H1' || tag === 'H2' || tag === 'H3' || tag === 'H4' || tag === 'H5' || tag === 'H6') {
-    // Only if it has text content and is not inside a link/button
     if (el.textContent && el.textContent.trim().length > 0) {
       let parent = el.parentElement;
       while (parent) {
@@ -62,37 +57,40 @@ function isTextElement(el: Element | null): boolean {
   return false;
 }
 
+// Sizes
+const DOT_SIZE = 22;       // dot diameter in px
+const IBEAM_W = 5;         // I-beam pill width
+const IBEAM_H = 34;        // I-beam pill height
+const GLOW_SIZE = 64;
+
+// GSAP-animated shape values (direct pixel dimensions, no scaling)
+interface Shape { w: number; h: number; }
+
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: -100, y: -100 });
-  // Use direct pixel tracking — no spring/delay on main dot
-  const dotPosRef = useRef({ x: -100, y: -100 });
-  const scaleRef = useRef({ value: 0.5 });
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
   const colorRef = useRef<'dark' | 'light'>('dark');
   const debounceRef = useRef<number>(0);
   const isTextRef = useRef(false);
-  const morphRef = useRef({ height: 32, width: 32, borderRadius: 50 });
+  // Click press scale: 1 = normal, >1 = pressed
+  const pressRef = useRef(1);
+  // Current animated shape
+  const shapeRef = useRef<Shape>({ w: DOT_SIZE, h: DOT_SIZE });
 
-  // Main render loop — dot is always instant (no interpolation)
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       const { x, y } = posRef.current;
-      const s = scaleRef.current.value;
-      const m = morphRef.current;
-      const w = m.width;
-      const h = m.height;
-      // Glow follows with slight lag (purely decorative)
-      if (glowRef.current) glowRef.current.style.transform = `translate(${x - 32}px, ${y - 32}px)`;
-      // Dot/cursor follows INSTANTLY — no lag
+      const { w, h } = shapeRef.current;
+      const p = pressRef.current;
+      if (glowRef.current) glowRef.current.style.transform = `translate(${x - GLOW_SIZE / 2}px, ${y - GLOW_SIZE / 2}px)`;
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${x - w / 2}px, ${y - h / 2}px) scale(${s})`;
+        dotRef.current.style.transform = `translate(${x - (w * p) / 2}px, ${y - (h * p) / 2}px) scale(${p})`;
         dotRef.current.style.width = `${w}px`;
         dotRef.current.style.height = `${h}px`;
-        dotRef.current.style.borderRadius = `${m.borderRadius}%`;
       }
       rafRef.current = 0;
     });
@@ -101,32 +99,27 @@ export default function CursorGlow() {
   useEffect(() => {
     const applyColor = () => {
       if (!dotRef.current) return;
-      const light = colorRef.current === 'light'; // true = cursor should be light (on dark bg)
+      const light = colorRef.current === 'light';
       if (isTextRef.current) {
-        // I-beam: contrast with background
-        dotRef.current.style.backgroundColor = light ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)';
+        dotRef.current.style.backgroundColor = light ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)';
         dotRef.current.style.boxShadow = light
-          ? '0 0 4px 1px rgba(255,255,255,0.15)' : '0 0 4px 1px rgba(0,0,0,0.15)';
+          ? '0 0 4px 1px rgba(0,0,0,0.15)' : '0 0 4px 1px rgba(255,255,255,0.15)';
       } else if (light) {
-        // Dark background → white cursor + white glow
         dotRef.current.style.backgroundColor = 'rgba(255,255,255,0.95)';
         dotRef.current.style.boxShadow = '0 0 8px 2px rgba(255,255,255,0.3)';
       } else {
-        // Light background → black cursor + soft glow
         dotRef.current.style.backgroundColor = 'rgba(0,0,0,0.8)';
         dotRef.current.style.boxShadow = '0 0 8px 3px rgba(0,0,0,0.15), 0 0 2px 1px rgba(0,0,0,0.1)';
       }
-      // Glow halo only on dark bg (white glow looks good), hide on light bg
       if (glowRef.current) glowRef.current.style.opacity = light ? '1' : '0';
     };
 
-    // Morph between dot and I-beam
     const morphToText = () => {
       if (isTextRef.current) return;
       isTextRef.current = true;
       applyColor();
-      gsap.to(morphRef.current, {
-        width: 7, height: 40, borderRadius: 50,
+      gsap.to(shapeRef.current, {
+        w: IBEAM_W, h: IBEAM_H,
         duration: 0.35, ease: 'elastic.out(1, 0.5)', overwrite: true,
         onUpdate: scheduleUpdate,
       });
@@ -136,18 +129,16 @@ export default function CursorGlow() {
       if (!isTextRef.current) return;
       isTextRef.current = false;
       applyColor();
-      gsap.to(morphRef.current, {
-        width: 32, height: 32, borderRadius: 50,
+      gsap.to(shapeRef.current, {
+        w: DOT_SIZE, h: DOT_SIZE,
         duration: 0.4, ease: 'elastic.out(1.2, 0.4)', overwrite: true,
         onUpdate: scheduleUpdate,
       });
     };
 
-    // Initial color
     colorRef.current = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
     applyColor();
 
-    // Brief hide on light→dark transition
     const onThemeToggle = () => {
       if (!document.documentElement.classList.contains('dark')) {
         if (dotRef.current) dotRef.current.style.opacity = '0';
@@ -156,7 +147,6 @@ export default function CursorGlow() {
     };
     document.addEventListener('hermes:theme-toggle', onThemeToggle);
 
-    // Re-sample on theme change
     const observer = new MutationObserver(() => {
       setTimeout(() => {
         const { x, y } = posRef.current;
@@ -168,12 +158,9 @@ export default function CursorGlow() {
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    // Mouse tracking — dot position is set DIRECTLY, no interpolation
     const handleMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
       scheduleUpdate();
-
-      // Background color sampling (debounced)
       const now = Date.now();
       if (now - debounceRef.current > 300) {
         debounceRef.current = now;
@@ -186,26 +173,20 @@ export default function CursorGlow() {
           }
         }
       }
-
-      // Text element detection
       const target = e.target as Element;
       const textEl = isTextElement(target) || isTextElement(target.closest('input, textarea, select, [contenteditable]'));
-      if (textEl && !isTextRef.current) {
-        morphToText();
-      } else if (!textEl && isTextRef.current) {
-        morphToDot();
-      }
+      if (textEl && !isTextRef.current) morphToText();
+      else if (!textEl && isTextRef.current) morphToDot();
     };
 
-    // Click: press to enlarge, release elastic bounce
     const handleDown = () => {
       isDownRef.current = true;
-      gsap.to(scaleRef.current, { value: 1, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
+      gsap.to(pressRef, { current: 1.3, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
-      gsap.to(scaleRef.current, { value: 0.5, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
+      gsap.to(pressRef, { current: 1, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
     };
 
     document.addEventListener('mousemove', handleMove, { passive: true });
@@ -223,21 +204,20 @@ export default function CursorGlow() {
 
   return (
     <>
-      {/* Glow halo — decorative, follows with natural slight lag */}
       <div ref={glowRef} aria-hidden style={{
-        position: 'fixed', top: 0, left: 0, width: 64, height: 64,
+        position: 'fixed', top: 0, left: 0, width: GLOW_SIZE, height: GLOW_SIZE,
         borderRadius: '50%', pointerEvents: 'none', zIndex: 200,
         willChange: 'transform', mixBlendMode: 'screen',
         background: 'radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 40%, transparent 70%)',
         opacity: 0, transition: 'opacity 0.3s ease', transform: 'translate(-100px, -100px)',
       }} />
-      {/* Cursor dot/I-beam — ZERO DELAY, always exactly at mouse position */}
       <div ref={dotRef} aria-hidden className="cursor-dot" style={{
-        position: 'fixed', top: 0, left: 0, width: 32, height: 32,
+        position: 'fixed', top: 0, left: 0,
+        width: DOT_SIZE, height: DOT_SIZE,
         borderRadius: '50%', pointerEvents: 'none', zIndex: 201,
-        willChange: 'transform, width, height, border-radius',
+        willChange: 'transform, width, height',
         backgroundColor: 'rgba(0,0,0,0.8)',
-        transform: 'translate(-100px, -100px) scale(0.5)', transformOrigin: 'center center',
+        transform: 'translate(-100px, -100px) scale(1)', transformOrigin: 'center center',
         boxShadow: '0 0 8px 3px rgba(0,0,0,0.15), 0 0 2px 1px rgba(0,0,0,0.1)',
         transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
       }} />
