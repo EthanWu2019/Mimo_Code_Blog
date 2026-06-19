@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import GallerySkeleton from '@/components/GallerySkeleton';
 
 interface GalleryItem {
   id: string;
@@ -33,6 +34,13 @@ const galleryData: GalleryItem[] = [
 ];
 
 const allTags = Array.from(new Set(galleryData.flatMap(item => item.tags)));
+
+// Create groups of 5 for hero slideshow
+const SLIDE_SIZE = 5;
+const heroGroups: GalleryItem[][] = [];
+for (let i = 0; i < galleryData.length; i += SLIDE_SIZE) {
+  heroGroups.push(galleryData.slice(i, i + SLIDE_SIZE));
+}
 
 function GalleryCard({ item, onOpen, likes, onLike }: {
   item: GalleryItem;
@@ -125,10 +133,20 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
 }
 
 export default function GalleryPage() {
+  const [loading, setLoading] = useState(true);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'date' | 'category'>('date');
   const [likes, setLikes] = useState<Record<string, number>>({});
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem('gallery-likes');
@@ -159,32 +177,72 @@ export default function GalleryPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const featured = galleryData.filter(item => item.featured).slice(0, 5);
+  // Hero slideshow auto-rotation
+  useEffect(() => {
+    if (isPaused || loading) return;
+    intervalRef.current = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % heroGroups.length);
+    }, 4500);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPaused, loading]);
+
+  if (loading) {
+    return <GallerySkeleton />;
+  }
+
+  const currentGroup = heroGroups[currentSlide] || heroGroups[0];
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+      <section
+        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-black/40 pointer-events-none" />
-        
-        {/* Featured images grid */}
-        <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-3 p-8 opacity-40">
-          {featured.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: i * 0.15 }}
-              className={`rounded-xl overflow-hidden ${i === 0 ? 'col-span-2 row-span-2' : ''}`}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                draggable={false}
-                className="w-full h-full object-cover select-none pointer-events-none"
-              />
-            </motion.div>
+
+        {/* Featured images grid with auto-rotation */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-3 p-8"
+          >
+            {currentGroup.map((item, i) => (
+              <div
+                key={item.id}
+                className={`relative rounded-xl overflow-hidden ${i === 0 ? 'col-span-2 row-span-2' : ''}`}
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  draggable={false}
+                  className="w-full h-full object-cover select-none pointer-events-none"
+                />
+              </div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Slide indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {heroGroups.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`h-1.5 rounded-full transition-all duration-500 ${
+                i === currentSlide
+                  ? 'w-8 bg-[#bf5af2]'
+                  : 'w-3 bg-white/30 hover:bg-white/50'
+              }`}
+            />
           ))}
         </div>
 
@@ -269,7 +327,7 @@ export default function GalleryPage() {
           className="columns-1 sm:columns-2 lg:columns-3 gap-4"
         >
           <AnimatePresence mode="popLayout">
-            {sortedItems.map((item, i) => (
+            {sortedItems.map((item) => (
               <GalleryCard
                 key={item.id}
                 item={item}
