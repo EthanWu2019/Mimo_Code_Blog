@@ -244,7 +244,7 @@ export default function CursorGlow() {
           const pos = (document as any).caretPositionFromPoint(e.clientX, e.clientY);
           if (pos) caretEl = pos.offsetNode?.nodeType === 3 ? pos.offsetNode.parentElement : pos.offsetNode;
         } else if ('caretRangeFromPoint' in document) {
-          const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+          const range = (document as any).caretRangeFromPoint(e.clientX, e.clientY);
           if (range) caretEl = range.startContainer?.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
         }
         if (!caretEl) caretEl = target;
