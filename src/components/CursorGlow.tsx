@@ -74,7 +74,7 @@ export default function CursorGlow() {
   const colorRef = useRef<'dark' | 'light'>('dark');
   const debounceRef = useRef<number>(0);
   const isTextRef = useRef(false);
-  const morphRef = useRef({ scaleY: 1, width: 20, borderRadius: 50 });
+  const morphRef = useRef({ scaleY: 1, width: 32, borderRadius: 50 });
 
   // Main render loop — dot is always instant (no interpolation)
   const scheduleUpdate = useCallback(() => {
@@ -126,7 +126,7 @@ export default function CursorGlow() {
       isTextRef.current = true;
       applyColor();
       gsap.to(morphRef.current, {
-        width: 2, scaleY: 1.4, borderRadius: 50,
+        width: 7, scaleY: 1.6, borderRadius: 50,
         duration: 0.35, ease: 'elastic.out(1, 0.5)', overwrite: true,
         onUpdate: scheduleUpdate,
       });
@@ -137,7 +137,7 @@ export default function CursorGlow() {
       isTextRef.current = false;
       applyColor();
       gsap.to(morphRef.current, {
-        width: 20, scaleY: 1, borderRadius: 50,
+        width: 32, scaleY: 1, borderRadius: 50,
         duration: 0.4, ease: 'elastic.out(1.2, 0.4)', overwrite: true,
         onUpdate: scheduleUpdate,
       });
@@ -225,7 +225,7 @@ export default function CursorGlow() {
     <>
       {/* Glow halo — decorative, follows with natural slight lag */}
       <div ref={glowRef} aria-hidden style={{
-        position: 'fixed', top: 0, left: 0, width: 50, height: 50,
+        position: 'fixed', top: 0, left: 0, width: 64, height: 64,
         borderRadius: '50%', pointerEvents: 'none', zIndex: 200,
         willChange: 'transform', mixBlendMode: 'screen',
         background: 'radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 40%, transparent 70%)',
@@ -233,7 +233,7 @@ export default function CursorGlow() {
       }} />
       {/* Cursor dot/I-beam — ZERO DELAY, always exactly at mouse position */}
       <div ref={dotRef} aria-hidden className="cursor-dot" style={{
-        position: 'fixed', top: 0, left: 0, width: 20, height: 20,
+        position: 'fixed', top: 0, left: 0, width: 32, height: 32,
         borderRadius: '50%', pointerEvents: 'none', zIndex: 201,
         willChange: 'transform, width, height, border-radius',
         backgroundColor: 'rgba(0,0,0,0.8)',
