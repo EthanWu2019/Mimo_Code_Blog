@@ -120,6 +120,11 @@ body {
 }
 
 
+/* Global zoom: 110% */
+html {
+  zoom: 1.1;
+}
+
 /* Custom cursor: hide system cursor in all themes */
 *, *::before, *::after {
   cursor: none !important;
