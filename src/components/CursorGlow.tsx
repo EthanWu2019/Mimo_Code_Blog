@@ -28,19 +28,24 @@ function getVisualBrightness(x: number, y: number): number {
 }
 
 function isOverText(x: number, y: number): boolean {
-  // Use browser's native caret detection — only returns a position if actually over text
-  let node: Node | null = null;
-  if ('caretPositionFromPoint' in document) {
-    const pos = (document as any).caretPositionFromPoint(x, y);
-    if (pos) node = pos.offsetNode;
-  } else if ('caretRangeFromPoint' in document) {
-    const range = (document as any).caretRangeFromPoint(x, y);
-    if (range) node = range.startContainer;
+  // Get the element under cursor
+  const el = document.elementFromPoint(x, y);
+  if (!el || !isTextElement(el)) return false;
+  
+  // Get actual text rectangles — only covers rendered character pixels
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const rects = range.getClientRects();
+  range.detach();
+  
+  // Check if cursor is within any text rectangle
+  for (let i = 0; i < rects.length; i++) {
+    const r = rects[i];
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+      return true;
+    }
   }
-  if (!node) return false;
-  // Must be a text node (actual characters) or an element containing text
-  const el = node.nodeType === 3 ? node.parentElement : node as Element;
-  return isTextElement(el);
+  return false;
 }
 
 function isTextElement(el: Element | null): boolean {
@@ -235,23 +240,13 @@ export default function CursorGlow() {
         }
       }
       const target = e.target as Element;
-      // Precise detection: only trigger on actual text characters, not empty container space
+      // Precise detection: only trigger on actual text characters
       const overText = isOverText(e.clientX, e.clientY);
       if (overText) {
-        // Get the element at cursor for font-size detection
-        let caretEl: Element | null = null;
-        if ('caretPositionFromPoint' in document) {
-          const pos = (document as any).caretPositionFromPoint(e.clientX, e.clientY);
-          if (pos) caretEl = pos.offsetNode?.nodeType === 3 ? pos.offsetNode.parentElement : pos.offsetNode;
-        } else if ('caretRangeFromPoint' in document) {
-          const range = (document as any).caretRangeFromPoint(e.clientX, e.clientY);
-          if (range) caretEl = range.startContainer?.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
-        }
-        if (!caretEl) caretEl = target;
+        const fs = getFontSize(target);
         if (!isTextRef.current) {
-          morphToText(getFontSize(caretEl));
+          morphToText(fs);
         } else {
-          const fs = getFontSize(caretEl);
           const scale = fs / FONT_BASE;
           const expectedW = Math.max(2, IBEAM_BASE_W * scale);
           if (Math.abs(shape.w - expectedW) > 0.5) resizeText(fs);
