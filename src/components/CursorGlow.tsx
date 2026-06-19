@@ -58,8 +58,8 @@ function isTextElement(el: Element | null): boolean {
 }
 
 const DOT_SIZE = 22;
-const IBEAM_BASE_W = 5;
-const IBEAM_BASE_H = 28;
+const IBEAM_BASE_W = 4;
+const IBEAM_BASE_H = 22;
 const FONT_BASE = 16; // reference font size in px
 
 function getFontSize(el: Element | null): number {
