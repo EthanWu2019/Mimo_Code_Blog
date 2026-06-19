@@ -237,7 +237,7 @@ export default function CursorGlow() {
       <div ref={dotRef} aria-hidden className="cursor-dot" style={{
         position: 'fixed', top: 0, left: 0,
         width: DOT_SIZE, height: DOT_SIZE,
-        borderRadius: '50%',
+        borderRadius: 999,
         pointerEvents: 'none', zIndex: 201,
         willChange: 'transform, width, height',
         backgroundColor: 'rgba(0,0,0,0.8)',
