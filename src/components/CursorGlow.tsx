@@ -27,27 +27,15 @@ function getVisualBrightness(x: number, y: number): number {
   return isDarkMode ? 10 : 240;
 }
 
-function isClickable(el: Element | null): boolean {
-  if (!el) return false;
-  const tag = el.tagName;
-  if (tag === 'A' || tag === 'BUTTON' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return true;
-  if (el.getAttribute('role') === 'button' || el.getAttribute('onclick')) return true;
-  if (window.getComputedStyle(el).cursor === 'pointer') return true;
-  return false;
-}
-
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: -100, y: -100 });
   const scaleRef = useRef({ value: 0.5 });
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
   const colorRef = useRef<'dark' | 'light'>('dark');
-  const clickableRef = useRef(false);
   const debounceRef = useRef<number>(0);
-  const ringAnimRef = useRef<gsap.core.Timeline | null>(null);
 
   const scheduleUpdate = useCallback(() => {
     if (rafRef.current) return;
@@ -56,7 +44,6 @@ export default function CursorGlow() {
       const s = scaleRef.current.value;
       if (glowRef.current) glowRef.current.style.transform = `translate(${x - 25}px, ${y - 25}px)`;
       if (dotRef.current) dotRef.current.style.transform = `translate(${x - 10}px, ${y - 10}px) scale(${s})`;
-      if (ringRef.current) ringRef.current.style.transform = `translate(${x - 16}px, ${y - 16}px)`;
       rafRef.current = 0;
     });
   }, []);
@@ -65,39 +52,12 @@ export default function CursorGlow() {
     const applyColor = () => {
       if (!dotRef.current) return;
       const light = colorRef.current === 'light';
-      if (clickableRef.current) {
-        // Warm amber on clickable
-        dotRef.current.style.backgroundColor = 'rgba(245, 158, 11, 0.9)';
-        dotRef.current.style.boxShadow = '0 0 10px 2px rgba(245, 158, 11, 0.3)';
-      } else {
-        dotRef.current.style.backgroundColor = light ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
-        dotRef.current.style.boxShadow = light
-          ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
-      }
-      if (glowRef.current) glowRef.current.style.opacity = light && !clickableRef.current ? '1' : '0';
+      dotRef.current.style.backgroundColor = light ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.6)';
+      dotRef.current.style.boxShadow = light
+        ? '0 0 8px 2px rgba(255,255,255,0.3)' : '0 0 4px rgba(0,0,0,0.15)';
+      if (glowRef.current) glowRef.current.style.opacity = light ? '1' : '0';
     };
 
-    // Soft ripple ring animation
-    const startRing = () => {
-      if (!ringRef.current) return;
-      stopRing();
-      const tl = gsap.timeline({ repeat: -1, delay: 0.2 });
-      tl.fromTo(ringRef.current,
-        { scale: 0.6, opacity: 0.6 },
-        { scale: 1.8, opacity: 0, duration: 1.2, ease: 'power2.out' }
-      );
-      ringAnimRef.current = tl;
-      // Enlarge dot slightly
-      gsap.to(scaleRef.current, { value: 0.65, duration: 0.3, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
-    };
-
-    const stopRing = () => {
-      if (ringAnimRef.current) { ringAnimRef.current.kill(); ringAnimRef.current = null; }
-      if (ringRef.current) { ringRef.current.style.opacity = '0'; ringRef.current.style.transform = 'translate(-100px,-100px) scale(0.6)'; }
-      gsap.to(scaleRef.current, { value: 0.5, duration: 0.3, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
-    };
-
-    // Initial
     colorRef.current = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
     applyColor();
 
@@ -120,25 +80,16 @@ export default function CursorGlow() {
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    const handleOver = (e: MouseEvent) => {
-      const target = e.target as Element;
-      const clickable = isClickable(target) || isClickable(target.closest('a, button, [role="button"]'));
-      if (clickable !== clickableRef.current) {
-        clickableRef.current = clickable;
-        applyColor();
-        clickable ? startRing() : stopRing();
-      }
-    };
-    document.addEventListener('mouseover', handleOver, { passive: true });
-
     const handleMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
       scheduleUpdate();
       const now = Date.now();
       if (now - debounceRef.current > 300) {
         debounceRef.current = now;
-        if (!clickableRef.current) {
-          colorRef.current = getVisualBrightness(e.clientX, e.clientY) > 128 ? 'dark' : 'light';
+        const lum = getVisualBrightness(e.clientX, e.clientY);
+        const shouldBe = lum > 128 ? 'dark' : 'light';
+        if (shouldBe !== colorRef.current) {
+          colorRef.current = shouldBe;
           applyColor();
         }
       }
@@ -146,12 +97,12 @@ export default function CursorGlow() {
 
     const handleDown = () => {
       isDownRef.current = true;
-      if (!clickableRef.current) gsap.to(scaleRef.current, { value: 1, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
+      gsap.to(scaleRef.current, { value: 1, duration: 0.15, ease: 'power2.out', overwrite: true, onUpdate: scheduleUpdate });
     };
     const handleUp = () => {
       if (!isDownRef.current) return;
       isDownRef.current = false;
-      if (!clickableRef.current) gsap.to(scaleRef.current, { value: 0.5, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
+      gsap.to(scaleRef.current, { value: 0.5, duration: 0.6, ease: 'elastic.out(1.2, 0.3)', overwrite: true, onUpdate: scheduleUpdate });
     };
 
     document.addEventListener('mousemove', handleMove, { passive: true });
@@ -162,10 +113,8 @@ export default function CursorGlow() {
       document.removeEventListener('mousedown', handleDown);
       document.removeEventListener('mouseup', handleUp);
       document.removeEventListener('hermes:theme-toggle', onThemeToggle);
-      document.removeEventListener('mouseover', handleOver);
       observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (ringAnimRef.current) ringAnimRef.current.kill();
     };
   }, [scheduleUpdate]);
 
@@ -177,14 +126,6 @@ export default function CursorGlow() {
         willChange: 'transform', mixBlendMode: 'screen',
         background: 'radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 40%, transparent 70%)',
         opacity: 0, transition: 'opacity 0.3s ease', transform: 'translate(-100px, -100px)',
-      }} />
-      {/* Ripple ring */}
-      <div ref={ringRef} aria-hidden style={{
-        position: 'fixed', top: 0, left: 0, width: 32, height: 32,
-        borderRadius: '50%', pointerEvents: 'none', zIndex: 200,
-        willChange: 'transform, opacity',
-        border: '1.5px solid rgba(245, 158, 11, 0.5)',
-        opacity: 0, transform: 'translate(-100px, -100px) scale(0.6)',
       }} />
       <div ref={dotRef} aria-hidden className="cursor-dot" style={{
         position: 'fixed', top: 0, left: 0, width: 20, height: 20,
