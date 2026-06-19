@@ -8,7 +8,8 @@ function getVisualBrightness(x: number, y: number): number {
   if (!el) return 0;
   const isDarkMode = document.documentElement.classList.contains('dark');
   let node: Element | null = el;
-  while (node) {
+  let depth = 0;
+  while (node && depth < 15) {
     const cs = window.getComputedStyle(node);
     const bg = cs.backgroundColor;
     const hasGlass = cs.backdropFilter !== 'none' && cs.backdropFilter !== '';
@@ -16,6 +17,8 @@ function getVisualBrightness(x: number, y: number): number {
       const m = bg.match(/[\d.]+/g);
       if (m && m.length >= 4) {
         const r = parseFloat(m[0]), g = parseFloat(m[1]), b = parseFloat(m[2]), a = parseFloat(m[3]);
+        const lum = 0.299 * (r * a + 128 * (1 - a)) + 0.587 * (g * a + 128 * (1 - a)) + 0.114 * (b * a + 128 * (1 - a));
+        if (depth < 5) console.log(`[BRIGHT] tag=${node.tagName} class="${node.className?.slice(0,40)}" bg=${bg} glass=${hasGlass} lum=${lum.toFixed(0)}`);
         if (hasGlass && a < 0.15) return isDarkMode ? 20 : 220;
         const bgR = isDarkMode ? 10 : 250, bgG = isDarkMode ? 10 : 250, bgB = isDarkMode ? 12 : 250;
         return 0.299 * (r * a + bgR * (1 - a)) + 0.587 * (g * a + bgG * (1 - a)) + 0.114 * (b * a + bgB * (1 - a));
@@ -23,6 +26,7 @@ function getVisualBrightness(x: number, y: number): number {
       if (m && m.length >= 3) return 0.299 * parseFloat(m[0]) + 0.587 * parseFloat(m[1]) + 0.114 * parseFloat(m[2]);
     }
     node = node.parentElement;
+    depth++;
   }
   return isDarkMode ? 10 : 240;
 }
