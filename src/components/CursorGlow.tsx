@@ -74,7 +74,7 @@ export default function CursorGlow() {
   const colorRef = useRef<'dark' | 'light'>('dark');
   const debounceRef = useRef<number>(0);
   const isTextRef = useRef(false);
-  const morphRef = useRef({ scaleY: 1, width: 32, borderRadius: 50 });
+  const morphRef = useRef({ height: 32, width: 32, borderRadius: 50 });
 
   // Main render loop — dot is always instant (no interpolation)
   const scheduleUpdate = useCallback(() => {
@@ -84,9 +84,9 @@ export default function CursorGlow() {
       const s = scaleRef.current.value;
       const m = morphRef.current;
       const w = m.width;
-      const h = 20 * m.scaleY;
+      const h = m.height;
       // Glow follows with slight lag (purely decorative)
-      if (glowRef.current) glowRef.current.style.transform = `translate(${x - 25}px, ${y - 25}px)`;
+      if (glowRef.current) glowRef.current.style.transform = `translate(${x - 32}px, ${y - 32}px)`;
       // Dot/cursor follows INSTANTLY — no lag
       if (dotRef.current) {
         dotRef.current.style.transform = `translate(${x - w / 2}px, ${y - h / 2}px) scale(${s})`;
@@ -126,7 +126,7 @@ export default function CursorGlow() {
       isTextRef.current = true;
       applyColor();
       gsap.to(morphRef.current, {
-        width: 7, scaleY: 1.6, borderRadius: 50,
+        width: 7, height: 40, borderRadius: 50,
         duration: 0.35, ease: 'elastic.out(1, 0.5)', overwrite: true,
         onUpdate: scheduleUpdate,
       });
@@ -137,7 +137,7 @@ export default function CursorGlow() {
       isTextRef.current = false;
       applyColor();
       gsap.to(morphRef.current, {
-        width: 32, scaleY: 1, borderRadius: 50,
+        width: 32, height: 32, borderRadius: 50,
         duration: 0.4, ease: 'elastic.out(1.2, 0.4)', overwrite: true,
         onUpdate: scheduleUpdate,
       });
