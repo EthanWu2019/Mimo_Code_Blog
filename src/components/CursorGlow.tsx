@@ -58,8 +58,8 @@ function isTextElement(el: Element | null): boolean {
 }
 
 const DOT_SIZE = 22;
-const IBEAM_W = 5;
-const IBEAM_H = 34;
+const IBEAM_W = 8;
+const IBEAM_H = 38;
 
 export default function CursorGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
@@ -124,8 +124,8 @@ export default function CursorGlow() {
       console.log('[CURSOR] morphToText: animating to', IBEAM_W, 'x', IBEAM_H);
       gsap.to(shape, {
         w: IBEAM_W, h: IBEAM_H,
-        duration: 0.35,
-        ease: 'elastic.out(1, 0.5)',
+        duration: 0.25,
+        ease: 'back.out(2)',
         overwrite: true,
         onUpdate() {
           wRef.current = shape.w;
@@ -143,8 +143,8 @@ export default function CursorGlow() {
       console.log('[CURSOR] morphToDot: animating to', DOT_SIZE, 'x', DOT_SIZE);
       gsap.to(shape, {
         w: DOT_SIZE, h: DOT_SIZE,
-        duration: 0.4,
-        ease: 'elastic.out(1.2, 0.4)',
+        duration: 0.2,
+        ease: 'back.out(2)',
         overwrite: true,
         onUpdate() {
           wRef.current = shape.w;
