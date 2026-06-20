@@ -203,11 +203,11 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section — extends behind navbar to page top */}
       <section
-        className="relative -mt-[72px] min-h-[calc(80vh+72px)] flex items-center justify-center overflow-hidden dark:bg-[#0a0a0b]"
+        className="relative -mt-[72px] min-h-[calc(100vh+72px)] flex items-center justify-center overflow-hidden dark:bg-[#0a0a0b]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="absolute inset-0 bg-black/40 dark:bg-black/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-black/60 dark:bg-black/20 pointer-events-none" />
 
         {/* Featured images grid with auto-rotation */}
         <AnimatePresence mode="wait">
@@ -289,16 +289,16 @@ export default function GalleryPage() {
         </motion.div>
       </section>
 
-      {/* Sticky Filter Bar */}
-      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-white/80 dark:bg-[#0a0a0b]/90 border-b border-zinc-200 dark:border-white/[0.06]">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
+      {/* Sticky Filter Bar — floating pill like navbar */}
+      <div className="sticky top-[72px] z-40 flex justify-center px-4 py-3">
+        <div className="glass-nav-acrylic rounded-full px-5 py-2.5 flex items-center gap-3 max-w-3xl">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               onClick={() => setActiveTag(null)}
-              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
+              className={`px-3 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
                 activeTag === null
-                  ? 'bg-[#bf5af2] text-white shadow-lg shadow-[#bf5af2]/20'
-                  : 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-[#bf5af2] text-white shadow-sm shadow-[#bf5af2]/20'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               All
@@ -307,33 +307,33 @@ export default function GalleryPage() {
               <button
                 key={tag}
                 onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
+                className={`px-3 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
                   activeTag === tag
-                    ? 'bg-[#bf5af2] text-white shadow-lg shadow-[#bf5af2]/20'
-                    : 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-zinc-200'
+                    ? 'bg-[#bf5af2] text-white shadow-sm shadow-[#bf5af2]/20'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 {tag}
               </button>
             ))}
           </div>
-          <div className="flex items-center bg-white/50 dark:bg-white/[0.04] backdrop-blur-md rounded-lg border border-zinc-200/60 dark:border-white/[0.06] p-0.5 relative">
-            <div
-              className="absolute top-0.5 bottom-0.5 rounded-md bg-white dark:bg-white/[0.1] shadow-sm transition-all duration-300 ease-out"
-              style={{ left: sortBy === 'date' ? '2px' : '50%', width: 'calc(50% - 2px)' }}
-            />
+          <div className="w-px h-5 bg-zinc-200 dark:bg-white/10 mx-1" />
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setSortBy('date')}
-              className="relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-200 rounded-md w-1/2 text-center"
-              style={{ color: sortBy === 'date' ? 'var(--sort-active)' : undefined }}
+              className={`px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+                sortBy === 'date' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
+              }`}
             >
-              <span className={sortBy === 'date' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}>Date</span>
+              Date
             </button>
             <button
               onClick={() => setSortBy('category')}
-              className="relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-200 rounded-md w-1/2 text-center"
+              className={`px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+                sortBy === 'category' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
+              }`}
             >
-              <span className={sortBy === 'category' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}>Category</span>
+              Category
             </button>
           </div>
         </div>

@@ -122,32 +122,32 @@ export default function PhotographyPage() {
   return (
     <div className="min-h-screen">
       {/* ═══ Hero — always visible ═══ */}
-      <section className="relative -mt-[72px] h-[calc(92vh+72px)] overflow-hidden bg-black dark:bg-[#0a0a0b]">
+      <section className="relative -mt-[72px] h-[calc(92vh+72px)] overflow-hidden bg-zinc-100 dark:bg-[#0a0a0b]">
         <FilmGrain />
         {/* Featured photo background */}
         <AnimatePresence mode="wait">
           <motion.div
             key={featuredPhotos[0].id}
-            initial={{ scale: 1.1, opacity: 0 }}
+            initial={{ scale: 1.05, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
-            className="absolute inset-0"
+            className="absolute inset-12 md:inset-20 lg:inset-28 z-[1]"
           >
             <img
               src={featuredPhotos[0].imageUrl}
               alt={featuredPhotos[0].title}
-              className="w-full h-full object-cover opacity-50"
+              className="w-full h-full object-cover rounded-lg opacity-60 dark:opacity-50"
               draggable={false}
               onContextMenu={e => e.preventDefault()}
             />
           </motion.div>
         </AnimatePresence>
         {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent z-[2]" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent z-[2]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-100 via-transparent to-transparent dark:from-[#0a0a0b] dark:via-transparent dark:to-transparent z-[2]" />
+        <div className="absolute inset-0  z-[2]" />
         {/* Letterbox bars (cinematic) */}
-        <div className="absolute top-0 left-0 right-0 h-12 bg-black z-[3]" />
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-black z-[3]" />
+        <div className="absolute top-0 left-0 right-0 h-12 bg-zinc-100 dark:bg-[#0a0a0b] z-[3]" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-zinc-100 dark:bg-[#0a0a0b] z-[3]" />
         {/* Hero content */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -156,26 +156,26 @@ export default function PhotographyPage() {
           className="absolute bottom-24 left-0 right-0 z-[4] px-8 max-w-7xl mx-auto"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-[1px] bg-amber-400" />
-            <span className="text-xs uppercase tracking-[0.3em] text-amber-400 font-medium">Ethan&apos;s Blog · Photography</span>
+            <div className="w-8 h-[1px] bg-amber-500 dark:bg-amber-400" />
+            <span className="text-xs uppercase tracking-[0.3em] text-amber-500 dark:text-amber-400 font-medium">Ethan&apos;s Blog · Photography</span>
           </div>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[0.95]">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-zinc-900 dark:text-white tracking-tight leading-[0.95]">
             Through<br />
-            <span className="text-zinc-400">the Lens</span>
+            <span className="text-zinc-500 dark:text-zinc-400">the Lens</span>
           </h1>
-          <p className="mt-4 text-zinc-400 text-lg max-w-lg">
+          <p className="mt-4 text-zinc-600 dark:text-zinc-400 text-lg max-w-lg">
             Capturing moments between light and shadow
           </p>
         </motion.div>
         {/* Camera frame corners */}
-        <div className="absolute top-16 left-6 w-12 h-12 border-l-2 border-t-2 border-white/20 z-[5]" />
-        <div className="absolute top-16 right-6 w-12 h-12 border-r-2 border-t-2 border-white/20 z-[5]" />
-        <div className="absolute bottom-16 left-6 w-12 h-12 border-l-2 border-b-2 border-white/20 z-[5]" />
-        <div className="absolute bottom-16 right-6 w-12 h-12 border-r-2 border-b-2 border-white/20 z-[5]" />
+        <div className="absolute top-16 left-6 w-12 h-12 border-l-2 border-t-2 border-zinc-300 dark:border-white/20 z-[5]" />
+        <div className="absolute top-16 right-6 w-12 h-12 border-r-2 border-t-2 border-zinc-300 dark:border-white/20 z-[5]" />
+        <div className="absolute bottom-16 left-6 w-12 h-12 border-l-2 border-b-2 border-zinc-300 dark:border-white/20 z-[5]" />
+        <div className="absolute bottom-16 right-6 w-12 h-12 border-r-2 border-b-2 border-zinc-300 dark:border-white/20 z-[5]" />
       </section>
 
       {/* ═══ Category Filmstrip ═══ */}
-      <section className="bg-black dark:bg-[#0a0a0b] py-6 border-b border-white/[0.06]">
+      <section className="bg-zinc-100 dark:bg-[#0a0a0b] py-6 border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
             <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 mr-2 flex-shrink-0">Filter</span>
@@ -196,65 +196,8 @@ export default function PhotographyPage() {
         </div>
       </section>
 
-      {/* ═══ Featured Filmstrip (horizontal scroll) ═══ */}
-      <section className="bg-black dark:bg-[#0a0a0b] py-12 relative overflow-hidden">
-        <FilmGrain />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-amber-500" />
-            <span className="text-xs uppercase tracking-[0.2em] text-zinc-500">Featured</span>
-            <div className="flex-1 h-[1px] bg-white/[0.06]" />
-          </div>
-        </div>
-        {loading ? (
-          <div className="flex gap-4 px-4 sm:px-6 pb-4">
-            {[320, 400, 360, 340, 380].map((w, i) => (
-              <div key={i} className="flex-shrink-0 rounded-lg overflow-hidden relative bg-white/[0.02]" style={{ width: w, height: w * 0.667 }}>
-                <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
-              </div>
-            ))}
-          </div>
-        ) : (
-        <div ref={filmstripRef} className="flex gap-4 overflow-x-auto scrollbar-hide px-4 sm:px-6 pb-4 snap-x snap-mandatory">
-          {featuredPhotos.map((photo, i) => (
-            <motion.div
-              key={photo.id}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              className="flex-shrink-0 snap-center group cursor-pointer"
-              onClick={() => openLightbox(photo)}
-            >
-              <div className="relative w-[320px] md:w-[400px] aspect-[3/2] rounded-lg overflow-hidden bg-zinc-900">
-                <img
-                  src={photo.imageUrl}
-                  alt={photo.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  draggable={false}
-                  onContextMenu={e => e.preventDefault()}
-                />
-                {/* Film frame border */}
-                <div className="absolute inset-0 border-2 border-white/[0.06] rounded-lg pointer-events-none" />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-white font-medium text-sm">{photo.title}</p>
-                    <p className="text-zinc-400 text-xs mt-0.5">{photo.camera} · {photo.aperture}</p>
-                  </div>
-                </div>
-                {/* Frame number */}
-                <div className="absolute top-3 right-3 text-[10px] font-mono text-white/30">
-                  {String(i + 1).padStart(2, '0')}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        )}
-      </section>
-
       {/* ═══ Photo Grid ═══ */}
-      <section className="bg-[#0a0a0b] py-16">
+      <section className="bg-zinc-50 dark:bg-[#0a0a0b] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-3 mb-10">
             <div className="w-2 h-2 rounded-full bg-amber-500" />
@@ -282,7 +225,7 @@ export default function PhotographyPage() {
                   className="group cursor-pointer"
                   onClick={() => openLightbox(photo)}
                 >
-                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900">
+                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-zinc-200 dark:bg-zinc-900">
                     <img
                       src={photo.imageUrl}
                       alt={photo.title}
@@ -291,7 +234,7 @@ export default function PhotographyPage() {
                       onContextMenu={e => e.preventDefault()}
                     />
                     {/* Film border */}
-                    <div className="absolute inset-0 border border-white/[0.04] rounded-xl pointer-events-none" />
+                    <div className="absolute inset-0 border border-zinc-300/50 dark:border-white/[0.04] rounded-xl pointer-events-none" />
                     {/* Info overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
                       <div className="absolute bottom-0 left-0 right-0 p-5">
@@ -300,7 +243,7 @@ export default function PhotographyPage() {
                             {photo.category}
                           </span>
                         </div>
-                        <h3 className="text-white font-semibold text-lg">{photo.title}</h3>
+                        <h3 className="text-zinc-900 dark:text-white font-semibold text-lg">{photo.title}</h3>
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           <ExifBadge icon="📷" value={photo.camera} />
                           <ExifBadge icon="◉" value={photo.aperture} />
@@ -313,7 +256,7 @@ export default function PhotographyPage() {
                       </div>
                     </div>
                     {/* Frame number */}
-                    <div className="absolute top-3 left-3 text-[10px] font-mono text-white/20 group-hover:text-white/40 transition-colors">
+                    <div className="absolute top-3 left-3 text-[10px] font-mono text-zinc-400/50 dark:text-white/20 group-hover:text-zinc-600 dark:group-hover:text-white/40 transition-colors">
                       {String(i + 1).padStart(2, '0')}
                     </div>
                   </div>
@@ -430,13 +373,13 @@ function PhotographySkeleton() {
   }, []);
 
   return (
-    <div ref={ref} className="min-h-screen bg-black dark:bg-[#0a0a0b]">
+    <div ref={ref} className="min-h-screen bg-zinc-100 dark:bg-[#0a0a0b]">
       {/* Hero skeleton */}
-      <section className="relative -mt-[72px] h-[calc(92vh+72px)] overflow-hidden bg-zinc-900">
+      <section className="relative -mt-[72px] h-[calc(92vh+72px)] overflow-hidden bg-zinc-200 dark:bg-zinc-900">
         <div className="absolute inset-0 shimmer-bar bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
         {/* Letterbox bars */}
-        <div className="absolute top-0 left-0 right-0 h-12 bg-black z-[3]" />
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-black z-[3]" />
+        <div className="absolute top-0 left-0 right-0 h-12 bg-zinc-100 dark:bg-[#0a0a0b] z-[3]" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-zinc-100 dark:bg-[#0a0a0b] z-[3]" />
         {/* Camera frame corners */}
         <div className="absolute top-16 left-6 w-12 h-12 border-l-2 border-t-2 border-white/10 z-[5]" />
         <div className="absolute top-16 right-6 w-12 h-12 border-r-2 border-t-2 border-white/10 z-[5]" />
@@ -456,7 +399,7 @@ function PhotographySkeleton() {
         </div>
       </section>
       {/* Category bar skeleton */}
-      <section className="bg-black dark:bg-[#0a0a0b] py-6 border-b border-white/[0.06]">
+      <section className="bg-zinc-100 dark:bg-[#0a0a0b] py-6 border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-3">
           {[48, 56, 64, 44, 52].map((w, i) => (
             <div key={i} className="rounded-lg overflow-hidden relative flex-shrink-0" style={{ width: w, height: 36 }}>
@@ -466,7 +409,7 @@ function PhotographySkeleton() {
         </div>
       </section>
       {/* Filmstrip skeleton */}
-      <section className="bg-black dark:bg-[#0a0a0b] py-12">
+      <section className="bg-zinc-100 dark:bg-[#0a0a0b] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6 flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-white/[0.06]" />
           <div className="w-16 h-3 rounded bg-white/[0.04] overflow-hidden relative">
@@ -483,7 +426,7 @@ function PhotographySkeleton() {
         </div>
       </section>
       {/* Grid skeleton */}
-      <section className="bg-[#0a0a0b] py-16">
+      <section className="bg-zinc-50 dark:bg-[#0a0a0b] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
