@@ -120,12 +120,16 @@ body {
 }
 
 /* Dark navbar when over dark hero sections (Gallery, Photography) */
+/* Transparent so hero shows through — no color mismatch */
 .nav-over-dark-hero {
-  background: rgba(15, 15, 18, 0.65) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
-.nav-over-dark-hero * {
+.nav-over-dark-hero a,
+.nav-over-dark-hero button,
+.nav-over-dark-hero span,
+.nav-over-dark-hero svg {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 

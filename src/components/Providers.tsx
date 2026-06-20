@@ -63,15 +63,15 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
       e.preventDefault();
       isAnimating.current = true;
       pendingHref.current = href;
-      // Determine overlay text based on destination
-      if (href === '/') pendingPageName.current = "Ethan's Blog";
-      else if (href === '/blog') pendingPageName.current = "Ethan's Blog | Blog";
-      else if (href === '/podcast') pendingPageName.current = "Ethan's Blog | Podcast";
-      else if (href === '/gallery') pendingPageName.current = "Ethan's Blog | Gallery";
-      else if (href === '/photography') pendingPageName.current = "Ethan's Blog | Photography";
-      else if (href === '/profile') pendingPageName.current = "Ethan's Blog | Profile";
-      else if (href.startsWith('/posts/')) pendingPageName.current = "Ethan's Blog | Article";
-      else pendingPageName.current = "Ethan's Blog";
+      // Determine overlay right-side text based on destination
+      if (href === '/') pendingPageName.current = "Home";
+      else if (href === '/blog') pendingPageName.current = "Blog";
+      else if (href === '/podcast') pendingPageName.current = "Podcast";
+      else if (href === '/gallery') pendingPageName.current = "Gallery";
+      else if (href === '/photography') pendingPageName.current = "Photography";
+      else if (href === '/profile') pendingPageName.current = "Profile";
+      else if (href.startsWith('/posts/')) pendingPageName.current = "Article";
+      else pendingPageName.current = "";
 
       const ov = overlayRef.current;
       const ct = contentRef.current;
@@ -119,11 +119,14 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
         className="fixed inset-0 z-[100] items-center justify-center pointer-events-none"
         style={{ display: 'none', background: 'var(--background)' }}
       >
-        <div ref={contentRef} className="flex flex-col items-center" style={{ opacity: 0 }}>
-          <span ref={textRef} className="text-xl font-medium tracking-tight select-none" style={{ color: 'var(--foreground)' }}>
-            Ethan's Blog
+        <div ref={contentRef} className="flex items-center" style={{ opacity: 0 }}>
+          <span className="text-xl font-medium tracking-tight select-none text-right" style={{ color: 'var(--foreground)', minWidth: '140px' }}>
+            Ethan&apos;s Blog
           </span>
-          <div className="mt-3 h-px w-10" style={{ background: 'var(--foreground)', opacity: 0.2 }} />
+          <span className="text-xl font-light mx-4 select-none" style={{ color: 'var(--foreground)', opacity: 0.4 }}>|</span>
+          <span ref={textRef} className="text-xl font-medium tracking-tight select-none text-left" style={{ color: 'var(--foreground)', minWidth: '140px' }}>
+            Blog
+          </span>
         </div>
       </div>
     </>
