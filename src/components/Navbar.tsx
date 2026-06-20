@@ -11,13 +11,11 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isCompact, setIsCompact] = useState(false);
-  const [overDarkHero, setOverDarkHero] = useState(false);
   const pathname = usePathname();
   const isBlog = pathname === '/blog';
   const isPost = pathname.startsWith('/posts/');
   const isGallery = pathname === '/gallery';
   const isPhotography = pathname === '/photography';
-  const hasDarkHero = isGallery || isPhotography;
 
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
@@ -29,20 +27,10 @@ export default function Navbar() {
       if (isPost) setIsCompact(y > 30);
       else if (isBlog || isGallery || isPhotography) setIsCompact(y > window.innerHeight * 0.8);
       else setIsCompact(false);
-      // Track if navbar is over dark hero
-      if (hasDarkHero) {
-        setOverDarkHero(y < window.innerHeight * 0.7);
-      }
     };
-    // Set initial state for dark hero pages
-    if (hasDarkHero) {
-      setOverDarkHero(true);
-    } else {
-      setOverDarkHero(false);
-    }
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [isPost, isBlog, isGallery, isPhotography, hasDarkHero]);
+  }, [isPost, isBlog, isGallery, isPhotography]);
 
   const userImage = avatar || (session?.user as any)?.image;
 
@@ -57,7 +45,7 @@ export default function Navbar() {
       <div className="h-[72px]" />
       <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3">
         <div
-          className={`glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full ${overDarkHero ? 'nav-over-dark-hero' : ''}`}
+          className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
           style={{
             maxWidth: getMaxWidth(),
             transition: 'max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',

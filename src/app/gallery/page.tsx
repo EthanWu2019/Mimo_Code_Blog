@@ -201,9 +201,9 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section — always visible, even during loading */}
+      {/* Hero Section — extends behind navbar to page top */}
       <section
-        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden dark:bg-[#0a0a0b]"
+        className="relative -mt-[72px] min-h-[calc(80vh+72px)] flex items-center justify-center overflow-hidden dark:bg-[#0a0a0b]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >

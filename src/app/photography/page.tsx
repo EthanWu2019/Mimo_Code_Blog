@@ -122,7 +122,7 @@ export default function PhotographyPage() {
   return (
     <div className="min-h-screen">
       {/* ═══ Hero — always visible ═══ */}
-      <section className="relative h-[92vh] overflow-hidden bg-black dark:bg-[#0a0a0b]">
+      <section className="relative -mt-[72px] h-[calc(92vh+72px)] overflow-hidden bg-black dark:bg-[#0a0a0b]">
         <FilmGrain />
         {/* Featured photo background */}
         <AnimatePresence mode="wait">
@@ -432,7 +432,7 @@ function PhotographySkeleton() {
   return (
     <div ref={ref} className="min-h-screen bg-black dark:bg-[#0a0a0b]">
       {/* Hero skeleton */}
-      <section className="relative h-[92vh] overflow-hidden bg-zinc-900">
+      <section className="relative -mt-[72px] h-[calc(92vh+72px)] overflow-hidden bg-zinc-900">
         <div className="absolute inset-0 shimmer-bar bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
         {/* Letterbox bars */}
         <div className="absolute top-0 left-0 right-0 h-12 bg-black z-[3]" />
