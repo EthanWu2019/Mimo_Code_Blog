@@ -201,92 +201,74 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section — extends behind navbar to page top */}
+      {/* Hero Section — gallery canvas style */}
       <section
-        className="relative -mt-[72px] min-h-[calc(100vh+72px)] flex items-center justify-center overflow-hidden dark:bg-[#0a0a0b]"
+        className="relative -mt-[72px] min-h-[calc(85vh+72px)] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="absolute inset-0 bg-black/60 dark:bg-black/20 pointer-events-none" />
-
-        {/* Featured images grid with auto-rotation */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-            className="absolute inset-0 gap-3 p-8"
-          >
-            {(() => {
-              // 4 different hero layouts, randomly picked per slide
-              const layouts = [
-                // Layout 0: Big left (4col×2row, first spans 2×2)
-                { grid: 'grid grid-cols-4 grid-rows-2', classes: ['col-span-2 row-span-2', '', '', '', ''] },
-                // Layout 1: Big right (4col×2row, last big)
-                { grid: 'grid grid-cols-4 grid-rows-2', classes: ['', '', '', 'col-start-3 col-span-2 row-span-2', ''] },
-                // Layout 2: Top hero + bottom 3 (4col×2row)
-                { grid: 'grid grid-cols-4 grid-rows-2', classes: ['col-span-2 row-span-2', 'col-start-3', 'col-start-4', 'col-start-3 row-start-2', 'col-start-4 row-start-2'] },
-                // Layout 3: Center big (5col×2row)
-                { grid: 'grid grid-cols-5 grid-rows-2', classes: ['', '', 'col-start-2 col-span-2 row-span-2', '', ''] },
-              ];
-              const layout = layouts[currentSlide % layouts.length];
-              return (
-                <div className={layout.grid + ' w-full h-full'}>
-                  {currentGroup.slice(0, 5).map((item, i) => (
-                    <div
-                      key={item.id}
-                      className={`relative rounded-xl overflow-hidden ${layout.classes[i] || ''}`}
-                      onContextMenu={(e) => e.preventDefault()}
-                    >
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        draggable={false}
-                        className="w-full h-full object-cover select-none pointer-events-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-          </motion.div>
-        </AnimatePresence>
-
         {/* Slide indicators */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        <div className="absolute top-[96px] left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {heroGroups.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentSlide(i)}
-              className={`h-1.5 rounded-full transition-all duration-500 ${
+              className={`h-1 rounded-full transition-all duration-500 ${
                 i === currentSlide
-                  ? 'w-8 bg-[#bf5af2]'
-                  : 'w-3 bg-white/30 hover:bg-white/50'
+                  ? 'w-6 bg-[#bf5af2]'
+                  : 'w-2.5 bg-zinc-300 dark:bg-white/20 hover:bg-zinc-400 dark:hover:bg-white/40'
               }`}
             />
           ))}
         </div>
 
-        {/* Hero content */}
+        {/* Hero content — title above image */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="relative z-10 text-center"
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="relative z-10 text-center mb-8"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/[0.1] mb-6">
-            <div className="w-2 h-2 rounded-full bg-[#bf5af2] animate-pulse" />
-            <span className="text-sm text-zinc-300">Ethan&apos;s Blog · Gallery</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] mb-4">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#bf5af2] animate-pulse" />
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Ethan&apos;s Blog · Gallery</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold text-white tracking-tight">
-            AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#bf5af2] to-purple-300">Gallery</span>
+          <h1 className="text-5xl md:text-7xl font-bold text-zinc-900 dark:text-white tracking-tight">
+            AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#bf5af2] to-purple-400">Gallery</span>
           </h1>
-          <p className="mt-4 text-lg text-zinc-300 max-w-2xl mx-auto px-4">
-            Exploring the intersection of artificial intelligence and artistic expression
-          </p>
         </motion.div>
+
+        {/* Featured artwork — framed like a gallery print */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            className="relative z-10 w-full max-w-4xl mx-auto px-8"
+          >
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/30 border border-zinc-200 dark:border-white/[0.06]"
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              <img
+                src={currentGroup[0].imageUrl}
+                alt={currentGroup[0].title}
+                draggable={false}
+                className="w-full aspect-[16/9] object-cover select-none pointer-events-none"
+              />
+              {/* Image info overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/60 to-transparent">
+                <p className="text-white text-sm font-medium">{currentGroup[0].title}</p>
+                <p className="text-zinc-300 text-xs mt-0.5">{currentGroup[0].subtitle}</p>
+              </div>
+            </div>
+            {/* Caption below */}
+            <p className="text-center text-zinc-400 dark:text-zinc-500 text-xs mt-3">
+              {currentGroup[0].tags.join(' · ')}
+            </p>
+          </motion.div>
+        </AnimatePresence>
       </section>
 
       {/* Sticky Filter Bar — floating pill like navbar */}

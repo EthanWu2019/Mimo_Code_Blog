@@ -131,7 +131,7 @@ export default function PhotographyPage() {
             initial={{ scale: 1.05, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
-            className="absolute inset-12 md:inset-20 lg:inset-28 z-[1]"
+            className="absolute inset-10 md:inset-16 lg:inset-24 z-[1]"
           >
             <img
               src={featuredPhotos[0].imageUrl}
