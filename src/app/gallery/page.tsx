@@ -312,30 +312,24 @@ export default function GalleryPage() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-zinc-400 dark:text-zinc-500">Sort by</span>
-            <div className="flex rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.08]">
-              <button
-                onClick={() => setSortBy('date')}
-                className={`px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
-                  sortBy === 'date'
-                    ? 'bg-[#bf5af2] text-white'
-                    : 'bg-transparent text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.04]'
-                }`}
-              >
-                📅 Date
-              </button>
-              <button
-                onClick={() => setSortBy('category')}
-                className={`px-4 py-1.5 text-xs font-medium transition-all duration-200 border-l border-zinc-200 dark:border-white/[0.08] ${
-                  sortBy === 'category'
-                    ? 'bg-[#bf5af2] text-white'
-                    : 'bg-transparent text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.04]'
-                }`}
-              >
-                🏷️ Category
-              </button>
-            </div>
+          <div className="flex items-center bg-white/50 dark:bg-white/[0.04] backdrop-blur-md rounded-lg border border-zinc-200/60 dark:border-white/[0.06] p-0.5 relative">
+            <div
+              className="absolute top-0.5 bottom-0.5 rounded-md bg-white dark:bg-white/[0.1] shadow-sm transition-all duration-300 ease-out"
+              style={{ left: sortBy === 'date' ? '2px' : '50%', width: 'calc(50% - 2px)' }}
+            />
+            <button
+              onClick={() => setSortBy('date')}
+              className="relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-200 rounded-md w-1/2 text-center"
+              style={{ color: sortBy === 'date' ? 'var(--sort-active)' : undefined }}
+            >
+              <span className={sortBy === 'date' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}>Date</span>
+            </button>
+            <button
+              onClick={() => setSortBy('category')}
+              className="relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-200 rounded-md w-1/2 text-center"
+            >
+              <span className={sortBy === 'category' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}>Category</span>
+            </button>
           </div>
         </div>
       </div>
