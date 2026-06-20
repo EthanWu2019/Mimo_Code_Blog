@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import GallerySkeleton from '@/components/GallerySkeleton';
+import gsap from 'gsap';
 
 interface GalleryItem {
   id: string;
@@ -148,6 +148,15 @@ export default function GalleryPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Init shimmer animations for skeleton bars
+  useEffect(() => {
+    if (!loading) return;
+    const bars = document.querySelectorAll('.shimmer-bar');
+    bars.forEach((el, i) => {
+      gsap.fromTo(el, { x: '-100%' }, { x: '200%', duration: 1.5, ease: 'none', repeat: -1, delay: i * 0.08 });
+    });
+  }, [loading]);
+
   useEffect(() => {
     const stored = localStorage.getItem('gallery-likes');
     if (stored) setLikes(JSON.parse(stored));
@@ -188,21 +197,17 @@ export default function GalleryPage() {
     };
   }, [isPaused, loading]);
 
-  if (loading) {
-    return <GallerySkeleton />;
-  }
-
   const currentGroup = heroGroups[currentSlide] || heroGroups[0];
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section — always visible, even during loading */}
       <section
-        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-zinc-100 dark:bg-zinc-950"
+        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden dark:bg-zinc-950"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/60 dark:from-black/20 dark:via-transparent dark:to-black/50 pointer-events-none" />
+        <div className="absolute inset-0 bg-black/40 dark:bg-black/20 pointer-events-none" />
 
         {/* Featured images grid with auto-rotation */}
         <AnimatePresence mode="wait">
@@ -271,14 +276,14 @@ export default function GalleryPage() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="relative z-10 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/60 dark:bg-white/[0.08] backdrop-blur-xl border border-zinc-200 dark:border-white/[0.1] mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/[0.1] mb-6">
             <div className="w-2 h-2 rounded-full bg-[#bf5af2] animate-pulse" />
-            <span className="text-sm text-zinc-600 dark:text-zinc-300">AI-Generated Collection</span>
+            <span className="text-sm text-zinc-300">Ethan&apos;s Blog · Gallery</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold text-zinc-900 dark:text-white tracking-tight">
+          <h1 className="text-6xl md:text-8xl font-bold text-white tracking-tight">
             AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#bf5af2] to-purple-300">Gallery</span>
           </h1>
-          <p className="mt-4 text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto px-4">
+          <p className="mt-4 text-lg text-zinc-300 max-w-2xl mx-auto px-4">
             Exploring the intersection of artificial intelligence and artistic expression
           </p>
         </motion.div>
@@ -336,6 +341,15 @@ export default function GalleryPage() {
 
       {/* Masonry Grid */}
       <section className="max-w-7xl mx-auto px-4 py-12">
+        {loading ? (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+            {['280px', '360px', '240px', '320px', '260px', '380px'].map((h, i) => (
+              <div key={i} className="mb-4 break-inside-avoid rounded-xl bg-zinc-200/60 dark:bg-white/[0.04] overflow-hidden relative" style={{ height: h }}>
+                <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/60 dark:via-white/[0.06] to-transparent" />
+              </div>
+            ))}
+          </div>
+        ) : (
         <motion.div
           layout
           className="columns-1 sm:columns-2 lg:columns-3 gap-4"
@@ -352,6 +366,7 @@ export default function GalleryPage() {
             ))}
           </AnimatePresence>
         </motion.div>
+        )}
       </section>
 
       {/* Lightbox Modal */}

@@ -83,6 +83,15 @@ export default function PhotographyPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Init shimmer animations for skeleton bars
+  useEffect(() => {
+    if (!loading) return;
+    const bars = document.querySelectorAll('.shimmer-bar');
+    bars.forEach((el, i) => {
+      gsap.fromTo(el, { x: '-100%' }, { x: '200%', duration: 1.5, ease: 'none', repeat: -1, delay: i * 0.08 });
+    });
+  }, [loading]);
+
   const filteredPhotos = activeCategory === 'All' ? photos : photos.filter(p => p.category === activeCategory);
   const featuredPhotos = photos.slice(0, 5);
 
@@ -110,13 +119,9 @@ export default function PhotographyPage() {
     return () => window.removeEventListener('keydown', handler);
   }, [selectedPhoto, navigateLightbox]);
 
-  if (loading) {
-    return <PhotographySkeleton />;
-  }
-
   return (
     <div className="min-h-screen">
-      {/* ═══ Hero ═══ */}
+      {/* ═══ Hero — always visible ═══ */}
       <section className="relative h-[92vh] overflow-hidden bg-black">
         <FilmGrain />
         {/* Featured photo background */}
@@ -152,7 +157,7 @@ export default function PhotographyPage() {
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-[1px] bg-amber-400" />
-            <span className="text-xs uppercase tracking-[0.3em] text-amber-400 font-medium">Photography</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-amber-400 font-medium">Ethan&apos;s Blog · Photography</span>
           </div>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[0.95]">
             Through<br />
@@ -201,6 +206,15 @@ export default function PhotographyPage() {
             <div className="flex-1 h-[1px] bg-white/[0.06]" />
           </div>
         </div>
+        {loading ? (
+          <div className="flex gap-4 px-4 sm:px-6 pb-4">
+            {[320, 400, 360, 340, 380].map((w, i) => (
+              <div key={i} className="flex-shrink-0 rounded-lg overflow-hidden relative bg-white/[0.02]" style={{ width: w, height: w * 0.667 }}>
+                <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+              </div>
+            ))}
+          </div>
+        ) : (
         <div ref={filmstripRef} className="flex gap-4 overflow-x-auto scrollbar-hide px-4 sm:px-6 pb-4 snap-x snap-mandatory">
           {featuredPhotos.map((photo, i) => (
             <motion.div
@@ -236,6 +250,7 @@ export default function PhotographyPage() {
             </motion.div>
           ))}
         </div>
+        )}
       </section>
 
       {/* ═══ Photo Grid ═══ */}
@@ -248,6 +263,13 @@ export default function PhotographyPage() {
             <span className="text-xs text-zinc-600 font-mono">{filteredPhotos.length} photos</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="aspect-[4/3] rounded-xl overflow-hidden relative bg-white/[0.02]">
+                  <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+                </div>
+              ))
+            ) : (
             <AnimatePresence mode="popLayout">
               {filteredPhotos.map((photo, i) => (
                 <motion.div
@@ -298,6 +320,7 @@ export default function PhotographyPage() {
                 </motion.div>
               ))}
             </AnimatePresence>
+            )}
           </div>
         </div>
       </section>
