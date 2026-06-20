@@ -20,10 +20,10 @@ function SkeletonCard({ delay = 0, height }: { delay?: number; height: string })
   return (
     <div ref={ref} className="mb-4 break-inside-avoid">
       <div
-        className="rounded-xl bg-zinc-100 dark:bg-white/[0.04] overflow-hidden relative"
+        className="rounded-xl bg-zinc-200/60 dark:bg-white/[0.04] overflow-hidden relative"
         style={{ height }}
       >
-        <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200/50 dark:via-white/[0.06] to-transparent" />
+        <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/60 dark:via-white/[0.06] to-transparent" />
       </div>
     </div>
   );
@@ -45,44 +45,41 @@ export default function GallerySkeleton() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero skeleton */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div ref={heroRef} className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-3 p-8">
+      {/* Hero skeleton - dark bg so it's visible on white page */}
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-zinc-900 dark:bg-zinc-950">
+        <div ref={heroRef} className="absolute inset-0 grid grid-cols-4 grid-rows-2 gap-3 p-8">
           {['col-span-2 row-span-2', '', '', '', ''].map((span, i) => (
-            <div key={i} className={`${span} rounded-xl bg-zinc-100 dark:bg-white/[0.04] overflow-hidden relative`}>
-              <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200/50 dark:via-white/[0.06] to-transparent" />
+            <div key={i} className={`${span} rounded-xl bg-white/[0.06] overflow-hidden relative`}>
+              <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
             </div>
           ))}
         </div>
         <div className="relative z-10 text-center space-y-4">
-          <div className="mx-auto w-48 h-8 rounded-full bg-zinc-100 dark:bg-white/[0.04] overflow-hidden relative">
-            <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200/50 dark:via-white/[0.06] to-transparent" />
+          <div className="mx-auto w-48 h-7 rounded-full bg-white/[0.08] overflow-hidden relative">
+            <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.1] to-transparent" />
           </div>
-          <div className="mx-auto w-72 h-14 rounded-lg bg-zinc-100 dark:bg-white/[0.04] overflow-hidden relative">
-            <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200/50 dark:via-white/[0.06] to-transparent" />
+          <div className="mx-auto w-72 h-16 rounded-lg bg-white/[0.06] overflow-hidden relative">
+            <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
           </div>
-          <div className="mx-auto w-96 h-5 rounded bg-zinc-100 dark:bg-white/[0.04] overflow-hidden relative">
-            <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200/50 dark:via-white/[0.06] to-transparent" />
+          <div className="mx-auto w-96 h-5 rounded bg-white/[0.05] overflow-hidden relative">
+            <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
           </div>
         </div>
       </section>
 
-      {/* Filter bar skeleton */}
-      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-white/[0.02] border-b border-white/[0.06]">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex gap-2">
-            {[60, 50, 70, 55, 65].map((w, i) => (
-              <div key={i} className="rounded-full bg-zinc-100 dark:bg-white/[0.04] overflow-hidden relative" style={{ width: w, height: 28 }}>
-                <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200/50 dark:via-white/[0.06] to-transparent" />
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <div className="w-12 h-7 rounded-full bg-zinc-100 dark:bg-white/[0.04] overflow-hidden relative">
-              <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200/50 dark:via-white/[0.06] to-transparent" />
+      {/* Filter bar skeleton - glassmorphism card */}
+      <div className="sticky top-[72px] z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between gap-4 px-5 py-4 rounded-2xl bg-white/70 dark:bg-white/[0.04] backdrop-blur-2xl border border-zinc-200/80 dark:border-white/[0.08] shadow-lg">
+            <div className="flex gap-2">
+              {[64, 52, 76, 58, 68].map((w, i) => (
+                <div key={i} className="rounded-xl bg-zinc-200/60 dark:bg-white/[0.04] overflow-hidden relative" style={{ width: w, height: 36 }}>
+                  <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/60 dark:via-white/[0.06] to-transparent" />
+                </div>
+              ))}
             </div>
-            <div className="w-18 h-7 rounded-full bg-zinc-100 dark:bg-white/[0.04] overflow-hidden relative">
-              <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-zinc-200/50 dark:via-white/[0.06] to-transparent" />
+            <div className="w-32 h-10 rounded-xl bg-zinc-200/60 dark:bg-white/[0.04] overflow-hidden relative">
+              <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/60 dark:via-white/[0.06] to-transparent" />
             </div>
           </div>
         </div>

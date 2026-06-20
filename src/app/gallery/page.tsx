@@ -16,20 +16,20 @@ interface GalleryItem {
 }
 
 const galleryData: GalleryItem[] = [
-  { id: 'neural-dreams', title: 'Neural Dreams', subtitle: 'AI-generated abstract landscapes', tags: ['AI Art', 'Landscape'], date: '2025-06-15', imageUrl: 'https://picsum.photos/seed/neural-dreams/800/600', aspectRatio: 'landscape', featured: true },
-  { id: 'digital-portrait', title: 'Digital Portrait', subtitle: 'Machine learning face synthesis', tags: ['AI Art', 'Portrait'], date: '2025-06-10', imageUrl: 'https://picsum.photos/seed/digital-portrait/600/800', aspectRatio: 'portrait', featured: true },
-  { id: 'synth-cityscape', title: 'Synth Cityscape', subtitle: 'Futuristic urban environments', tags: ['Architecture', 'AI Art'], date: '2025-06-05', imageUrl: 'https://picsum.photos/seed/synth-cityscape/800/600', aspectRatio: 'landscape', featured: true },
-  { id: 'abstract-flora', title: 'Abstract Flora', subtitle: 'Botanical patterns via diffusion', tags: ['AI Art', 'Nature'], date: '2025-05-28', imageUrl: 'https://picsum.photos/seed/abstract-flora/700/700', aspectRatio: 'square' },
+  { id: 'neural-dreams', title: 'Neural Dreams', subtitle: 'AI-generated abstract landscapes', tags: ['Landscape'], date: '2025-06-15', imageUrl: 'https://picsum.photos/seed/neural-dreams/800/600', aspectRatio: 'landscape', featured: true },
+  { id: 'digital-portrait', title: 'Digital Portrait', subtitle: 'Machine learning face synthesis', tags: ['Portrait'], date: '2025-06-10', imageUrl: 'https://picsum.photos/seed/digital-portrait/600/800', aspectRatio: 'portrait', featured: true },
+  { id: 'synth-cityscape', title: 'Synth Cityscape', subtitle: 'Futuristic urban environments', tags: ['Architecture'], date: '2025-06-05', imageUrl: 'https://picsum.photos/seed/synth-cityscape/800/600', aspectRatio: 'landscape', featured: true },
+  { id: 'abstract-flora', title: 'Abstract Flora', subtitle: 'Botanical patterns via diffusion', tags: ['Nature'], date: '2025-05-28', imageUrl: 'https://picsum.photos/seed/abstract-flora/700/700', aspectRatio: 'square' },
   { id: 'cyber-portrait', title: 'Cyber Portrait', subtitle: 'Neon-lit character studies', tags: ['Portrait', 'Cyberpunk'], date: '2025-05-20', imageUrl: 'https://picsum.photos/seed/cyber-portrait/600/800', aspectRatio: 'portrait' },
-  { id: 'data-viz', title: 'Data Visualization', subtitle: 'Complex datasets as art', tags: ['Data', 'AI Art'], date: '2025-05-15', imageUrl: 'https://picsum.photos/seed/data-viz/800/600', aspectRatio: 'landscape', featured: true },
-  { id: 'minimal-forms', title: 'Minimal Forms', subtitle: 'Geometric abstraction by AI', tags: ['AI Art', 'Minimal'], date: '2025-05-10', imageUrl: 'https://picsum.photos/seed/minimal-forms/700/700', aspectRatio: 'square' },
-  { id: 'ethereal-space', title: 'Ethereal Space', subtitle: 'Cosmic exploration imagery', tags: ['AI Art', 'Space'], date: '2025-05-05', imageUrl: 'https://picsum.photos/seed/ethereal-space/800/600', aspectRatio: 'landscape' },
-  { id: 'retro-wave', title: 'Retro Wave', subtitle: 'Synthwave aesthetics generated', tags: ['Cyberpunk', 'AI Art'], date: '2025-04-28', imageUrl: 'https://picsum.photos/seed/retro-wave/800/600', aspectRatio: 'landscape' },
-  { id: 'nature-ai', title: 'Nature Reimagined', subtitle: 'AI interpretation of wilderness', tags: ['Nature', 'AI Art'], date: '2025-04-20', imageUrl: 'https://picsum.photos/seed/nature-ai/600/800', aspectRatio: 'portrait' },
-  { id: 'face-study', title: 'Face Study', subtitle: 'Generative portrait series', tags: ['Portrait', 'AI Art'], date: '2025-04-15', imageUrl: 'https://picsum.photos/seed/face-study/700/700', aspectRatio: 'square', featured: true },
+  { id: 'data-viz', title: 'Data Visualization', subtitle: 'Complex datasets as art', tags: ['Data'], date: '2025-05-15', imageUrl: 'https://picsum.photos/seed/data-viz/800/600', aspectRatio: 'landscape', featured: true },
+  { id: 'minimal-forms', title: 'Minimal Forms', subtitle: 'Geometric abstraction by AI', tags: ['Minimal'], date: '2025-05-10', imageUrl: 'https://picsum.photos/seed/minimal-forms/700/700', aspectRatio: 'square' },
+  { id: 'ethereal-space', title: 'Ethereal Space', subtitle: 'Cosmic exploration imagery', tags: ['Space'], date: '2025-05-05', imageUrl: 'https://picsum.photos/seed/ethereal-space/800/600', aspectRatio: 'landscape' },
+  { id: 'retro-wave', title: 'Retro Wave', subtitle: 'Synthwave aesthetics generated', tags: ['Cyberpunk'], date: '2025-04-28', imageUrl: 'https://picsum.photos/seed/retro-wave/800/600', aspectRatio: 'landscape' },
+  { id: 'nature-ai', title: 'Nature Reimagined', subtitle: 'AI interpretation of wilderness', tags: ['Nature'], date: '2025-04-20', imageUrl: 'https://picsum.photos/seed/nature-ai/600/800', aspectRatio: 'portrait' },
+  { id: 'face-study', title: 'Face Study', subtitle: 'Generative portrait series', tags: ['Portrait'], date: '2025-04-15', imageUrl: 'https://picsum.photos/seed/face-study/700/700', aspectRatio: 'square', featured: true },
   { id: 'urban-layers', title: 'Urban Layers', subtitle: 'Multi-exposure city composites', tags: ['Architecture', 'Urban'], date: '2025-04-10', imageUrl: 'https://picsum.photos/seed/urban-layers/800/600', aspectRatio: 'landscape' },
-  { id: 'dreamscapes', title: 'Dreamscapes', subtitle: 'Surreal AI-generated worlds', tags: ['AI Art', 'Surreal'], date: '2025-04-05', imageUrl: 'https://picsum.photos/seed/dreamscapes/800/600', aspectRatio: 'landscape' },
-  { id: 'pixel-art', title: 'Pixel Art Fusion', subtitle: 'Retro meets modern AI', tags: ['AI Art', 'Pixel'], date: '2025-03-28', imageUrl: 'https://picsum.photos/seed/pixel-art/700/700', aspectRatio: 'square' },
+  { id: 'dreamscapes', title: 'Dreamscapes', subtitle: 'Surreal AI-generated worlds', tags: ['Surreal'], date: '2025-04-05', imageUrl: 'https://picsum.photos/seed/dreamscapes/800/600', aspectRatio: 'landscape' },
+  { id: 'pixel-art', title: 'Pixel Art Fusion', subtitle: 'Retro meets modern AI', tags: ['Pixel'], date: '2025-03-28', imageUrl: 'https://picsum.photos/seed/pixel-art/700/700', aspectRatio: 'square' },
   { id: 'macro-world', title: 'Macro World', subtitle: 'Extreme close-up generation', tags: ['Nature', 'Macro'], date: '2025-03-20', imageUrl: 'https://picsum.photos/seed/macro-world/600/800', aspectRatio: 'portrait' },
 ];
 
@@ -198,11 +198,11 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section
-        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden dark:bg-zinc-950"
+        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-zinc-100 dark:bg-zinc-950"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="absolute inset-0 bg-black/40 dark:bg-black/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/60 dark:from-black/20 dark:via-transparent dark:to-black/50 pointer-events-none" />
 
         {/* Featured images grid with auto-rotation */}
         <AnimatePresence mode="wait">
@@ -271,68 +271,65 @@ export default function GalleryPage() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="relative z-10 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/[0.1] mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/60 dark:bg-white/[0.08] backdrop-blur-xl border border-zinc-200 dark:border-white/[0.1] mb-6">
             <div className="w-2 h-2 rounded-full bg-[#bf5af2] animate-pulse" />
-            <span className="text-sm text-zinc-300">AI-Generated Collection</span>
+            <span className="text-sm text-zinc-600 dark:text-zinc-300">AI-Generated Collection</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold text-white tracking-tight">
+          <h1 className="text-6xl md:text-8xl font-bold text-zinc-900 dark:text-white tracking-tight">
             AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#bf5af2] to-purple-300">Gallery</span>
           </h1>
-          <p className="mt-4 text-lg text-zinc-300 dark:text-zinc-400 max-w-2xl mx-auto px-4">
+          <p className="mt-4 text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto px-4">
             Exploring the intersection of artificial intelligence and artistic expression
           </p>
         </motion.div>
       </section>
 
       {/* Sticky Filter Bar */}
-      <div className="sticky top-[72px] z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-5 py-4 rounded-2xl bg-white/70 dark:bg-white/[0.04] backdrop-blur-2xl border border-zinc-200/80 dark:border-white/[0.08] shadow-lg shadow-black/[0.03] dark:shadow-black/20">
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2">
+      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-white/80 dark:bg-zinc-950/90 border-b border-zinc-200 dark:border-white/[0.06]">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveTag(null)}
+              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
+                activeTag === null
+                  ? 'bg-[#bf5af2] text-white shadow-lg shadow-[#bf5af2]/20'
+                  : 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              All
+            </button>
+            {allTags.map(tag => (
               <button
-                onClick={() => setActiveTag(null)}
-                className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
-                  activeTag === null
-                    ? 'bg-[#bf5af2] text-white shadow-md shadow-[#bf5af2]/25'
-                    : 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/[0.12] hover:text-zinc-900 dark:hover:text-white'
+                key={tag}
+                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300 ${
+                  activeTag === tag
+                    ? 'bg-[#bf5af2] text-white shadow-lg shadow-[#bf5af2]/20'
+                    : 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/[0.1] hover:text-zinc-900 dark:hover:text-zinc-200'
                 }`}
               >
-                All
+                {tag}
               </button>
-              {allTags.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                  className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
-                    activeTag === tag
-                      ? 'bg-[#bf5af2] text-white shadow-md shadow-[#bf5af2]/25'
-                      : 'bg-zinc-100 dark:bg-white/[0.06] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/[0.12] hover:text-zinc-900 dark:hover:text-white'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-            {/* Sort Toggle */}
-            <div className="flex items-center bg-zinc-100 dark:bg-white/[0.04] backdrop-blur-md rounded-xl border border-zinc-200/80 dark:border-white/[0.06] p-1 relative flex-shrink-0">
-              <div
-                className="absolute top-1 bottom-1 rounded-lg bg-white dark:bg-white/[0.1] shadow-sm transition-all duration-300 ease-out"
-                style={{ left: sortBy === 'date' ? '4px' : '50%', width: 'calc(50% - 4px)' }}
-              />
-              <button
-                onClick={() => setSortBy('date')}
-                className="relative z-10 px-5 py-2 text-sm font-medium transition-colors duration-200 rounded-lg w-1/2 text-center"
-              >
-                <span className={sortBy === 'date' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}>Date</span>
-              </button>
-              <button
-                onClick={() => setSortBy('category')}
-                className="relative z-10 px-5 py-2 text-sm font-medium transition-colors duration-200 rounded-lg w-1/2 text-center"
-              >
-                <span className={sortBy === 'category' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}>Category</span>
-              </button>
-            </div>
+            ))}
+          </div>
+          <div className="flex items-center bg-white/50 dark:bg-white/[0.04] backdrop-blur-md rounded-lg border border-zinc-200/60 dark:border-white/[0.06] p-0.5 relative">
+            <div
+              className="absolute top-0.5 bottom-0.5 rounded-md bg-white dark:bg-white/[0.1] shadow-sm transition-all duration-300 ease-out"
+              style={{ left: sortBy === 'date' ? '2px' : '50%', width: 'calc(50% - 2px)' }}
+            />
+            <button
+              onClick={() => setSortBy('date')}
+              className="relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-200 rounded-md w-1/2 text-center"
+              style={{ color: sortBy === 'date' ? 'var(--sort-active)' : undefined }}
+            >
+              <span className={sortBy === 'date' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}>Date</span>
+            </button>
+            <button
+              onClick={() => setSortBy('category')}
+              className="relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-200 rounded-md w-1/2 text-center"
+            >
+              <span className={sortBy === 'category' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}>Category</span>
+            </button>
           </div>
         </div>
       </div>

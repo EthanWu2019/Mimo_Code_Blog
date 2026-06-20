@@ -15,6 +15,7 @@ export default function Navbar() {
   const isBlog = pathname === '/blog';
   const isPost = pathname.startsWith('/posts/');
   const isGallery = pathname === '/gallery';
+  const isPhotography = pathname === '/photography';
 
   useEffect(() => {
     if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
@@ -24,7 +25,7 @@ export default function Navbar() {
     const onScroll = () => {
       const y = window.scrollY;
       if (isPost) setIsCompact(y > 30);
-      else if (isBlog || isGallery) setIsCompact(y > window.innerHeight * 0.8);
+      else if (isBlog || isGallery || isPhotography) setIsCompact(y > window.innerHeight * 0.8);
       else setIsCompact(false);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -59,6 +60,9 @@ export default function Navbar() {
             </Link>
             <Link href="/gallery" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
               AI Gallery
+            </Link>
+            <Link href="/photography" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
+              Photography
             </Link>
             <Link href="/blog" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
               Blog
