@@ -67,6 +67,8 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
       if (href === '/') pendingPageName.current = "Ethan's Blog";
       else if (href === '/blog') pendingPageName.current = "Ethan's Blog | Blog";
       else if (href === '/podcast') pendingPageName.current = "Ethan's Blog | Podcast";
+      else if (href === '/gallery') pendingPageName.current = "Ethan's Blog | Gallery";
+      else if (href === '/photography') pendingPageName.current = "Ethan's Blog | Photography";
       else if (href === '/profile') pendingPageName.current = "Ethan's Blog | Profile";
       else if (href.startsWith('/posts/')) pendingPageName.current = "Ethan's Blog | Article";
       else pendingPageName.current = "Ethan's Blog";

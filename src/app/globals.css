@@ -119,6 +119,16 @@ body {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* Dark navbar when over dark hero sections (Gallery, Photography) */
+.nav-over-dark-hero {
+  background: rgba(15, 15, 18, 0.65) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3) !important;
+}
+.nav-over-dark-hero * {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
 
 
 /* Custom cursor: hide system cursor in all themes */
