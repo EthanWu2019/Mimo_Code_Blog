@@ -153,7 +153,7 @@ export default function PhotographyPage() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="absolute bottom-28 left-4 md:left-8 z-[4] max-w-3xl"
+          className="absolute bottom-28 left-8 md:left-16 z-[4] max-w-3xl"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-[1px] bg-amber-500 dark:bg-amber-400" />
