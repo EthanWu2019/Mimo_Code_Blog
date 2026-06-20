@@ -129,7 +129,6 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
               Blog
             </span>
           </div>
-          <div className="mt-3 h-px w-10" style={{ background: 'var(--foreground)', opacity: 0.2 }} />
         </div>
       </div>
     </>

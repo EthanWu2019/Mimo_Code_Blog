@@ -140,6 +140,7 @@ export default function GalleryPage() {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Simulate initial loading
@@ -156,6 +157,18 @@ export default function GalleryPage() {
       gsap.fromTo(el, { x: '-100%' }, { x: '200%', duration: 1.5, ease: 'none', repeat: -1, delay: i * 0.08 });
     });
   }, [loading]);
+
+  // Animate frame corner borders on hero
+  useEffect(() => {
+    if (loading || !heroRef.current) return;
+    const corners = heroRef.current.querySelectorAll('div');
+    corners.forEach((el, i) => {
+      gsap.fromTo(el,
+        { scaleX: i % 2 === 0 ? 0 : 1, scaleY: i % 2 === 0 ? 1 : 0 },
+        { scaleX: 1, scaleY: 1, duration: 0.8, delay: 0.3 + i * 0.08, ease: 'power2.out', overwrite: true }
+      );
+    });
+  }, [loading, currentSlide]);
 
   useEffect(() => {
     const stored = localStorage.getItem('gallery-likes');
@@ -201,35 +214,36 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section — gallery canvas style */}
+      {/* Hero Section — generative canvas concept */}
       <section
         className="relative -mt-[72px] min-h-[calc(85vh+72px)] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Slide indicators */}
-        <div className="absolute top-[96px] left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {heroGroups.map((_, i) => (
-            <button
+        {/* Ambient dots — subtle neural network hint */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
               key={i}
-              onClick={() => setCurrentSlide(i)}
-              className={`h-1 rounded-full transition-all duration-500 ${
-                i === currentSlide
-                  ? 'w-6 bg-[#bf5af2]'
-                  : 'w-2.5 bg-zinc-300 dark:bg-white/20 hover:bg-zinc-400 dark:hover:bg-white/40'
-              }`}
+              className="absolute w-1 h-1 rounded-full bg-[#bf5af2]/10 dark:bg-[#bf5af2]/5"
+              style={{
+                left: `${10 + (i * 37) % 80}%`,
+                top: `${15 + (i * 53) % 70}%`,
+                animation: `pulse ${3 + (i % 3)}s ease-in-out infinite`,
+                animationDelay: `${i * 0.3}s`,
+              }}
             />
           ))}
         </div>
 
-        {/* Hero content — title above image */}
+        {/* Title */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="relative z-10 text-center mb-8"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] mb-4">
             <div className="w-1.5 h-1.5 rounded-full bg-[#bf5af2] animate-pulse" />
             <span className="text-xs text-zinc-500 dark:text-zinc-400">Ethan&apos;s Blog · Gallery</span>
           </div>
@@ -238,37 +252,77 @@ export default function GalleryPage() {
           </h1>
         </motion.div>
 
-        {/* Featured artwork — framed like a gallery print */}
+        {/* Featured artwork — generative canvas frame */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
-            initial={{ opacity: 0, scale: 0.96 }}
+            initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative z-10 w-full max-w-4xl mx-auto px-8"
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            className="relative z-10 w-full max-w-3xl mx-auto px-8"
           >
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/30 border border-zinc-200 dark:border-white/[0.06]"
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              <img
-                src={currentGroup[0].imageUrl}
-                alt={currentGroup[0].title}
-                draggable={false}
-                className="w-full aspect-[16/9] object-cover select-none pointer-events-none"
-              />
-              {/* Image info overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/60 to-transparent">
-                <p className="text-white text-sm font-medium">{currentGroup[0].title}</p>
-                <p className="text-zinc-300 text-xs mt-0.5">{currentGroup[0].subtitle}</p>
+            <div className="relative group" onContextMenu={(e) => e.preventDefault()}>
+              {/* Animated frame borders */}
+              <div ref={heroRef} className="absolute -inset-3 pointer-events-none">
+                <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-[#bf5af2] to-transparent" />
+                <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-[#bf5af2] to-transparent" />
+                <div className="absolute top-0 right-0 w-8 h-[1px] bg-gradient-to-l from-[#bf5af2] to-transparent" />
+                <div className="absolute top-0 right-0 w-[1px] h-8 bg-gradient-to-b from-[#bf5af2] to-transparent" />
+                <div className="absolute bottom-0 left-0 w-8 h-[1px] bg-gradient-to-r from-[#bf5af2] to-transparent" />
+                <div className="absolute bottom-0 left-0 w-[1px] h-8 bg-gradient-to-t from-[#bf5af2] to-transparent" />
+                <div className="absolute bottom-0 right-0 w-8 h-[1px] bg-gradient-to-l from-[#bf5af2] to-transparent" />
+                <div className="absolute bottom-0 right-0 w-[1px] h-8 bg-gradient-to-t from-[#bf5af2] to-transparent" />
+              </div>
+
+              {/* Image */}
+              <div className="relative rounded-lg overflow-hidden shadow-xl shadow-black/5 dark:shadow-black/30">
+                <img
+                  src={currentGroup[0].imageUrl}
+                  alt={currentGroup[0].title}
+                  draggable={false}
+                  className="w-full aspect-[16/10] object-cover select-none pointer-events-none"
+                />
+                {/* Subtle scan line overlay */}
+                <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                  style={{
+                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 3px)',
+                    backgroundSize: '100% 3px',
+                  }}
+                />
+                {/* Bottom info */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+                  <p className="text-white text-sm font-medium">{currentGroup[0].title}</p>
+                  <p className="text-zinc-300 text-xs mt-0.5">{currentGroup[0].subtitle}</p>
+                </div>
+              </div>
+
+              {/* Tag label */}
+              <div className="flex items-center justify-center gap-2 mt-4">
+                {currentGroup[0].tags.map(tag => (
+                  <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
-            {/* Caption below */}
-            <p className="text-center text-zinc-400 dark:text-zinc-500 text-xs mt-3">
-              {currentGroup[0].tags.join(' · ')}
-            </p>
           </motion.div>
         </AnimatePresence>
+
+        {/* Slide indicators */}
+        <div className="relative z-10 flex gap-2 mt-8">
+          {heroGroups.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`h-1 rounded-full transition-all duration-500 ${
+                i === currentSlide
+                  ? 'w-6 bg-[#bf5af2]'
+                  : 'w-2.5 bg-zinc-300 dark:bg-white/15 hover:bg-zinc-400 dark:hover:bg-white/30'
+              }`}
+            />
+          ))}
+        </div>
       </section>
 
       {/* Sticky Filter Bar — floating pill like navbar */}
