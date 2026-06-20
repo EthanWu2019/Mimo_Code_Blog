@@ -203,7 +203,7 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section — always visible, even during loading */}
       <section
-        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden dark:bg-zinc-950"
+        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden dark:bg-[#0a0a0b]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -290,7 +290,7 @@ export default function GalleryPage() {
       </section>
 
       {/* Sticky Filter Bar */}
-      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-white/80 dark:bg-zinc-950/90 border-b border-zinc-200 dark:border-white/[0.06]">
+      <div className="sticky top-[72px] z-40 backdrop-blur-xl bg-white/80 dark:bg-[#0a0a0b]/90 border-b border-zinc-200 dark:border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             <button

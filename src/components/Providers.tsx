@@ -119,14 +119,17 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
         className="fixed inset-0 z-[100] items-center justify-center pointer-events-none"
         style={{ display: 'none', background: 'var(--background)' }}
       >
-        <div ref={contentRef} className="flex items-center" style={{ opacity: 0 }}>
-          <span className="text-xl font-medium tracking-tight select-none text-right" style={{ color: 'var(--foreground)', minWidth: '140px' }}>
-            Ethan&apos;s Blog
-          </span>
-          <span className="text-xl font-light mx-4 select-none" style={{ color: 'var(--foreground)', opacity: 0.4 }}>|</span>
-          <span ref={textRef} className="text-xl font-medium tracking-tight select-none text-left" style={{ color: 'var(--foreground)', minWidth: '140px' }}>
-            Blog
-          </span>
+        <div ref={contentRef} className="flex flex-col items-center" style={{ opacity: 0 }}>
+          <div className="flex items-center">
+            <span className="text-xl font-medium tracking-tight select-none text-right" style={{ color: 'var(--foreground)', minWidth: '140px' }}>
+              Ethan&apos;s Blog
+            </span>
+            <span className="text-xl font-light mx-4 select-none" style={{ color: 'var(--foreground)', opacity: 0.4 }}>|</span>
+            <span ref={textRef} className="text-xl font-medium tracking-tight select-none text-left" style={{ color: 'var(--foreground)', minWidth: '140px' }}>
+              Blog
+            </span>
+          </div>
+          <div className="mt-3 h-px w-10" style={{ background: 'var(--foreground)', opacity: 0.2 }} />
         </div>
       </div>
     </>

@@ -35,7 +35,11 @@ export default function Navbar() {
       }
     };
     // Set initial state for dark hero pages
-    if (hasDarkHero) setOverDarkHero(true);
+    if (hasDarkHero) {
+      setOverDarkHero(true);
+    } else {
+      setOverDarkHero(false);
+    }
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isPost, isBlog, isGallery, isPhotography, hasDarkHero]);

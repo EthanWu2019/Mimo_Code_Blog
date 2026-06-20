@@ -122,7 +122,7 @@ export default function PhotographyPage() {
   return (
     <div className="min-h-screen">
       {/* ═══ Hero — always visible ═══ */}
-      <section className="relative h-[92vh] overflow-hidden bg-black">
+      <section className="relative h-[92vh] overflow-hidden bg-black dark:bg-[#0a0a0b]">
         <FilmGrain />
         {/* Featured photo background */}
         <AnimatePresence mode="wait">
@@ -175,7 +175,7 @@ export default function PhotographyPage() {
       </section>
 
       {/* ═══ Category Filmstrip ═══ */}
-      <section className="bg-black py-6 border-b border-white/[0.06]">
+      <section className="bg-black dark:bg-[#0a0a0b] py-6 border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
             <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 mr-2 flex-shrink-0">Filter</span>
@@ -197,7 +197,7 @@ export default function PhotographyPage() {
       </section>
 
       {/* ═══ Featured Filmstrip (horizontal scroll) ═══ */}
-      <section className="bg-black py-12 relative overflow-hidden">
+      <section className="bg-black dark:bg-[#0a0a0b] py-12 relative overflow-hidden">
         <FilmGrain />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
           <div className="flex items-center gap-3">
@@ -254,7 +254,7 @@ export default function PhotographyPage() {
       </section>
 
       {/* ═══ Photo Grid ═══ */}
-      <section className="bg-zinc-950 py-16">
+      <section className="bg-[#0a0a0b] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-3 mb-10">
             <div className="w-2 h-2 rounded-full bg-amber-500" />
@@ -430,7 +430,7 @@ function PhotographySkeleton() {
   }, []);
 
   return (
-    <div ref={ref} className="min-h-screen bg-black">
+    <div ref={ref} className="min-h-screen bg-black dark:bg-[#0a0a0b]">
       {/* Hero skeleton */}
       <section className="relative h-[92vh] overflow-hidden bg-zinc-900">
         <div className="absolute inset-0 shimmer-bar bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
@@ -456,7 +456,7 @@ function PhotographySkeleton() {
         </div>
       </section>
       {/* Category bar skeleton */}
-      <section className="bg-black py-6 border-b border-white/[0.06]">
+      <section className="bg-black dark:bg-[#0a0a0b] py-6 border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-3">
           {[48, 56, 64, 44, 52].map((w, i) => (
             <div key={i} className="rounded-lg overflow-hidden relative flex-shrink-0" style={{ width: w, height: 36 }}>
@@ -466,7 +466,7 @@ function PhotographySkeleton() {
         </div>
       </section>
       {/* Filmstrip skeleton */}
-      <section className="bg-black py-12">
+      <section className="bg-black dark:bg-[#0a0a0b] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6 flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-white/[0.06]" />
           <div className="w-16 h-3 rounded bg-white/[0.04] overflow-hidden relative">
@@ -483,7 +483,7 @@ function PhotographySkeleton() {
         </div>
       </section>
       {/* Grid skeleton */}
-      <section className="bg-zinc-950 py-16">
+      <section className="bg-[#0a0a0b] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
