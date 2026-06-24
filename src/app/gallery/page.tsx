@@ -135,7 +135,7 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
 export default function GalleryPage() {
   const [loading, setLoading] = useState(true);
   const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'date' | 'category'>('date');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
   const [likes, setLikes] = useState<Record<string, number>>({});
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -187,9 +187,9 @@ export default function GalleryPage() {
     ? galleryData.filter(item => item.tags.includes(activeTag))
     : galleryData;
 
-  const sortedItems = sortBy === 'date'
+  const sortedItems = sortBy === 'newest'
     ? [...filteredItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    : [...filteredItems].sort((a, b) => a.tags[0].localeCompare(b.tags[0]));
+    : [...filteredItems].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -356,20 +356,20 @@ export default function GalleryPage() {
           <div className="w-px h-5 bg-zinc-200 dark:bg-white/10 mx-1" />
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setSortBy('date')}
+              onClick={() => setSortBy('newest')}
               className={`px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
-                sortBy === 'date' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
+                sortBy === 'newest' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
               }`}
             >
-              Date
+              Newest
             </button>
             <button
-              onClick={() => setSortBy('category')}
+              onClick={() => setSortBy('oldest')}
               className={`px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
-                sortBy === 'category' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
+                sortBy === 'oldest' ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
               }`}
             >
-              Category
+              Oldest
             </button>
           </div>
         </div>
