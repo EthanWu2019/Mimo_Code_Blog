@@ -216,101 +216,91 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section — generative canvas concept */}
       <section
-        className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
+        className="relative -mt-[72px] min-h-[calc(85vh+72px)] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Ambient dots — subtle neural network hint */}
+        {/* Generative background — abstract gradient orbs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 rounded-full bg-[#bf5af2]/10 dark:bg-[#bf5af2]/5"
-              style={{
-                left: `${10 + (i * 37) % 80}%`,
-                top: `${15 + (i * 53) % 70}%`,
-                animation: `pulse ${3 + (i % 3)}s ease-in-out infinite`,
-                animationDelay: `${i * 0.3}s`,
-              }}
-            />
-          ))}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#bf5af2]/[0.07] dark:bg-[#bf5af2]/[0.04] blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-purple-500/[0.06] dark:bg-purple-500/[0.03] blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-[#bf5af2]/[0.04] to-purple-500/[0.04] dark:from-[#bf5af2]/[0.02] dark:to-purple-500/[0.02] blur-2xl" />
         </div>
 
-        {/* Title */}
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }}
+        />
+
+        {/* Title — centered, bold */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative z-10 text-center mb-8"
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="relative z-10 text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] mb-5">
             <div className="w-1.5 h-1.5 rounded-full bg-[#bf5af2] animate-pulse" />
             <span className="text-xs text-zinc-500 dark:text-zinc-400">Ethan&apos;s Blog · Gallery</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-zinc-900 dark:text-white tracking-tight">
+          <h1 className="text-6xl md:text-8xl font-bold text-zinc-900 dark:text-white tracking-tight leading-[0.9]">
             AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#bf5af2] to-purple-400">Gallery</span>
           </h1>
+          <p className="mt-4 text-zinc-500 dark:text-zinc-400 text-lg max-w-xl mx-auto">
+            Exploring the intersection of artificial intelligence and artistic expression
+          </p>
         </motion.div>
 
-        {/* Featured artwork — generative canvas frame */}
+        {/* Featured artwork — centered frame */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
             className="relative z-10 w-full max-w-3xl mx-auto px-8"
           >
-            <div className="relative group" onContextMenu={(e) => e.preventDefault()}>
-              {/* Animated frame borders */}
-              <div ref={heroRef} className="absolute -inset-3 pointer-events-none">
-                <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-[#bf5af2] to-transparent" />
-                <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-[#bf5af2] to-transparent" />
-                <div className="absolute top-0 right-0 w-8 h-[1px] bg-gradient-to-l from-[#bf5af2] to-transparent" />
-                <div className="absolute top-0 right-0 w-[1px] h-8 bg-gradient-to-b from-[#bf5af2] to-transparent" />
-                <div className="absolute bottom-0 left-0 w-8 h-[1px] bg-gradient-to-r from-[#bf5af2] to-transparent" />
-                <div className="absolute bottom-0 left-0 w-[1px] h-8 bg-gradient-to-t from-[#bf5af2] to-transparent" />
-                <div className="absolute bottom-0 right-0 w-8 h-[1px] bg-gradient-to-l from-[#bf5af2] to-transparent" />
-                <div className="absolute bottom-0 right-0 w-[1px] h-8 bg-gradient-to-t from-[#bf5af2] to-transparent" />
+            <div className="relative rounded-xl overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/40 border border-zinc-200 dark:border-white/[0.06]"
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              <img
+                src={currentGroup[0].imageUrl}
+                alt={currentGroup[0].title}
+                draggable={false}
+                className="w-full aspect-[16/10] object-cover select-none pointer-events-none"
+              />
+              {/* Scan line overlay */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                style={{
+                  backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 3px)',
+                  backgroundSize: '100% 3px',
+                }}
+              />
+              {/* Bottom gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+              {/* Info */}
+              <div className="absolute bottom-0 left-0 right-0 p-5">
+                <p className="text-white text-sm font-medium">{currentGroup[0].title}</p>
+                <p className="text-zinc-300 text-xs mt-0.5">{currentGroup[0].subtitle}</p>
               </div>
-
-              {/* Image */}
-              <div className="relative rounded-lg overflow-hidden shadow-xl shadow-black/5 dark:shadow-black/30">
-                <img
-                  src={currentGroup[0].imageUrl}
-                  alt={currentGroup[0].title}
-                  draggable={false}
-                  className="w-full aspect-[16/10] object-cover select-none pointer-events-none"
-                />
-                {/* Subtle scan line overlay */}
-                <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                  style={{
-                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 3px)',
-                    backgroundSize: '100% 3px',
-                  }}
-                />
-                {/* Bottom info */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
-                  <p className="text-white text-sm font-medium">{currentGroup[0].title}</p>
-                  <p className="text-zinc-300 text-xs mt-0.5">{currentGroup[0].subtitle}</p>
-                </div>
-              </div>
-
-              {/* Tag label */}
-              <div className="flex items-center justify-center gap-2 mt-4">
-                {currentGroup[0].tags.map(tag => (
-                  <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+            </div>
+            {/* Tags */}
+            <div className="flex items-center justify-center gap-3 mt-4">
+              {currentGroup[0].tags.map(tag => (
+                <span key={tag} className="text-[11px] uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                  {tag}
+                </span>
+              ))}
             </div>
           </motion.div>
         </AnimatePresence>
 
         {/* Slide indicators */}
-        <div className="relative z-10 flex gap-2 mt-8">
+        <div className="relative z-10 flex gap-2 mt-10">
           {heroGroups.map((_, i) => (
             <button
               key={i}
