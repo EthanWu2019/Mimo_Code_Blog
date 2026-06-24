@@ -216,7 +216,7 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section — generative canvas concept */}
       <section
-        className="relative -mt-[72px] min-h-[calc(85vh+72px)] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
+        className="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -235,8 +235,8 @@ export default function GalleryPage() {
           }}
         />
 
-        {/* Content — pushed below navbar */}
-        <div className="relative z-[60] flex flex-col items-center justify-center w-full max-w-7xl mx-auto px-8" style={{ paddingTop: '96px', paddingBottom: '48px' }}>
+        {/* Content — below navbar, no z-index override */}
+        <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto px-8">
           {/* Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
