@@ -220,24 +220,36 @@ export default function GalleryPage() {
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Generative background — visible orbs + grid */}
+        {/* Background layer — full bleed behind navbar */}
         <div className="absolute inset-0 bg-white dark:bg-[#0a0a0b]">
           {/* Gradient orbs */}
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#bf5af2]/15 dark:bg-[#bf5af2]/10 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-purple-500/15 dark:bg-purple-500/10 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-[#bf5af2]/10 to-purple-500/10 dark:from-[#bf5af2]/5 dark:to-purple-500/5 blur-2xl" />
           
-          {/* Grid pattern */}
+          {/* Grid pattern — visible in both themes */}
           <div className="absolute inset-0"
             style={{
-              backgroundImage: 'linear-gradient(rgba(0,0,0,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px)',
+              backgroundImage: 'linear-gradient(rgba(0,0,0,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.12) 1px, transparent 1px)',
+              backgroundSize: '60px 60px',
+            }}
+          />
+          <div className="absolute inset-0 dark:hidden"
+            style={{
+              backgroundImage: 'linear-gradient(rgba(0,0,0,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.12) 1px, transparent 1px)',
+              backgroundSize: '60px 60px',
+            }}
+          />
+          <div className="absolute inset-0 hidden dark:block"
+            style={{
+              backgroundImage: 'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
               backgroundSize: '60px 60px',
             }}
           />
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto px-8">
+        {/* Content — padded below navbar */}
+        <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto px-8" style={{ paddingTop: '96px', paddingBottom: '48px' }}>
           {/* Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -257,7 +269,7 @@ export default function GalleryPage() {
             </p>
           </motion.div>
 
-          {/* Featured artwork */}
+          {/* Featured artworks — 3-image grid */}
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -265,31 +277,39 @@ export default function GalleryPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-              className="w-full max-w-3xl mx-auto"
+              className="w-full max-w-4xl mx-auto"
             >
-              <div className="relative rounded-xl overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/40 border border-zinc-200 dark:border-white/[0.08]"
-                onContextMenu={(e) => e.preventDefault()}
-              >
-                <img
-                  src={currentGroup[0].imageUrl}
-                  alt={currentGroup[0].title}
-                  draggable={false}
-                  className="w-full aspect-[16/10] object-cover select-none pointer-events-none"
-                />
-                {/* Scan line overlay — visible */}
-                <div className="absolute inset-0 pointer-events-none"
-                  style={{
-                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 3px)',
-                    backgroundSize: '100% 3px',
-                  }}
-                />
-                {/* Bottom gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-                {/* Info */}
-                <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="text-white text-sm font-medium">{currentGroup[0].title}</p>
-                  <p className="text-zinc-300 text-xs mt-0.5">{currentGroup[0].subtitle}</p>
-                </div>
+              <div className="grid grid-cols-3 gap-3 md:gap-4">
+                {currentGroup.slice(0, 3).map((item, i) => (
+                  <div
+                    key={item.id}
+                    className={`relative rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.08] ${
+                      i === 0 ? 'col-span-2 row-span-2 aspect-[4/3]' : 'aspect-square'
+                    }`}
+                    onContextMenu={(e) => e.preventDefault()}
+                  >
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      draggable={false}
+                      className="w-full h-full object-cover select-none pointer-events-none"
+                    />
+                    {/* Scan lines */}
+                    <div className="absolute inset-0 pointer-events-none"
+                      style={{
+                        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 3px)',
+                        backgroundSize: '100% 3px',
+                      }}
+                    />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-300 flex items-end p-3">
+                      <div>
+                        <p className="text-white text-xs font-medium">{item.title}</p>
+                        <p className="text-zinc-300 text-[10px] mt-0.5">{item.subtitle}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
               {/* Tags */}
               <div className="flex items-center justify-center gap-3 mt-4">
