@@ -216,26 +216,27 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section — generative canvas concept */}
       <section
-        className="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
+        className="relative -mt-[72px] min-h-[calc(85vh+72px)] flex flex-col items-center justify-center overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Generative background — abstract gradient orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#bf5af2]/[0.07] dark:bg-[#bf5af2]/[0.04] blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-purple-500/[0.06] dark:bg-purple-500/[0.03] blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-[#bf5af2]/[0.04] to-purple-500/[0.04] dark:from-[#bf5af2]/[0.02] dark:to-purple-500/[0.02] blur-2xl" />
+        {/* Generative background — visible orbs + grid */}
+        <div className="absolute inset-0 bg-white dark:bg-[#0a0a0b]">
+          {/* Gradient orbs */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#bf5af2]/15 dark:bg-[#bf5af2]/10 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-purple-500/15 dark:bg-purple-500/10 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-[#bf5af2]/10 to-purple-500/10 dark:from-[#bf5af2]/5 dark:to-purple-500/5 blur-2xl" />
+          
+          {/* Grid pattern */}
+          <div className="absolute inset-0"
+            style={{
+              backgroundImage: 'linear-gradient(rgba(0,0,0,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px)',
+              backgroundSize: '60px 60px',
+            }}
+          />
         </div>
 
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage: 'linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
-          }}
-        />
-
-        {/* Content — below navbar, no z-index override */}
+        {/* Content */}
         <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto px-8">
           {/* Title */}
           <motion.div
@@ -244,19 +245,19 @@ export default function GalleryPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center mb-10"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] mb-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] mb-5">
               <div className="w-1.5 h-1.5 rounded-full bg-[#bf5af2] animate-pulse" />
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">Ethan&apos;s Blog · Gallery</span>
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">Ethan&apos;s Blog · Gallery</span>
             </div>
             <h1 className="text-6xl md:text-8xl font-bold text-zinc-900 dark:text-white tracking-tight leading-[0.9]">
               AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#bf5af2] to-purple-400">Gallery</span>
             </h1>
-            <p className="mt-4 text-zinc-500 dark:text-zinc-400 text-lg max-w-xl mx-auto">
+            <p className="mt-4 text-zinc-600 dark:text-zinc-400 text-lg max-w-xl mx-auto">
               Exploring the intersection of artificial intelligence and artistic expression
             </p>
           </motion.div>
 
-          {/* Featured artwork — centered frame */}
+          {/* Featured artwork */}
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -266,7 +267,7 @@ export default function GalleryPage() {
               transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
               className="w-full max-w-3xl mx-auto"
             >
-              <div className="relative rounded-xl overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/40 border border-zinc-200 dark:border-white/[0.06]"
+              <div className="relative rounded-xl overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/40 border border-zinc-200 dark:border-white/[0.08]"
                 onContextMenu={(e) => e.preventDefault()}
               >
                 <img
@@ -275,10 +276,10 @@ export default function GalleryPage() {
                   draggable={false}
                   className="w-full aspect-[16/10] object-cover select-none pointer-events-none"
                 />
-                {/* Scan line overlay */}
-                <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                {/* Scan line overlay — visible */}
+                <div className="absolute inset-0 pointer-events-none"
                   style={{
-                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 3px)',
+                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 3px)',
                     backgroundSize: '100% 3px',
                   }}
                 />
@@ -293,7 +294,7 @@ export default function GalleryPage() {
               {/* Tags */}
               <div className="flex items-center justify-center gap-3 mt-4">
                 {currentGroup[0].tags.map(tag => (
-                  <span key={tag} className="text-[11px] uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                  <span key={tag} className="text-[11px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
                     {tag}
                   </span>
                 ))}
