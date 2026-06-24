@@ -216,7 +216,7 @@ export default function GalleryPage() {
     <div className="min-h-screen">
       {/* Hero Section — generative canvas concept */}
       <section
-        className="relative -mt-[72px] min-h-[calc(85vh+72px)] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
+        className="relative min-h-[100vh]" flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#0a0a0b]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
