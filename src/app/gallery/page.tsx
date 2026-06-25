@@ -49,7 +49,16 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
       <div
         className="relative rounded-xl overflow-hidden cursor-pointer border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-500"
         onClick={() => onOpen(item)}
-        style={{ aspectRatio: item.aspectRatio === 'portrait' ? '3/4' : item.aspectRatio === 'square' ? '1/1' : '4/3' }}
+        style={{
+          aspectRatio:
+            item.width && item.height
+              ? `${item.width} / ${item.height}`
+              : item.aspectRatio === 'portrait'
+              ? '3 / 4'
+              : item.aspectRatio === 'square'
+              ? '1 / 1'
+              : '4 / 3',
+        }}
       >
         {/* Image with protection */}
         <div className="absolute inset-0" onContextMenu={(e) => e.preventDefault()}>
