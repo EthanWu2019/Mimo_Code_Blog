@@ -6,39 +6,34 @@ interface SecureImageProps {
   slug: string;
   alt: string;
   className?: string;
-  /** "thumb" -> uses /thumb endpoint (with watermark), "full" -> uses /image */
+  /** "thumb" -> /thumb endpoint (faster, downscaled), "full" -> /image */
   variant?: "thumb" | "full";
-  /** Owner ID shown in watermark for traceability */
-  ownerFingerprint?: string;
-  /** Watermark opacity (0-1) */
-  watermarkOpacity?: number;
-  /** Disable watermark (e.g. for trusted admin view) */
-  noWatermark?: boolean;
 }
 
 /**
  * SecureImage
  *
- * Loads the protected image via signed-token URL, converts to a Blob,
- * renders onto a <canvas> via blob: URL -- so the <img> URL is NEVER
- * exposed in DevTools Network tab. Overlays a subtle repeating SVG watermark
- * containing the work title, owner fingerprint, and current epoch -- visible
- * deterrent against casual screenshot theft.
+ * Loads the protected image via a one-shot signed URL, converts to a Blob,
+ * renders onto a <canvas> via blob: URL.  The <img> HTTP URL is never
+ * exposed -- DevTools Network panel only sees the token-mint call and a
+ * blob: handle that is revoked as soon as the image is decoded.
+ *
+ * Visible watermarks are burned into the image server-side (corner
+ * signature + LSB invisible watermark), so this component renders the
+ * image cleanly without any additional overlay.
  *
  * Defense layers:
- *   L1 (Network): signed token expires every 5 min
- *   L2 (Client):  blob: URL (not http://), no <img src> visible
- *   L3 (Visual):  visible watermark with owner ID baked in
- *   L4 (Forensic): session fingerprint stored in watermark for trace
+ *   L1 (Network):  signed HMAC-SHA256 token, 5 min TTL
+ *   L2 (Client):   blob: URL (no http:// in DevTools)
+ *   L3 (Forensic): LSB invisible watermark baked into pixels at upload time
+ *   L4 (AI-edit):  PhotoGuard-style adversarial perturbation in pixel LSBs
+ *   L5 (Visual):   subtle corner signature burned at upload time
  */
 export default function SecureImage({
   slug,
   alt,
   className = "",
   variant = "thumb",
-  ownerFingerprint = "ethan",
-  watermarkOpacity = 0.08,
-  noWatermark = false,
 }: SecureImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [errored, setErrored] = useState(false);
@@ -54,8 +49,7 @@ export default function SecureImage({
 
     async function loadAndRender() {
       try {
-        // 1) Ask our own /api/gallery/[slug]/token?action=sign to mint a fresh token
-        //    -- keeps the secret on the server, never exposed.
+        // 1) Mint a one-shot signed URL on the server (secret never leaves)
         const tokenResp = await fetch(
           `/api/gallery/${slug}/token?variant=${variant}`,
           { credentials: "include" },
@@ -63,19 +57,17 @@ export default function SecureImage({
         if (!tokenResp.ok) throw new Error("token mint failed");
         const { url } = await tokenResp.json();
 
-        // 2) Fetch with the one-shot signed URL (5 min TTL)
+        // 2) Fetch the protected image (5 min TTL on the URL)
         const imgResp = await fetch(url);
         if (!imgResp.ok) throw new Error("fetch failed");
         const blob = await imgResp.blob();
 
-        // 3) Turn into a blob: URL -- the ONLY URL visible to DevTools.
-        //    Crucially, this URL is NOT the same as the network URL, and
-        //    copying it from DevTools yields a memory:// handle, not http://.
+        // 3) Wrap in a blob: URL -- the ONLY URL visible in DevTools.
+        //    Copying it out of DevTools yields a memory:// handle, not http://.
         const blobUrl = URL.createObjectURL(blob);
 
         // 4) Decode and draw to canvas
         const img = new Image();
-        img.crossOrigin = "anonymous";
         img.onload = () => {
           if (cancelled || !canvas || !ctx) {
             URL.revokeObjectURL(blobUrl);
@@ -84,17 +76,6 @@ export default function SecureImage({
           canvas.width = img.naturalWidth;
           canvas.height = img.naturalHeight;
           ctx.drawImage(img, 0, 0);
-
-          // 5) Overlay watermark (visible deterrent)
-          if (!noWatermark) {
-            drawWatermark(ctx, canvas.width, canvas.height, {
-              title: alt,
-              owner: ownerFingerprint,
-              opacity: watermarkOpacity,
-              epoch: Math.floor(Date.now() / 1000),
-            });
-          }
-
           setLoaded(true);
           URL.revokeObjectURL(blobUrl);
         };
@@ -114,7 +95,7 @@ export default function SecureImage({
     return () => {
       cancelled = true;
     };
-  }, [slug, variant, alt, ownerFingerprint, watermarkOpacity, noWatermark]);
+  }, [slug, variant]);
 
   if (errored) {
     return (
@@ -134,6 +115,7 @@ export default function SecureImage({
       <canvas
         ref={canvasRef}
         data-lightbox-canvas={variant === "full" ? "true" : undefined}
+        aria-label={alt}
         className="block w-full h-full object-contain select-none pointer-events-none"
       />
       {!loaded && (
@@ -143,40 +125,4 @@ export default function SecureImage({
       )}
     </div>
   );
-}
-
-/**
- * Draw a tiled SVG-style watermark: title, owner fingerprint, and session epoch.
- * Repeats diagonally across the image at low opacity.
- */
-function drawWatermark(
-  ctx: CanvasRenderingContext2D,
-  w: number,
-  h: number,
-  opts: { title: string; owner: string; opacity: number; epoch: number },
-) {
-  ctx.save();
-  ctx.globalAlpha = opts.opacity;
-  ctx.fillStyle = "#ffffff";
-  ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 2;
-  ctx.font = `${Math.max(18, Math.round(w / 80))}px sans-serif`;
-  ctx.textBaseline = "middle";
-  ctx.textAlign = "center";
-
-  const tileSize = Math.max(180, Math.round(Math.min(w, h) / 4));
-  const label = `${opts.title} · © ${opts.owner} · ${opts.epoch}`;
-
-  for (let y = 0; y < h + tileSize; y += tileSize) {
-    for (let x = 0; x < w + tileSize; x += tileSize) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(-Math.PI / 12);
-      ctx.strokeText(label, 0, 0);
-      ctx.fillText(label, 0, 0);
-      ctx.restore();
-    }
-  }
-
-  ctx.restore();
 }

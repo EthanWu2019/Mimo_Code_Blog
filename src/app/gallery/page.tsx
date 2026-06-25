@@ -67,8 +67,6 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
             slug={item.slug}
             alt={item.title}
             variant="thumb"
-            ownerFingerprint="EthanWu"
-            watermarkOpacity={0.06}
             className="w-full h-full transition-transform duration-700 group-hover:scale-105"
           />
         </div>
@@ -697,8 +695,6 @@ export default function GalleryPage() {
                     slug={selectedItem.slug}
                     alt={selectedItem.title}
                     variant="full"
-                    ownerFingerprint="EthanWu"
-                    watermarkOpacity={0.07}
                     className="w-full h-full"
                   />
                   {/* Zoom hint */}

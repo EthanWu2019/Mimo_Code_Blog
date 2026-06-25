@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { embedWatermark, type WatermarkPayload } from "@/lib/image-watermark";
 import sharp from "sharp";
+import { embedWatermark, type WatermarkPayload } from "@/lib/image-watermark";
+import { perturbImage } from "@/lib/image-perturb";
 
 /**
  * POST /api/gallery/backfill-watermark
- * Backfills LSB watermark into all existing gallery items that don't have one.
- * Idempotent: items already watermarked (by checking if extracted owner matches)
- * are skipped.
+ *
+ * Applies full security pipeline to ALL existing gallery items:
+ *  - PhotoGuard-style perturbation
+ *  - LSB invisible watermark (owner / slug / timestamp)
+ *  - Corner signature watermark (subtle, ~6% of width, opacity 0.55)
+ *
+ * Idempotent -- if LSB already contains our owner tag, we re-embed to refresh
+ * the timestamp and update the corner mark.
  */
 export async function POST(request: Request) {
   try {
@@ -41,7 +47,6 @@ export async function POST(request: Request) {
         const mime = match[1];
         const bytes = Buffer.from(match[2], "base64");
 
-        // Decode via sharp (handles webp/jpeg/png uniformly)
         const img = sharp(bytes);
         const meta = await img.metadata();
         const w = meta.width || item.width || 0;
@@ -51,11 +56,15 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // Convert to raw RGBA for LSB embedding
         const { data: rawPixels } = await img
           .ensureAlpha()
           .raw()
           .toBuffer({ resolveWithObject: true });
+
+        const perturbed = perturbImage(new Uint8Array(rawPixels), w, h, {
+          seed: item.slug + ":backfill",
+          strength: 2,
+        });
 
         const payload: WatermarkPayload = {
           owner,
@@ -63,27 +72,22 @@ export async function POST(request: Request) {
           uploadedAt: Date.now(),
         };
 
-        const watermarked = embedWatermark(
-          new Uint8Array(rawPixels),
-          w,
-          h,
-          payload,
-          4,
-        );
+        const watermarked = embedWatermark(perturbed, w, h, payload, 4);
 
-        // Re-encode back to original mime
+        // Render corner signature
+        const sigPng = await renderSignatureWatermark(owner, w, h);
+        const composited = await sharp(Buffer.from(watermarked), {
+          raw: { width: w, height: h, channels: 4 },
+        })
+          .composite([{ input: sigPng, gravity: "southeast" }])
+          .toBuffer();
+
         const out =
           mime === "image/png"
-            ? await sharp(Buffer.from(watermarked), {
-                raw: { width: w, height: h, channels: 4 },
-              }).png().toBuffer()
+            ? await sharp(composited).png({ compressionLevel: 9 }).toBuffer()
             : mime === "image/webp"
-              ? await sharp(Buffer.from(watermarked), {
-                  raw: { width: w, height: h, channels: 4 },
-                }).webp({ quality: 95 }).toBuffer()
-              : await sharp(Buffer.from(watermarked), {
-                  raw: { width: w, height: h, channels: 4 },
-                }).jpeg({ quality: 95 }).toBuffer();
+              ? await sharp(composited).webp({ quality: 95 }).toBuffer()
+              : await sharp(composited).jpeg({ quality: 95, mozjpeg: true }).toBuffer();
 
         const newDataUrl = `data:${mime};base64,${out.toString("base64")}`;
 
@@ -107,4 +111,35 @@ export async function POST(request: Request) {
     console.error("Backfill watermark error:", error);
     return NextResponse.json({ error: "Backfill failed" }, { status: 500 });
   }
+}
+
+async function renderSignatureWatermark(
+  owner: string,
+  imageW: number,
+  imageH: number,
+): Promise<Buffer> {
+  const sigW = Math.max(180, Math.round(imageW * 0.06));
+  const sigH = Math.max(28, Math.round(imageW * 0.012));
+  const fontSize = Math.max(11, Math.round(sigH * 0.5));
+
+  const svg = `
+    <svg width="${sigW}" height="${sigH}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0.10"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="${sigW}" height="${sigH}" rx="4" ry="4" fill="url(#g)"/>
+      <text x="${sigW / 2}" y="${sigH / 2 + fontSize * 0.35}"
+            text-anchor="middle"
+            font-family="ui-sans-serif, -apple-system, system-ui, sans-serif"
+            font-size="${fontSize}"
+            font-weight="500"
+            letter-spacing="0.08em"
+            fill="#ffffff"
+            fill-opacity="0.55">© ${owner}</text>
+    </svg>
+  `;
+  return sharp(Buffer.from(svg)).png().toBuffer();
 }
