@@ -239,9 +239,9 @@ export default function GalleryPage() {
     const id = setInterval(() => {
       setProgress(p => {
         if (p >= 100) { setGenStep(s => (s + 1) % 4); return 0; }
-        return p + 1.4;
+        return p + 2;
       });
-    }, 65);
+    }, 100);
     return () => clearInterval(id);
   }, []);
 
@@ -258,8 +258,8 @@ export default function GalleryPage() {
         {/* ==== Background layers ==== */}
         <div className="absolute inset-0">
           {/* Radial gradient orbs */}
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-[#bf5af2]/12 dark:bg-[#bf5af2]/8 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-indigo-500/12 dark:bg-indigo-500/8 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+          <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-[#bf5af2]/12 dark:bg-[#bf5af2]/8 blur-3xl animate-pulse will-change-[opacity]" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-1/4 right-1/4 w-[320px] h-[320px] rounded-full bg-indigo-500/12 dark:bg-indigo-500/8 blur-3xl animate-pulse will-change-[opacity]" style={{ animationDuration: '10s', animationDelay: '2s' }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-[#bf5af2]/8 to-indigo-500/8 dark:from-[#bf5af2]/4 dark:to-indigo-500/4 blur-3xl" />
 
           {/* Grid pattern */}
@@ -274,31 +274,13 @@ export default function GalleryPage() {
               backgroundSize: '56px 56px',
             }} />
 
-          {/* Noise overlay */}
-          <canvas
-            ref={(el) => {
-              if (!el) return;
-              const ctx = el.getContext('2d');
-              if (!ctx) return;
-              const dpr = Math.min(window.devicePixelRatio || 1, 2);
-              el.width = el.offsetWidth * dpr;
-              el.height = el.offsetHeight * dpr;
-              const draw = () => {
-                const w = el.width, h = el.height;
-                const imageData = ctx.createImageData(w, h);
-                const d = imageData.data;
-                for (let i = 0; i < d.length; i += 4) {
-                  const v = Math.random() < 0.4 ? 255 : 0;
-                  d[i] = v; d[i + 1] = v; d[i + 2] = v;
-                  d[i + 3] = Math.random() < 0.4 ? 15 : 0;
-                }
-                ctx.putImageData(imageData, 0, 0);
-              };
-              draw();
-              const id = setInterval(draw, 80);
-              return () => clearInterval(id);
+          {/* Noise overlay — static, low-cost CSS texture */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.10] mix-blend-overlay"
+            style={{
+              backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>")`,
+              backgroundSize: '200px 200px',
             }}
-            className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.16] mix-blend-overlay"
           />
         </div>
 
@@ -431,26 +413,27 @@ export default function GalleryPage() {
                     src="https://picsum.photos/seed/tokyo-neon-3am/1200/960"
                     alt="AI generated image preview"
                     className="w-full h-full object-cover"
-                    style={{ filter: `blur(${(100 - progress) / 18}px) saturate(${0.9 + progress / 200})` }}
+                    loading="eager"
+                    decoding="async"
+                    style={{ filter: `blur(${Math.min((100 - progress) / 40, 2.5)}px) saturate(${0.9 + progress / 200})` }}
                   />
                 </div>
 
-                {/* Noise overlay — fades as progress increases */}
+                {/* Noise overlay — fades as progress increases (low-fps, small canvas) */}
                 <div
                   className="absolute inset-0 mix-blend-overlay pointer-events-none"
-                  style={{ opacity: (100 - progress) / 100 }}
+                  style={{ opacity: (100 - progress) / 120 }}
                 >
                   <canvas
                     ref={(el) => {
                       if (!el) return;
                       const ctx = el.getContext('2d');
                       if (!ctx) return;
-                      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-                      el.width = el.offsetWidth * dpr;
-                      el.height = el.offsetHeight * dpr;
+                      const size = 160; // tiny canvas — tiled
+                      el.width = size;
+                      el.height = size;
                       const draw = () => {
-                        const w = el.width, h = el.height;
-                        const imageData = ctx.createImageData(w, h);
+                        const imageData = ctx.createImageData(size, size);
                         const d = imageData.data;
                         for (let i = 0; i < d.length; i += 4) {
                           const v = Math.random() < 0.5 ? 255 : 0;
@@ -460,10 +443,11 @@ export default function GalleryPage() {
                         ctx.putImageData(imageData, 0, 0);
                       };
                       draw();
-                      const id = setInterval(draw, 60);
+                      const id = setInterval(draw, 200); // 5fps
                       return () => clearInterval(id);
                     }}
                     className="w-full h-full"
+                    style={{ imageRendering: 'pixelated' }}
                   />
                 </div>
 
