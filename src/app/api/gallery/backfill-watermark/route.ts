@@ -53,55 +53,53 @@ export async function POST(request: Request) {
           continue;
         }
 
-        const { data: rawPixels, info } = await img
+        // Convert to RGBA buffer regardless of input format
+        const { data: rgba } = await img
+          .ensureAlpha()
           .raw()
           .toBuffer({ resolveWithObject: true });
 
-        const channels = info.channels;
-
-        // Apply perturbation
-        const perturbed = perturbImage(new Uint8Array(rawPixels), w, h, {
+        // Perturbation (RGBA = 4 channels)
+        const perturbed = perturbImage(new Uint8Array(rgba), w, h, {
           seed: item.slug + ":backfill",
           strength: 2,
         });
 
-        // Embed LSB watermark (works on RGBA; for RGB we pass 3 channels)
+        // LSB watermark (RGBA)
         const payload: WatermarkPayload = {
           owner,
           slug: item.slug,
           uploadedAt: Date.now(),
         };
-        const watermarked = embedWatermark(
-          perturbed,
-          w,
-          h,
-          payload,
-          channels === 4 ? 4 : 3,
-        );
+        const watermarked = embedWatermark(perturbed, w, h, payload, 4);
 
-        // Render corner signature overlay
+        // Render corner signature as PNG overlay
         const sigPng = await renderSignatureWatermark(owner, w, h);
 
-        // Re-assemble using the correct channel count
-        const composited = await sharp(Buffer.from(watermarked), {
-          raw: { width: w, height: h, channels },
-        })
+        // Reassemble -- sharp.raw() then composite + encode -- this works
+        // because we're starting from a raw RGBA buffer, not from a webp file.
+        const base = sharp(Buffer.from(watermarked), {
+          raw: { width: w, height: h, channels: 4 },
+        });
+        const composited = await base
           .composite([{ input: sigPng, gravity: "southeast" }])
+          .png()
           .toBuffer();
 
-        // Re-encode in original format
-        const out =
-          mime === "image/png"
-            ? await sharp(composited, { raw: { width: w, height: h, channels } })
-                .png({ compressionLevel: 9 })
-                .toBuffer()
-            : mime === "image/webp"
-              ? await sharp(composited, { raw: { width: w, height: h, channels } })
-                  .webp({ quality: 95 })
-                  .toBuffer()
-              : await sharp(composited, { raw: { width: w, height: h, channels } })
-                  .jpeg({ quality: 95, mozjpeg: true })
-                  .toBuffer();
+        // If the original was webp, encode as webp; if jpeg, encode as jpeg.
+        // Convert png buffer -> target format.
+        let out: Buffer;
+        if (mime === "image/png") {
+          out = composited;
+        } else if (mime === "image/webp") {
+          out = await sharp(composited).webp({ quality: 95 }).toBuffer();
+        } else if (mime === "image/jpeg") {
+          out = await sharp(composited).jpeg({ quality: 95, mozjpeg: true }).toBuffer();
+        } else {
+          // Fallback: keep as png
+          out = composited;
+          console.warn(`Unknown mime ${mime}, storing as png`);
+        }
 
         const newDataUrl = `data:${mime};base64,${out.toString("base64")}`;
 
