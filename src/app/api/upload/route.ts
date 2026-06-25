@@ -16,8 +16,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      return NextResponse.json({ error: "File too large (max 2MB)" }, { status: 400 });
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();

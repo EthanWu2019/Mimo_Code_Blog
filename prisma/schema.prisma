@@ -112,3 +112,27 @@ model CommentLike {
 
   @@unique([commentId, userId])
 }
+
+model GalleryItem {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  subtitle    String?
+  description String?
+  imageData   String   // base64 data URL
+  imageMime   String   // "image/webp" | "image/jpeg" | "image/png"
+  width       Int
+  height      Int
+  aspectRatio String   @default("landscape") // portrait | landscape | square
+  tags        String[] // simple string array instead of relational Tag
+  featured    Boolean  @default(false)
+  viewCount   Int      @default(0)
+  likeCount   Int      @default(0)
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([featured])
+  @@index([createdAt])
+}

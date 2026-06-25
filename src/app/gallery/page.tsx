@@ -6,6 +6,7 @@ import gsap from 'gsap';
 
 interface GalleryItem {
   id: string;
+  slug: string;
   title: string;
   subtitle: string;
   tags: string[];
@@ -13,33 +14,17 @@ interface GalleryItem {
   imageUrl: string;
   aspectRatio: 'portrait' | 'landscape' | 'square';
   featured?: boolean;
+  width?: number;
+  height?: number;
 }
 
-const galleryData: GalleryItem[] = [
-  { id: 'neural-dreams', title: 'Neural Dreams', subtitle: 'AI-generated abstract landscapes', tags: ['Landscape'], date: '2025-06-15', imageUrl: 'https://picsum.photos/seed/neural-dreams/800/600', aspectRatio: 'landscape', featured: true },
-  { id: 'digital-portrait', title: 'Digital Portrait', subtitle: 'Machine learning face synthesis', tags: ['Portrait'], date: '2025-06-10', imageUrl: 'https://picsum.photos/seed/digital-portrait/600/800', aspectRatio: 'portrait', featured: true },
-  { id: 'synth-cityscape', title: 'Synth Cityscape', subtitle: 'Futuristic urban environments', tags: ['Architecture'], date: '2025-06-05', imageUrl: 'https://picsum.photos/seed/synth-cityscape/800/600', aspectRatio: 'landscape', featured: true },
-  { id: 'abstract-flora', title: 'Abstract Flora', subtitle: 'Botanical patterns via diffusion', tags: ['Nature'], date: '2025-05-28', imageUrl: 'https://picsum.photos/seed/abstract-flora/700/700', aspectRatio: 'square' },
-  { id: 'cyber-portrait', title: 'Cyber Portrait', subtitle: 'Neon-lit character studies', tags: ['Portrait', 'Cyberpunk'], date: '2025-05-20', imageUrl: 'https://picsum.photos/seed/cyber-portrait/600/800', aspectRatio: 'portrait' },
-  { id: 'data-viz', title: 'Data Visualization', subtitle: 'Complex datasets as art', tags: ['Data'], date: '2025-05-15', imageUrl: 'https://picsum.photos/seed/data-viz/800/600', aspectRatio: 'landscape', featured: true },
-  { id: 'minimal-forms', title: 'Minimal Forms', subtitle: 'Geometric abstraction by AI', tags: ['Minimal'], date: '2025-05-10', imageUrl: 'https://picsum.photos/seed/minimal-forms/700/700', aspectRatio: 'square' },
-  { id: 'ethereal-space', title: 'Ethereal Space', subtitle: 'Cosmic exploration imagery', tags: ['Space'], date: '2025-05-05', imageUrl: 'https://picsum.photos/seed/ethereal-space/800/600', aspectRatio: 'landscape' },
-  { id: 'retro-wave', title: 'Retro Wave', subtitle: 'Synthwave aesthetics generated', tags: ['Cyberpunk'], date: '2025-04-28', imageUrl: 'https://picsum.photos/seed/retro-wave/800/600', aspectRatio: 'landscape' },
-  { id: 'nature-ai', title: 'Nature Reimagined', subtitle: 'AI interpretation of wilderness', tags: ['Nature'], date: '2025-04-20', imageUrl: 'https://picsum.photos/seed/nature-ai/600/800', aspectRatio: 'portrait' },
-  { id: 'face-study', title: 'Face Study', subtitle: 'Generative portrait series', tags: ['Portrait'], date: '2025-04-15', imageUrl: 'https://picsum.photos/seed/face-study/700/700', aspectRatio: 'square', featured: true },
-  { id: 'urban-layers', title: 'Urban Layers', subtitle: 'Multi-exposure city composites', tags: ['Architecture', 'Urban'], date: '2025-04-10', imageUrl: 'https://picsum.photos/seed/urban-layers/800/600', aspectRatio: 'landscape' },
-  { id: 'dreamscapes', title: 'Dreamscapes', subtitle: 'Surreal AI-generated worlds', tags: ['Surreal'], date: '2025-04-05', imageUrl: 'https://picsum.photos/seed/dreamscapes/800/600', aspectRatio: 'landscape' },
-  { id: 'pixel-art', title: 'Pixel Art Fusion', subtitle: 'Retro meets modern AI', tags: ['Pixel'], date: '2025-03-28', imageUrl: 'https://picsum.photos/seed/pixel-art/700/700', aspectRatio: 'square' },
-  { id: 'macro-world', title: 'Macro World', subtitle: 'Extreme close-up generation', tags: ['Nature', 'Macro'], date: '2025-03-20', imageUrl: 'https://picsum.photos/seed/macro-world/600/800', aspectRatio: 'portrait' },
-];
-
-const allTags = Array.from(new Set(galleryData.flatMap(item => item.tags)));
-
-// Create groups of 5 for hero slideshow
-const SLIDE_SIZE = 5;
-const heroGroups: GalleryItem[][] = [];
-for (let i = 0; i < galleryData.length; i += SLIDE_SIZE) {
-  heroGroups.push(galleryData.slice(i, i + SLIDE_SIZE));
+// (data is fetched at runtime inside the component)
+function buildHeroGroups(items: GalleryItem[], size: number): GalleryItem[][] {
+  const groups: GalleryItem[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    groups.push(items.slice(i, i + size));
+  }
+  return groups;
 }
 
 function GalleryCard({ item, onOpen, likes, onLike }: {
@@ -134,6 +119,7 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
 
 export default function GalleryPage() {
   const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<GalleryItem[]>([]);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
   const [likes, setLikes] = useState<Record<string, number>>({});
@@ -144,10 +130,34 @@ export default function GalleryPage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Simulate initial loading
+  // Fetch gallery items from API
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
+    let cancelled = false;
+    fetch('/api/gallery')
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        const list = (data.items || []).map((it: any) => ({
+          id: it.id,
+          slug: it.slug,
+          title: it.title,
+          subtitle: it.subtitle || '',
+          tags: it.tags || [],
+          date: new Date(it.createdAt).toISOString().slice(0, 10),
+          imageUrl: `/api/gallery/${it.slug}/image`,
+          aspectRatio: it.aspectRatio || 'landscape',
+          featured: it.featured || false,
+          width: it.width,
+          height: it.height,
+        }));
+        setItems(list);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Gallery fetch failed:', err);
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, []);
 
   // Init shimmer animations for skeleton bars
@@ -185,8 +195,8 @@ export default function GalleryPage() {
   }, []);
 
   const filteredItems = activeTag
-    ? galleryData.filter(item => item.tags.includes(activeTag))
-    : galleryData;
+    ? items.filter(item => item.tags.includes(activeTag))
+    : items;
 
   const sortedItems = sortBy === 'newest'
     ? [...filteredItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -201,17 +211,20 @@ export default function GalleryPage() {
   }, []);
 
   // Hero slideshow auto-rotation
+  const SLIDE_SIZE = 5;
+  const heroGroups = buildHeroGroups(items, SLIDE_SIZE);
   useEffect(() => {
-    if (isPaused || loading) return;
+    if (isPaused || loading || heroGroups.length === 0) return;
     intervalRef.current = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % heroGroups.length);
+      setCurrentSlide(prev => (prev + 1) % Math.max(heroGroups.length, 1));
     }, 4500);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isPaused, loading]);
+  }, [isPaused, loading, heroGroups.length]);
 
-  const currentGroup = heroGroups[currentSlide] || heroGroups[0];
+  const currentGroup = heroGroups[currentSlide] || heroGroups[0] || [];
+  const allTags = Array.from(new Set(items.flatMap(item => item.tags)));
 
   // Simulated "currently generating" typewriter
   const fullPrompt = 'a quiet city street in tokyo at 3am, neon reflections on wet asphalt, cinematic grain, kodak portra 800';
