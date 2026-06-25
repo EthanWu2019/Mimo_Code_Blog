@@ -60,27 +60,22 @@ export default function BackToTop() {
           fill="none"
           stroke="currentColor"
           strokeWidth="2.5"
-          className="text-zinc-300/30 dark:text-white/[0.08]"
+          className="text-zinc-300/40 dark:text-white/[0.08]"
         />
-        {/* Progress arc — purple, animates with scroll */}
+        {/* Progress arc — black in light mode, white in dark mode */}
         <circle
           cx="22"
           cy="22"
           r={RADIUS}
           fill="none"
-          stroke="url(#backToTopGradient)"
+          stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeDasharray={CIRC}
           strokeDashoffset={dashOffset}
           style={{ transition: 'stroke-dashoffset 0.05s linear' }}
+          className="text-zinc-900 dark:text-white"
         />
-        <defs>
-          <linearGradient id="backToTopGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#bf5af2" />
-            <stop offset="100%" stopColor="#af52de" />
-          </linearGradient>
-        </defs>
       </svg>
 
       {/* Arrow icon */}
