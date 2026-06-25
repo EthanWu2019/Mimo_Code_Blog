@@ -10,10 +10,7 @@ import { perturbImage } from "@/lib/image-perturb";
  * Applies full security pipeline to ALL existing gallery items:
  *  - PhotoGuard-style perturbation
  *  - LSB invisible watermark (owner / slug / timestamp)
- *  - Corner signature watermark (subtle, ~6% of width, opacity 0.55)
- *
- * Idempotent -- if LSB already contains our owner tag, we re-embed to refresh
- * the timestamp and update the corner mark.
+ *  - Corner signature watermark
  */
 export async function POST(request: Request) {
   try {
@@ -56,38 +53,55 @@ export async function POST(request: Request) {
           continue;
         }
 
-        const { data: rawPixels } = await img
-          .ensureAlpha()
+        const { data: rawPixels, info } = await img
           .raw()
           .toBuffer({ resolveWithObject: true });
 
+        const channels = info.channels;
+
+        // Apply perturbation
         const perturbed = perturbImage(new Uint8Array(rawPixels), w, h, {
           seed: item.slug + ":backfill",
           strength: 2,
         });
 
+        // Embed LSB watermark (works on RGBA; for RGB we pass 3 channels)
         const payload: WatermarkPayload = {
           owner,
           slug: item.slug,
           uploadedAt: Date.now(),
         };
+        const watermarked = embedWatermark(
+          perturbed,
+          w,
+          h,
+          payload,
+          channels === 4 ? 4 : 3,
+        );
 
-        const watermarked = embedWatermark(perturbed, w, h, payload, 4);
-
-        // Render corner signature
+        // Render corner signature overlay
         const sigPng = await renderSignatureWatermark(owner, w, h);
+
+        // Re-assemble using the correct channel count
         const composited = await sharp(Buffer.from(watermarked), {
-          raw: { width: w, height: h, channels: 4 },
+          raw: { width: w, height: h, channels },
         })
           .composite([{ input: sigPng, gravity: "southeast" }])
           .toBuffer();
 
+        // Re-encode in original format
         const out =
           mime === "image/png"
-            ? await sharp(composited).png({ compressionLevel: 9 }).toBuffer()
+            ? await sharp(composited, { raw: { width: w, height: h, channels } })
+                .png({ compressionLevel: 9 })
+                .toBuffer()
             : mime === "image/webp"
-              ? await sharp(composited).webp({ quality: 95 }).toBuffer()
-              : await sharp(composited).jpeg({ quality: 95, mozjpeg: true }).toBuffer();
+              ? await sharp(composited, { raw: { width: w, height: h, channels } })
+                  .webp({ quality: 95 })
+                  .toBuffer()
+              : await sharp(composited, { raw: { width: w, height: h, channels } })
+                  .jpeg({ quality: 95, mozjpeg: true })
+                  .toBuffer();
 
         const newDataUrl = `data:${mime};base64,${out.toString("base64")}`;
 
