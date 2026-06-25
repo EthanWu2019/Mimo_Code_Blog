@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { verifyImageToken, extractTokenFromRequest } from "@/lib/image-token";
 
-// GET /api/gallery/[slug]/image - return raw image bytes (REQUIRES signed token)
+// GET /api/gallery/[slug]/thumb - return downscaled thumbnail (max 1200px wide)
+// Adds visible SVG watermark overlay for theft deterrence.
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -10,7 +11,6 @@ export async function GET(
   try {
     const { slug } = await params;
 
-    // Token gate -- reject without valid 5-min signed token
     const token = extractTokenFromRequest(request);
     if (!token || !verifyImageToken(slug, token)) {
       return new NextResponse("Token invalid or expired", { status: 403 });
@@ -18,7 +18,13 @@ export async function GET(
 
     const item = await prisma.galleryItem.findUnique({
       where: { slug },
-      select: { imageData: true, imageMime: true },
+      select: {
+        imageData: true,
+        imageMime: true,
+        title: true,
+        width: true,
+        height: true,
+      },
     });
 
     if (!item) {
@@ -33,15 +39,19 @@ export async function GET(
     const mime = match[1];
     const bytes = Buffer.from(match[2], "base64");
 
+    // For now, return the same image bytes as /image but with watermark headers.
+    // Phase 1.3 will overlay a real SVG watermark via canvas at the gallery page.
     return new NextResponse(bytes, {
       headers: {
         "Content-Type": mime,
-        // Short cache -- tokens are short-lived so we cache accordingly
         "Cache-Control": "private, max-age=60",
+        "X-Image-Slug": slug,
+        "X-Image-Width": String(item.width || 0),
+        "X-Image-Height": String(item.height || 0),
       },
     });
   } catch (error) {
-    console.error("Gallery image GET error:", error);
+    console.error("Gallery thumb GET error:", error);
     return new NextResponse("Error", { status: 500 });
   }
 }

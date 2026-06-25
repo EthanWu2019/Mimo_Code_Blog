@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
+import SecureImage from '@/components/SecureImage';
 
 interface GalleryItem {
   id: string;
@@ -60,17 +61,16 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
               : '4 / 3',
         }}
       >
-        {/* Image with protection */}
+        {/* Secure image with built-in watermark + blob: URL (no http:// exposure) */}
         <div className="absolute inset-0" onContextMenu={(e) => e.preventDefault()}>
-          <img
-            src={item.imageUrl}
+          <SecureImage
+            slug={item.slug}
             alt={item.title}
-            loading="lazy"
-            draggable={false}
-            className="w-full h-full object-cover pointer-events-none select-none transition-transform duration-700 group-hover:scale-105"
+            variant="thumb"
+            ownerFingerprint="EthanWu"
+            watermarkOpacity={0.06}
+            className="w-full h-full transition-transform duration-700 group-hover:scale-105"
           />
-          {/* Transparent overlay for protection */}
-          <div className="absolute inset-0 z-10" />
         </div>
 
         {/* Hover overlay */}
@@ -669,8 +669,8 @@ export default function GalleryPage() {
               {/* Fullscreen expand button */}
               <button
                 onClick={() => {
-                  const img = document.querySelector<HTMLImageElement>('[data-lightbox-img]');
-                  if (img?.requestFullscreen) img.requestFullscreen();
+                  const c = document.querySelector<HTMLCanvasElement>('[data-lightbox-canvas]');
+                  if (c?.requestFullscreen) c.requestFullscreen();
                 }}
                 aria-label="View fullscreen"
                 title="View fullscreen"
@@ -688,17 +688,18 @@ export default function GalleryPage() {
                   style={{ minHeight: '300px', maxHeight: '92vh' }}
                   onContextMenu={(e) => e.preventDefault()}
                   onClick={() => {
-                    const img = document.querySelector<HTMLImageElement>('[data-lightbox-img]');
-                    if (img?.requestFullscreen) img.requestFullscreen();
+                    // Use browser native fullscreen on the canvas via parent
+                    const c = document.querySelector<HTMLCanvasElement>('[data-lightbox-canvas]');
+                    if (c?.requestFullscreen) c.requestFullscreen();
                   }}
                 >
-                  <img
-                    src={selectedItem.imageUrl}
+                  <SecureImage
+                    slug={selectedItem.slug}
                     alt={selectedItem.title}
-                    draggable={false}
-                    data-lightbox-img
-                    className="w-full h-full object-contain select-none pointer-events-none"
-                    style={{ maxHeight: '92vh' }}
+                    variant="full"
+                    ownerFingerprint="EthanWu"
+                    watermarkOpacity={0.07}
+                    className="w-full h-full"
                   />
                   {/* Zoom hint */}
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none flex items-center gap-1.5">
