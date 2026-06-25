@@ -643,7 +643,7 @@ export default function GalleryPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl"
             onClick={() => setSelectedItem(null)}
           >
             <motion.div
@@ -651,13 +651,14 @@ export default function GalleryPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative max-w-5xl w-full max-h-[90vh] overflow-hidden rounded-2xl bg-white/[0.03] border border-white/[0.1] backdrop-blur-2xl"
+              className="relative w-full max-w-[95vw] max-h-[92vh] overflow-hidden rounded-2xl bg-white/[0.03] border border-white/[0.1] backdrop-blur-2xl"
               onClick={(e) => e.stopPropagation()}
               onContextMenu={(e) => e.preventDefault()}
             >
               {/* Close button */}
               <button
                 onClick={() => setSelectedItem(null)}
+                aria-label="Close"
                 className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -665,21 +666,51 @@ export default function GalleryPage() {
                 </svg>
               </button>
 
-              <div className="flex flex-col lg:flex-row">
-                {/* Image */}
-                <div className="lg:w-2/3 relative" onContextMenu={(e) => e.preventDefault()}>
+              {/* Fullscreen expand button */}
+              <button
+                onClick={() => {
+                  const img = document.querySelector<HTMLImageElement>('[data-lightbox-img]');
+                  if (img?.requestFullscreen) img.requestFullscreen();
+                }}
+                aria-label="View fullscreen"
+                title="View fullscreen"
+                className="absolute top-4 right-16 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+
+              <div className="flex flex-col lg:flex-row max-h-[92vh]">
+                {/* Image — click to open native fullscreen (browser's own zoom UI) */}
+                <div
+                  className="lg:w-2/3 relative bg-black/30 flex items-center justify-center cursor-zoom-in group"
+                  style={{ minHeight: '300px', maxHeight: '92vh' }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  onClick={() => {
+                    const img = document.querySelector<HTMLImageElement>('[data-lightbox-img]');
+                    if (img?.requestFullscreen) img.requestFullscreen();
+                  }}
+                >
                   <img
                     src={selectedItem.imageUrl}
                     alt={selectedItem.title}
                     draggable={false}
-                    className="w-full h-full object-cover select-none pointer-events-none"
-                    style={{ maxHeight: '70vh' }}
+                    data-lightbox-img
+                    className="w-full h-full object-contain select-none pointer-events-none"
+                    style={{ maxHeight: '92vh' }}
                   />
-                  <div className="absolute inset-0" />
+                  {/* Zoom hint */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                    </svg>
+                    Click image for fullscreen
+                  </div>
                 </div>
 
                 {/* Metadata */}
-                <div className="lg:w-1/3 p-6 flex flex-col justify-between">
+                <div className="lg:w-1/3 p-6 flex flex-col justify-between overflow-y-auto">
                   <div>
                     <h2 className="text-2xl font-bold text-white">{selectedItem.title}</h2>
                     <p className="text-zinc-400 mt-2">{selectedItem.subtitle}</p>
