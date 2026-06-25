@@ -600,7 +600,7 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* Masonry Grid */}
+      {/* Masonry Grid — 1 item: 2/3 width, 2 items: 2 cols, 3+: 3 cols */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         {loading ? (
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
@@ -613,7 +613,13 @@ export default function GalleryPage() {
         ) : (
         <motion.div
           layout
-          className="columns-1 sm:columns-2 lg:columns-3 gap-4"
+          className={
+            sortedItems.length === 1
+              ? 'columns-1 gap-4 max-w-[66.67%] mx-auto'
+              : sortedItems.length === 2
+              ? 'columns-1 sm:columns-2 gap-4'
+              : 'columns-1 sm:columns-2 lg:columns-3 gap-4'
+          }
         >
           <AnimatePresence mode="popLayout">
             {sortedItems.map((item) => (
