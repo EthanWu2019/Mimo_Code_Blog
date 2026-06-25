@@ -140,6 +140,7 @@ export default function GalleryPage() {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [tab, setTab] = useState<'all' | 'sref' | 'seed'>('all');
   const heroRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -212,129 +213,333 @@ export default function GalleryPage() {
 
   const currentGroup = heroGroups[currentSlide] || heroGroups[0];
 
+  // Simulated "currently generating" typewriter
+  const fullPrompt = 'a quiet city street in tokyo at 3am, neon reflections on wet asphalt, cinematic grain, kodak portra 800';
+  const metaString = 'SDXL 1.0 · 50 steps · CFG 7.5 · 1024×1024';
+  const [typedPrompt, setTypedPrompt] = useState('');
+  const [typedMeta, setTypedMeta] = useState('');
+  const [progress, setProgress] = useState(0);
+  const [genStep, setGenStep] = useState(0);
+
+  useEffect(() => {
+    let i = 0; setTypedPrompt('');
+    const pId = setInterval(() => {
+      i++; setTypedPrompt(fullPrompt.slice(0, i));
+      if (i >= fullPrompt.length) clearInterval(pId);
+    }, 35);
+    let j = 0; setTypedMeta('');
+    const mId = setInterval(() => {
+      j++; setTypedMeta(metaString.slice(0, j));
+      if (j >= metaString.length) clearInterval(mId);
+    }, 50);
+    return () => { clearInterval(pId); clearInterval(mId); };
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) { setGenStep(s => (s + 1) % 4); return 0; }
+        return p + 1.4;
+      });
+    }, 65);
+    return () => clearInterval(id);
+  }, []);
+
+  const genStepLabels = ['Injecting noise', 'Denoising · 24/50 steps', 'Refining details', 'Upscaling 2×'];
+
   return (
     <div className="min-h-screen">
       {/* Hero Section — generative canvas concept */}
       <section
-        className="relative -mt-[72px] min-h-[calc(85vh+72px)] flex flex-col items-center justify-center overflow-hidden"
+        className="relative -mt-[72px] pt-[72px] min-h-[100vh] overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Background layer — full bleed behind navbar */}
-        <div className="absolute inset-0 bg-white dark:bg-[#0a0a0b]">
-          {/* Gradient orbs */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#bf5af2]/15 dark:bg-[#bf5af2]/10 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-purple-500/15 dark:bg-purple-500/10 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-[#bf5af2]/10 to-purple-500/10 dark:from-[#bf5af2]/5 dark:to-purple-500/5 blur-2xl" />
-          
-          {/* Grid pattern — visible in both themes */}
-          <div className="absolute inset-0"
+        {/* ==== Background layers ==== */}
+        <div className="absolute inset-0">
+          {/* Radial gradient orbs */}
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-[#bf5af2]/12 dark:bg-[#bf5af2]/8 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-indigo-500/12 dark:bg-indigo-500/8 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-[#bf5af2]/8 to-indigo-500/8 dark:from-[#bf5af2]/4 dark:to-indigo-500/4 blur-3xl" />
+
+          {/* Grid pattern */}
+          <div className="absolute inset-0 opacity-40"
             style={{
-              backgroundImage: 'linear-gradient(rgba(0,0,0,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.12) 1px, transparent 1px)',
-              backgroundSize: '60px 60px',
-            }}
-          />
-          <div className="absolute inset-0 dark:hidden"
+              backgroundImage: 'linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)',
+              backgroundSize: '56px 56px',
+            }} />
+          <div className="absolute inset-0 opacity-30 hidden dark:block"
             style={{
-              backgroundImage: 'linear-gradient(rgba(0,0,0,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.12) 1px, transparent 1px)',
-              backgroundSize: '60px 60px',
+              backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
+              backgroundSize: '56px 56px',
+            }} />
+
+          {/* Noise overlay */}
+          <canvas
+            ref={(el) => {
+              if (!el) return;
+              const ctx = el.getContext('2d');
+              if (!ctx) return;
+              const dpr = Math.min(window.devicePixelRatio || 1, 2);
+              el.width = el.offsetWidth * dpr;
+              el.height = el.offsetHeight * dpr;
+              const draw = () => {
+                const w = el.width, h = el.height;
+                const imageData = ctx.createImageData(w, h);
+                const d = imageData.data;
+                for (let i = 0; i < d.length; i += 4) {
+                  const v = Math.random() < 0.4 ? 255 : 0;
+                  d[i] = v; d[i + 1] = v; d[i + 2] = v;
+                  d[i + 3] = Math.random() < 0.4 ? 15 : 0;
+                }
+                ctx.putImageData(imageData, 0, 0);
+              };
+              draw();
+              const id = setInterval(draw, 80);
+              return () => clearInterval(id);
             }}
-          />
-          <div className="absolute inset-0 hidden dark:block"
-            style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
-              backgroundSize: '60px 60px',
-            }}
+            className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.16] mix-blend-overlay"
           />
         </div>
 
-        {/* Content — padded below navbar */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto px-8" style={{ paddingTop: '96px', paddingBottom: '48px' }}>
-          {/* Title */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center mb-10"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] mb-5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#bf5af2] animate-pulse" />
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">Ethan&apos;s Blog · Gallery</span>
-            </div>
-            <h1 className="text-6xl md:text-8xl font-bold text-zinc-900 dark:text-white tracking-tight leading-[0.9]">
-              AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#bf5af2] to-purple-400">Gallery</span>
-            </h1>
-            <p className="mt-4 text-zinc-600 dark:text-zinc-400 text-lg max-w-xl mx-auto">
-              Exploring the intersection of artificial intelligence and artistic expression
-            </p>
-          </motion.div>
+        {/* ==== Hero Content: 12-column asymmetric grid ==== */}
+        <div className="relative z-10 max-w-7xl mx-auto px-8 pt-16 pb-20 min-h-[calc(100vh-72px)] flex items-center">
+          <div className="grid grid-cols-12 gap-8 w-full items-center">
+            {/* ==== LEFT: copy + meta + stats ==== */}
+            <div className="col-span-12 lg:col-span-5">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/50 dark:bg-white/[0.03] backdrop-blur-sm mb-6"
+              >
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#bf5af2] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#bf5af2]"></span>
+                </span>
+                <span className="text-[10px] font-medium tracking-[0.18em] uppercase text-zinc-600 dark:text-zinc-400">
+                  Ethan's Blog · Generative
+                </span>
+              </motion.div>
 
-          {/* Featured artworks — 3-image grid */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-              className="w-full max-w-4xl mx-auto"
-            >
-              <div className="grid grid-cols-3 gap-3 md:gap-4">
-                {currentGroup.slice(0, 3).map((item, i) => (
-                  <div
-                    key={item.id}
-                    className={`relative rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.08] ${
-                      i === 0 ? 'col-span-2 row-span-2 aspect-[4/3]' : 'aspect-square'
-                    }`}
-                    onContextMenu={(e) => e.preventDefault()}
-                  >
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      draggable={false}
-                      className="w-full h-full object-cover select-none pointer-events-none"
-                    />
-                    {/* Scan lines */}
-                    <div className="absolute inset-0 pointer-events-none"
-                      style={{
-                        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 3px)',
-                        backgroundSize: '100% 3px',
-                      }}
-                    />
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-300 flex items-end p-3">
-                      <div>
-                        <p className="text-white text-xs font-medium">{item.title}</p>
-                        <p className="text-zinc-300 text-[10px] mt-0.5">{item.subtitle}</p>
-                      </div>
+              <motion.h1
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="text-5xl md:text-6xl xl:text-7xl font-semibold tracking-tighter text-zinc-900 dark:text-white leading-[0.95]"
+              >
+                Pixels born
+                <br />
+                from{' '}
+                <span className="relative inline-block">
+                  <span className="bg-gradient-to-r from-[#bf5af2] via-fuchsia-400 to-indigo-500 bg-clip-text text-transparent">
+                    prompts
+                  </span>
+                  <svg className="absolute -bottom-2 left-0 w-full" height="6" viewBox="0 0 200 6" fill="none">
+                    <path d="M2 4 Q 100 -2 198 4" stroke="url(#g1)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                    <defs>
+                      <linearGradient id="g1" x1="0" x2="200" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#8b5cf6" />
+                        <stop offset="1" stopColor="#6366f1" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+                .
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-5 text-base text-zinc-600 dark:text-zinc-400 max-w-md leading-relaxed"
+              >
+                A studio for images conjured from language. Stable Diffusion, Midjourney, Flux — and a great many midnight prompts.
+              </motion.p>
+
+              {/* Live generation block */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-7 p-4 rounded-2xl border border-zinc-200 dark:border-white/[0.08] bg-zinc-50/60 dark:bg-white/[0.02] backdrop-blur-sm"
+              >
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#bf5af2] animate-pulse"></span>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                      live · now generating
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 tabular-nums">
+                    {Math.floor(progress)}%
+                  </span>
+                </div>
+                <div className="text-[12px] font-mono text-zinc-700 dark:text-zinc-300 leading-relaxed min-h-[3rem] break-words">
+                  <span className="text-zinc-500 dark:text-zinc-500">&quot;{typedPrompt}</span>
+                  <span className="inline-block w-1.5 h-3 bg-[#bf5af2] align-middle ml-0.5 animate-pulse"></span>
+                  <span className="text-zinc-500 dark:text-zinc-500">&quot;</span>
+                </div>
+                <div className="mt-3 h-1 rounded-full bg-zinc-200 dark:bg-white/[0.06] overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-[#bf5af2] via-fuchsia-500 to-indigo-500"
+                    style={{ width: `${progress}%` }}
+                    transition={{ duration: 0.1 }}
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[10px] font-mono text-zinc-500 dark:text-zinc-500">
+                  <span>{genStepLabels[genStep]}</span>
+                  <span>seed: 8419207</span>
+                </div>
+              </motion.div>
+
+              {/* Stat row */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-6 flex gap-6"
+              >
+                <div>
+                  <div className="text-2xl font-semibold tabular-nums text-zinc-900 dark:text-white">148</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mt-0.5">prompts</div>
+                </div>
+                <div className="w-px bg-zinc-200 dark:bg-white/[0.06]" />
+                <div>
+                  <div className="text-2xl font-semibold tabular-nums text-zinc-900 dark:text-white">12</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mt-0.5">models</div>
+                </div>
+                <div className="w-px bg-zinc-200 dark:bg-white/[0.06]" />
+                <div>
+                  <div className="text-2xl font-semibold tabular-nums text-zinc-900 dark:text-white">∞</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mt-0.5">iterations</div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* ==== RIGHT: live "generating" preview with HUD ==== */}
+            <div className="col-span-12 lg:col-span-7">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative aspect-[5/4] rounded-2xl overflow-hidden border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-zinc-900/40"
+              >
+                {/* The "image" — blurry → sharp as progress increases */}
+                <div className="absolute inset-0">
+                  <img
+                    src="https://picsum.photos/seed/tokyo-neon-3am/1200/960"
+                    alt="AI generated image preview"
+                    className="w-full h-full object-cover"
+                    style={{ filter: `blur(${(100 - progress) / 18}px) saturate(${0.9 + progress / 200})` }}
+                  />
+                </div>
+
+                {/* Noise overlay — fades as progress increases */}
+                <div
+                  className="absolute inset-0 mix-blend-overlay pointer-events-none"
+                  style={{ opacity: (100 - progress) / 100 }}
+                >
+                  <canvas
+                    ref={(el) => {
+                      if (!el) return;
+                      const ctx = el.getContext('2d');
+                      if (!ctx) return;
+                      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                      el.width = el.offsetWidth * dpr;
+                      el.height = el.offsetHeight * dpr;
+                      const draw = () => {
+                        const w = el.width, h = el.height;
+                        const imageData = ctx.createImageData(w, h);
+                        const d = imageData.data;
+                        for (let i = 0; i < d.length; i += 4) {
+                          const v = Math.random() < 0.5 ? 255 : 0;
+                          d[i] = v; d[i + 1] = v; d[i + 2] = v;
+                          d[i + 3] = Math.random() < 0.5 ? 20 : 0;
+                        }
+                        ctx.putImageData(imageData, 0, 0);
+                      };
+                      draw();
+                      const id = setInterval(draw, 60);
+                      return () => clearInterval(id);
+                    }}
+                    className="w-full h-full"
+                  />
+                </div>
+
+                {/* Scan line */}
+                <motion.div
+                  className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-violet-400/80 to-transparent"
+                  initial={{ top: '0%' }}
+                  animate={{ top: '100%' }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+                />
+
+                {/* Top HUD */}
+                <div className="absolute top-0 inset-x-0 flex items-center justify-between p-3.5 text-[10px] font-mono uppercase tracking-widest text-white/90 z-10">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                    <span>REC</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span>1024×1024</span>
+                    <span className="opacity-50">·</span>
+                    <span className="font-mono normal-case tracking-normal text-[10px]">{typedMeta}</span>
+                  </div>
+                </div>
+
+                {/* Bottom HUD */}
+                <div className="absolute bottom-0 inset-x-0 p-3.5 z-10">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-white/80">
+                    <div className="flex items-center gap-3">
+                      <span>step {Math.floor((progress / 100) * 50)}/50</span>
+                      <span className="opacity-50">·</span>
+                      <span>noise {Math.round(100 - progress)}%</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {['noise', 'denoise', 'refine', 'upscale'].map((s, i) => (
+                        <span
+                          key={s}
+                          className={`h-1 rounded-full transition-all duration-300 ${
+                            i === genStep ? 'w-6 bg-white' : i < genStep ? 'w-2 bg-white/60' : 'w-2 bg-white/20'
+                          }`}
+                        />
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-              {/* Tags */}
-              <div className="flex items-center justify-center gap-3 mt-4">
-                {currentGroup[0].tags.map(tag => (
-                  <span key={tag} className="text-[11px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
-          </AnimatePresence>
+                </div>
 
-          {/* Slide indicators */}
-          <div className="flex gap-2 mt-10">
-            {heroGroups.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentSlide(i)}
-                className={`h-1 rounded-full transition-all duration-500 ${
-                  i === currentSlide
-                    ? 'w-6 bg-[#bf5af2]'
-                    : 'w-2.5 bg-zinc-300 dark:bg-white/15 hover:bg-zinc-400 dark:hover:bg-white/30'
-                }`}
-              />
-            ))}
+                {/* Corner brackets */}
+                <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-white/40 z-10" />
+                <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-white/40 z-10" />
+                <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l border-white/40 z-10" />
+                <div className="absolute bottom-3 right-3 w-3 h-3 border-b border-r border-white/40 z-10" />
+              </motion.div>
+
+              {/* Below preview: tab bar */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-3 flex items-center justify-between text-[11px] font-mono text-zinc-500 dark:text-zinc-400"
+              >
+                <div className="flex items-center gap-3">
+                  {(['all', 'sref', 'seed'] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTab(t)}
+                      className={`uppercase tracking-widest transition-colors ${
+                        tab === t ? 'text-zinc-900 dark:text-white' : 'hover:text-zinc-700 dark:hover:text-zinc-300'
+                      }`}
+                    >
+                      {t === 'sref' ? 'style ref' : t}
+                      {tab === t && <span className="ml-1.5 text-[#bf5af2]">·</span>}
+                    </button>
+                  ))}
+                </div>
+                <span>↓ scroll to collection</span>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
