@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
+import SecureImage from '@/components/SecureImage';
 
 interface GalleryItem {
   id: string;
@@ -60,13 +61,11 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
               : '4 / 3',
         }}
       >
-        <img
-          src={item.imageUrl}
+        <SecureImage
+          slug={item.slug}
           alt={item.title}
-          loading="lazy"
-          draggable={false}
-          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-transform duration-700 ease-out group-hover:scale-105"
-          onContextMenu={(e) => e.preventDefault()}
+          variant="thumb"
+          className="absolute inset-0 w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
         {/* Hover overlay -- non-interactive background, only buttons receive clicks */}
@@ -130,6 +129,7 @@ export default function GalleryPage() {
   const [likes, setLikes] = useState<Record<string, number>>({});
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenBlobUrl, setFullscreenBlobUrl] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [tab, setTab] = useState<'all' | 'sref' | 'seed'>('all');
@@ -660,6 +660,19 @@ export default function GalleryPage() {
                 onClick={() => setIsFullscreen(true)}
                 aria-label="View fullscreen"
                 title="View fullscreen"
+                onClick={async () => {
+                  setIsFullscreen(true);
+                  // Fetch blob URL via token API
+                  try {
+                    const t = await fetch(`/api/gallery/${selectedItem.slug}/token?variant=thumb`, { credentials: 'include' });
+                    if (t.ok) {
+                      const { url } = await t.json();
+                      const r = await fetch(url);
+                      const b = await r.blob();
+                      setFullscreenBlobUrl(URL.createObjectURL(b));
+                    }
+                  } catch {}
+                }}
                 className="absolute top-4 right-16 z-[60] w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -682,14 +695,24 @@ export default function GalleryPage() {
                   className="lg:w-2/3 relative bg-black/30 flex items-center justify-center cursor-zoom-in group"
                   style={{ minHeight: '300px', maxHeight: '92vh' }}
                   onContextMenu={(e) => e.preventDefault()}
-                  onClick={() => setIsFullscreen(true)}
+                  onClick={async () => {
+                    setIsFullscreen(true);
+                    try {
+                      const t = await fetch(`/api/gallery/${selectedItem.slug}/token?variant=thumb`, { credentials: 'include' });
+                      if (t.ok) {
+                        const { url } = await t.json();
+                        const r = await fetch(url);
+                        const b = await r.blob();
+                        setFullscreenBlobUrl(URL.createObjectURL(b));
+                      }
+                    } catch {}
+                  }}
                 >
-                  <img
-                    src={selectedItem.imageUrl}
+                  <SecureImage
+                    slug={selectedItem.slug}
                     alt={selectedItem.title}
-                    draggable={false}
-                    className="w-full h-full object-contain select-none"
-                    onContextMenu={(e) => e.preventDefault()}
+                    variant="thumb"
+                    className="w-full h-full"
                   />
                   {/* Zoom hint */}
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none flex items-center gap-1.5">
@@ -748,7 +771,11 @@ export default function GalleryPage() {
           >
             {/* Close button */}
             <button
-              onClick={() => setIsFullscreen(false)}
+              onClick={() => {
+                if (fullscreenBlobUrl) URL.revokeObjectURL(fullscreenBlobUrl);
+                setFullscreenBlobUrl(null);
+                setIsFullscreen(false);
+              }}
               aria-label="Exit fullscreen"
               className="absolute top-4 right-4 z-[110] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
             >
@@ -761,15 +788,19 @@ export default function GalleryPage() {
               Click anywhere to close
             </div>
             {/* Image — object-contain so it fits without cropping */}
-            <img
-              src={selectedItem.imageUrl}
-              alt={selectedItem.title}
-              draggable={false}
-              className="max-w-full max-h-full object-contain select-none"
-              style={{ width: 'auto', height: 'auto' }}
-              onClick={(e) => e.stopPropagation()}
-              onContextMenu={(e) => e.preventDefault()}
-            />
+            {fullscreenBlobUrl ? (
+              <img
+                src={fullscreenBlobUrl}
+                alt={selectedItem.title}
+                draggable={false}
+                className="max-w-full max-h-full object-contain select-none"
+                style={{ width: 'auto', height: 'auto' }}
+                onClick={(e) => e.stopPropagation()}
+                onContextMenu={(e) => e.preventDefault()}
+              />
+            ) : (
+              <div className="text-zinc-400 text-sm">Loading...</div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
