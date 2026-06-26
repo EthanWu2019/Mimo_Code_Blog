@@ -651,31 +651,29 @@ export default function GalleryPage() {
               onClick={(e) => e.stopPropagation()}
               onContextMenu={(e) => e.preventDefault()}
             >
-              {/* Close button */}
-              <button
-                onClick={() => setSelectedItem(null)}
-                aria-label="Close"
-                className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
-              {/* Fullscreen expand button */}
+              {/* Buttons — at lightbox level (top of stacking context) */}
               <button
                 onClick={() => {
                   const img = document.querySelector<HTMLImageElement>(
-                    `[data-secure-img="${selectedItem.slug}-full"]`,
+                    `[data-secure-img="${selectedItem.slug}-thumb"]`,
                   );
                   if (img?.requestFullscreen) img.requestFullscreen();
                 }}
                 aria-label="View fullscreen"
                 title="View fullscreen"
-                className="absolute top-4 right-16 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
+                className="absolute top-4 right-16 z-[60] w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setSelectedItem(null)}
+                aria-label="Close"
+                className="absolute top-4 right-4 z-[60] w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
 
@@ -687,7 +685,7 @@ export default function GalleryPage() {
                   onContextMenu={(e) => e.preventDefault()}
                   onClick={() => {
                     const img = document.querySelector<HTMLImageElement>(
-                      `[data-secure-img="${selectedItem.slug}-full"]`,
+                      `[data-secure-img="${selectedItem.slug}-thumb"]`,
                     );
                     if (img?.requestFullscreen) img.requestFullscreen();
                   }}
