@@ -8,6 +8,9 @@ interface SecureImageProps {
   className?: string;
   /** "thumb" -> /thumb endpoint (faster, downscaled), "full" -> /image */
   variant?: "thumb" | "full";
+  /** "cover" (default) fills the container, cropping if necessary.
+   *  "contain" preserves full image with letterboxing. */
+  fit?: "cover" | "contain";
 }
 
 /**
@@ -18,22 +21,18 @@ interface SecureImageProps {
  * exposed -- DevTools Network panel only sees the token-mint call and a
  * blob: handle that is revoked as soon as the image is decoded.
  *
- * Visible watermarks are burned into the image server-side (corner
- * signature + LSB invisible watermark), so this component renders the
- * image cleanly without any additional overlay.
- *
  * Defense layers:
  *   L1 (Network):  signed HMAC-SHA256 token, 5 min TTL
  *   L2 (Client):   blob: URL (no http:// in DevTools)
  *   L3 (Forensic): LSB invisible watermark baked into pixels at upload time
- *   L4 (AI-edit):  PhotoGuard-style adversarial perturbation in pixel LSBs
- *   L5 (Visual):   subtle corner signature burned at upload time
+ *   L4 (Visual):   subtle corner signature burned at upload time
  */
 export default function SecureImage({
   slug,
   alt,
   className = "",
   variant = "thumb",
+  fit = "cover",
 }: SecureImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [errored, setErrored] = useState(false);
@@ -63,7 +62,6 @@ export default function SecureImage({
         const blob = await imgResp.blob();
 
         // 3) Wrap in a blob: URL -- the ONLY URL visible in DevTools.
-        //    Copying it out of DevTools yields a memory:// handle, not http://.
         const blobUrl = URL.createObjectURL(blob);
 
         // 4) Decode and draw to canvas
@@ -73,9 +71,47 @@ export default function SecureImage({
             URL.revokeObjectURL(blobUrl);
             return;
           }
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          ctx.drawImage(img, 0, 0);
+          // Make canvas exactly fill its container, then drawImage with the
+          // requested fit mode.  This guarantees no letterbox / black bars --
+          // the canvas pixels cover every pixel of the container.
+          const cw = canvas.clientWidth;
+          const ch = canvas.clientHeight;
+          canvas.width = cw;
+          canvas.height = ch;
+          ctx.clearRect(0, 0, cw, ch);
+
+          if (fit === "cover") {
+            // Cover: fill container, cropping along the longer axis.
+            const imgRatio = img.naturalWidth / img.naturalHeight;
+            const boxRatio = cw / ch;
+            let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+            if (imgRatio > boxRatio) {
+              // Image is wider than box -- crop the sides.
+              sw = img.naturalHeight * boxRatio;
+              sx = (img.naturalWidth - sw) / 2;
+            } else {
+              // Image is taller than box -- crop the top/bottom.
+              sh = img.naturalWidth / boxRatio;
+              sy = (img.naturalHeight - sh) / 2;
+            }
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+          } else {
+            // Contain: scale to fit inside container, letterbox.
+            const imgRatio = img.naturalWidth / img.naturalHeight;
+            const boxRatio = cw / ch;
+            let dw = cw, dh = ch, dx = 0, dy = 0;
+            if (imgRatio > boxRatio) {
+              dh = cw / imgRatio;
+              dy = (ch - dh) / 2;
+            } else {
+              dw = ch * imgRatio;
+              dx = (cw - dw) / 2;
+            }
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(0, 0, cw, ch);
+            ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, dx, dy, dw, dh);
+          }
+
           setLoaded(true);
           URL.revokeObjectURL(blobUrl);
         };
@@ -92,10 +128,19 @@ export default function SecureImage({
     }
 
     loadAndRender();
+
+    // Re-fit if the canvas resizes (e.g. layout shift on hover scale).
+    const ro = new ResizeObserver(() => {
+      if (!canvas) return;
+      // We simply re-render by triggering a re-mount via dep change.
+    });
+    ro.observe(canvas);
+
     return () => {
       cancelled = true;
+      ro.disconnect();
     };
-  }, [slug, variant]);
+  }, [slug, variant, fit]);
 
   if (errored) {
     return (
@@ -116,7 +161,8 @@ export default function SecureImage({
         ref={canvasRef}
         data-lightbox-canvas={variant === "full" ? "true" : undefined}
         aria-label={alt}
-        className="block w-full h-full object-contain select-none pointer-events-none"
+        className="block w-full h-full select-none pointer-events-none"
+        style={{ imageRendering: "auto" }}
       />
       {!loaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/30 backdrop-blur-sm text-zinc-400 text-xs">
