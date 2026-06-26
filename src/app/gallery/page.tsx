@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
-import SecureImage from '@/components/SecureImage';
 
 interface GalleryItem {
   id: string;
@@ -61,12 +60,13 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
               : '4 / 3',
         }}
       >
-        {/* Secure image with built-in watermark + blob: URL (no http:// exposure) */}
-        <SecureImage
-          slug={item.slug}
+        <img
+          src={item.imageUrl}
           alt={item.title}
-          variant="thumb"
-          className="absolute inset-0 w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
+          loading="lazy"
+          draggable={false}
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-transform duration-700 ease-out group-hover:scale-105"
+          onContextMenu={(e) => e.preventDefault()}
         />
 
         {/* Hover overlay -- non-interactive background, only buttons receive clicks */}
@@ -684,11 +684,12 @@ export default function GalleryPage() {
                   onContextMenu={(e) => e.preventDefault()}
                   onClick={() => setIsFullscreen(true)}
                 >
-                  <SecureImage
-                    slug={selectedItem.slug}
+                  <img
+                    src={selectedItem.imageUrl}
                     alt={selectedItem.title}
-                    variant="thumb"
-                    className="w-full h-full"
+                    draggable={false}
+                    className="w-full h-full object-contain select-none"
+                    onContextMenu={(e) => e.preventDefault()}
                   />
                   {/* Zoom hint */}
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none flex items-center gap-1.5">
@@ -761,12 +762,13 @@ export default function GalleryPage() {
             </div>
             {/* Image — object-contain so it fits without cropping */}
             <img
-              src={document.querySelector<HTMLImageElement>(`[data-secure-img="${selectedItem.slug}-thumb"]`)?.src}
+              src={selectedItem.imageUrl}
               alt={selectedItem.title}
               draggable={false}
               className="max-w-full max-h-full object-contain select-none"
               style={{ width: 'auto', height: 'auto' }}
               onClick={(e) => e.stopPropagation()}
+              onContextMenu={(e) => e.preventDefault()}
             />
           </motion.div>
         )}
