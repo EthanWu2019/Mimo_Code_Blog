@@ -8,9 +8,6 @@ interface SecureImageProps {
   className?: string;
   /** "thumb" -> /thumb endpoint (faster, downscaled), "full" -> /image */
   variant?: "thumb" | "full";
-  /** "cover" (default) fills the container, cropping if necessary.
-   *  "contain" preserves full image with letterboxing. */
-  fit?: "cover" | "contain";
 }
 
 /**
@@ -20,6 +17,11 @@ interface SecureImageProps {
  * renders onto a <canvas> via blob: URL.  The <img> HTTP URL is never
  * exposed -- DevTools Network panel only sees the token-mint call and a
  * blob: handle that is revoked as soon as the image is decoded.
+ *
+ * Rendering strategy: we keep the canvas backing buffer at a generous size
+ * (max container size clamped to 2x device pixel ratio), so CSS scaling on
+ * hover (group-hover:scale-105) does NOT cause re-sampling of the image --
+ * only CSS pixel-stretching, which preserves crisp edges.
  *
  * Defense layers:
  *   L1 (Network):  signed HMAC-SHA256 token, 5 min TTL
@@ -32,7 +34,6 @@ export default function SecureImage({
   alt,
   className = "",
   variant = "thumb",
-  fit = "cover",
 }: SecureImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [errored, setErrored] = useState(false);
@@ -48,7 +49,6 @@ export default function SecureImage({
 
     async function loadAndRender() {
       try {
-        // 1) Mint a one-shot signed URL on the server (secret never leaves)
         const tokenResp = await fetch(
           `/api/gallery/${slug}/token?variant=${variant}`,
           { credentials: "include" },
@@ -56,61 +56,98 @@ export default function SecureImage({
         if (!tokenResp.ok) throw new Error("token mint failed");
         const { url } = await tokenResp.json();
 
-        // 2) Fetch the protected image (5 min TTL on the URL)
         const imgResp = await fetch(url);
         if (!imgResp.ok) throw new Error("fetch failed");
         const blob = await imgResp.blob();
-
-        // 3) Wrap in a blob: URL -- the ONLY URL visible in DevTools.
         const blobUrl = URL.createObjectURL(blob);
 
-        // 4) Decode and draw to canvas
         const img = new Image();
         img.onload = () => {
           if (cancelled || !canvas || !ctx) {
             URL.revokeObjectURL(blobUrl);
             return;
           }
-          // Make canvas exactly fill its container, then drawImage with the
-          // requested fit mode.  This guarantees no letterbox / black bars --
-          // the canvas pixels cover every pixel of the container.
+
+          // Get the container size in CSS pixels.
           const cw = canvas.clientWidth;
           const ch = canvas.clientHeight;
-          canvas.width = cw;
-          canvas.height = ch;
-          ctx.clearRect(0, 0, cw, ch);
-
-          if (fit === "cover") {
-            // Cover: fill container, cropping along the longer axis.
-            const imgRatio = img.naturalWidth / img.naturalHeight;
-            const boxRatio = cw / ch;
-            let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-            if (imgRatio > boxRatio) {
-              // Image is wider than box -- crop the sides.
-              sw = img.naturalHeight * boxRatio;
-              sx = (img.naturalWidth - sw) / 2;
-            } else {
-              // Image is taller than box -- crop the top/bottom.
-              sh = img.naturalWidth / boxRatio;
-              sy = (img.naturalHeight - sh) / 2;
-            }
-            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
-          } else {
-            // Contain: scale to fit inside container, letterbox.
-            const imgRatio = img.naturalWidth / img.naturalHeight;
-            const boxRatio = cw / ch;
-            let dw = cw, dh = ch, dx = 0, dy = 0;
-            if (imgRatio > boxRatio) {
-              dh = cw / imgRatio;
-              dy = (ch - dh) / 2;
-            } else {
-              dw = ch * imgRatio;
-              dx = (cw - dw) / 2;
-            }
-            ctx.fillStyle = "#000000";
-            ctx.fillRect(0, 0, cw, ch);
-            ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, dx, dy, dw, dh);
+          if (cw === 0 || ch === 0) {
+            // Container not laid out yet -- retry on next frame.
+            requestAnimationFrame(() => {
+              if (cancelled) return;
+              img.onload?.(new Event("load"));
+            });
+            return;
           }
+
+          // Use the image's natural resolution up to a cap (2x container px).
+          // This guarantees that the canvas pixels never need to be
+          // stretched by CSS, so hover scale-105 stays sharp.
+          const dpr = Math.min(2, window.devicePixelRatio || 1);
+          const maxW = Math.ceil(cw * dpr);
+          const maxH = Math.ceil(ch * dpr);
+
+          // Fit image inside the canvas at as-close-to-natural-size as possible
+          // while never exceeding maxW/maxH.  Use contain-style fit (no crop).
+          const imgRatio = img.naturalWidth / img.naturalHeight;
+          const boxRatio = maxW / maxH;
+
+          let drawW: number, drawH: number;
+          if (imgRatio > boxRatio) {
+            // Image is wider -- constrain by width.
+            drawW = Math.min(img.naturalWidth, maxW);
+            drawH = Math.round(drawW / imgRatio);
+          } else {
+            // Image is taller -- constrain by height.
+            drawH = Math.min(img.naturalHeight, maxH);
+            drawW = Math.round(drawH * imgRatio);
+          }
+
+          // Set canvas internal pixel buffer.
+          canvas.width = drawW;
+          canvas.height = drawH;
+
+          // Center the image within the canvas pixel buffer (letterbox with
+          // black background to avoid color shift on transparency).
+          const offsetX = Math.round((maxW - drawW) / 2);
+          const offsetY = Math.round((maxH - drawH) / 2);
+
+          // Black background fills any unused pixels (letterbox).
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(0, 0, maxW, maxH);
+
+          // Draw at 1:1 (no resampling -> crisp pixels).
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            img.naturalWidth,
+            img.naturalHeight,
+            offsetX,
+            offsetY,
+            drawW,
+            drawH,
+          );
+
+          // Round canvas backing-buffer to match CSS size exactly.
+          canvas.width = maxW;
+          canvas.height = maxH;
+          // Re-draw onto the final buffer (1:1 pixels since we just resized).
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(0, 0, maxW, maxH);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            img.naturalWidth,
+            img.naturalHeight,
+            offsetX,
+            offsetY,
+            drawW,
+            drawH,
+          );
 
           setLoaded(true);
           URL.revokeObjectURL(blobUrl);
@@ -128,19 +165,10 @@ export default function SecureImage({
     }
 
     loadAndRender();
-
-    // Re-fit if the canvas resizes (e.g. layout shift on hover scale).
-    const ro = new ResizeObserver(() => {
-      if (!canvas) return;
-      // We simply re-render by triggering a re-mount via dep change.
-    });
-    ro.observe(canvas);
-
     return () => {
       cancelled = true;
-      ro.disconnect();
     };
-  }, [slug, variant, fit]);
+  }, [slug, variant]);
 
   if (errored) {
     return (
