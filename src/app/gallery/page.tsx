@@ -69,7 +69,7 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
           className="absolute inset-0 w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
-        {/* Hover overlay */}
+        {/* Hover overlay -- non-interactive background, only buttons receive clicks */}
         <AnimatePresence>
           {isHovered && (
             <motion.div
@@ -77,7 +77,7 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 z-20 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4"
+              className="absolute inset-0 z-20 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 pointer-events-none"
             >
               <h3 className="text-white font-semibold text-lg">{item.title}</h3>
               <p className="text-zinc-300 text-sm mt-1">{item.subtitle}</p>
@@ -92,7 +92,7 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
                 <span className="text-zinc-400 text-xs">{new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); onLike(item.id); }}
-                  className="flex items-center gap-1.5 text-xs text-zinc-300 hover:text-[#bf5af2] transition-colors"
+                  className="pointer-events-auto flex items-center gap-1.5 text-xs text-zinc-300 hover:text-[#bf5af2] transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill={likes > 0 ? '#bf5af2' : 'none'} stroke={likes > 0 ? '#bf5af2' : 'currentColor'} strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
