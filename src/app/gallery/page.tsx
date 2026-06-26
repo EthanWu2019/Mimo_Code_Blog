@@ -694,7 +694,7 @@ export default function GalleryPage() {
                   <SecureImage
                     slug={selectedItem.slug}
                     alt={selectedItem.title}
-                    variant="full"
+                    variant="thumb"
                     className="w-full h-full"
                   />
                   {/* Zoom hint */}
