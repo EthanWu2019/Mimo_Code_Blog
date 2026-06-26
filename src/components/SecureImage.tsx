@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+
+export interface SecureImageHandle {
+  /** Returns the underlying <img> element for native fullscreen requests. */
+  getElement: () => HTMLImageElement | null;
+}
 
 interface SecureImageProps {
   slug: string;
@@ -13,15 +18,12 @@ interface SecureImageProps {
 /**
  * SecureImage
  *
- * Loads the protected image via a one-shot signed URL, converts to a Blob,
- * and sets an <img> src to a blob: URL.  The original http:// URL is never
- * exposed -- DevTools Network only sees the token-mint request and the
- * blob:// handle (which becomes invalid after revoke).
+ * Loads the protected image via a one-shot signed URL, sets an <img> src to
+ * a blob: URL.  The original http:// URL is never exposed.
  *
- * This is the simplest possible implementation.  No canvas, no resampling --
- * just <img src={blobUrl}> with object-cover so the image fills the
- * container.  This guarantees crisp output and lets the existing
- * group-hover:scale-105 animation work without any extra plumbing.
+ * Uses plain <img> with object-cover -- browser-native rendering is always
+ * crisp, and group-hover:scale-105 / click handlers work without any canvas
+ * quirks.  The blob: URL is revoked on unmount.
  *
  * Defense layers:
  *   L1 (Network):  signed HMAC-SHA256 token, 5 min TTL
@@ -29,80 +31,96 @@ interface SecureImageProps {
  *   L3 (Forensic): LSB invisible watermark baked into pixels at upload time
  *   L4 (Visual):   subtle corner signature burned at upload time
  */
-export default function SecureImage({
-  slug,
-  alt,
-  className = "",
-  variant = "thumb",
-}: SecureImageProps) {
-  const [url, setUrl] = useState<string | null>(null);
-  const [errored, setErrored] = useState(false);
+const SecureImage = forwardRef<SecureImageHandle, SecureImageProps>(
+  function SecureImage(
+    { slug, alt, className = "", variant = "thumb" },
+    ref,
+  ) {
+    const [url, setUrl] = useState<string | null>(null);
+    const [errored, setErrored] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    let currentUrl: string | null = null;
+    useImperativeHandle(
+      ref,
+      () => ({
+        getElement: () => {
+          const el = document.querySelector<HTMLImageElement>(
+            `[data-secure-img="${slug}-${variant}"]`,
+          );
+          return el;
+        },
+      }),
+      [slug, variant],
+    );
 
-    async function load() {
-      try {
-        const tokenResp = await fetch(
-          `/api/gallery/${slug}/token?variant=${variant}`,
-          { credentials: "include" },
-        );
-        if (!tokenResp.ok) throw new Error("token mint failed");
-        const { url: signedUrl } = await tokenResp.json();
+    useEffect(() => {
+      let cancelled = false;
+      let currentUrl: string | null = null;
 
-        const imgResp = await fetch(signedUrl);
-        if (!imgResp.ok) throw new Error("fetch failed");
-        const blob = await imgResp.blob();
+      async function load() {
+        try {
+          const tokenResp = await fetch(
+            `/api/gallery/${slug}/token?variant=${variant}`,
+            { credentials: "include" },
+          );
+          if (!tokenResp.ok) throw new Error("token mint failed");
+          const { url: signedUrl } = await tokenResp.json();
 
-        const blobUrl = URL.createObjectURL(blob);
-        currentUrl = blobUrl;
+          const imgResp = await fetch(signedUrl);
+          if (!imgResp.ok) throw new Error("fetch failed");
+          const blob = await imgResp.blob();
 
-        if (!cancelled) {
-          setUrl(blobUrl);
-        } else {
-          URL.revokeObjectURL(blobUrl);
+          const blobUrl = URL.createObjectURL(blob);
+          currentUrl = blobUrl;
+
+          if (!cancelled) {
+            setUrl(blobUrl);
+          } else {
+            URL.revokeObjectURL(blobUrl);
+          }
+        } catch (e) {
+          if (!cancelled) setErrored(true);
         }
-      } catch (e) {
-        if (!cancelled) setErrored(true);
       }
+
+      load();
+      return () => {
+        cancelled = true;
+        if (currentUrl) URL.revokeObjectURL(currentUrl);
+      };
+    }, [slug, variant]);
+
+    if (errored) {
+      return (
+        <div
+          className={
+            "flex items-center justify-center bg-zinc-900/40 text-zinc-500 text-xs " +
+            className
+          }
+        >
+          Failed to load
+        </div>
+      );
     }
 
-    load();
-    return () => {
-      cancelled = true;
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
-    };
-  }, [slug, variant]);
-
-  if (errored) {
     return (
-      <div
-        className={
-          "flex items-center justify-center bg-zinc-900/40 text-zinc-500 text-xs " +
-          className
-        }
-      >
-        Failed to load
+      <div className={"relative overflow-hidden " + className}>
+        {url ? (
+          <img
+            src={url}
+            alt={alt}
+            data-secure-img={`${slug}-${variant}`}
+            className="block w-full h-full object-cover select-none"
+            draggable={false}
+            loading="lazy"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/30 backdrop-blur-sm text-zinc-400 text-xs">
+            Loading...
+          </div>
+        )}
       </div>
     );
-  }
+  },
+);
 
-  return (
-    <div className={"relative " + className}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={url ?? undefined}
-        alt={alt}
-        data-lightbox-canvas={variant === "full" ? "true" : undefined}
-        className="block w-full h-full object-cover select-none pointer-events-none"
-        draggable={false}
-      />
-      {!url && (
-        <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/30 backdrop-blur-sm text-zinc-400 text-xs">
-          Loading...
-        </div>
-      )}
-    </div>
-  );
-}
+export default SecureImage;

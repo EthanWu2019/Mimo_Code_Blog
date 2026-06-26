@@ -62,14 +62,12 @@ function GalleryCard({ item, onOpen, likes, onLike }: {
         }}
       >
         {/* Secure image with built-in watermark + blob: URL (no http:// exposure) */}
-        <div className="absolute inset-0" onContextMenu={(e) => e.preventDefault()}>
-          <SecureImage
-            slug={item.slug}
-            alt={item.title}
-            variant="thumb"
-            className="w-full h-full transition-transform duration-700 group-hover:scale-105"
-          />
-        </div>
+        <SecureImage
+          slug={item.slug}
+          alt={item.title}
+          variant="thumb"
+          className="absolute inset-0 w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
+        />
 
         {/* Hover overlay */}
         <AnimatePresence>
@@ -667,8 +665,10 @@ export default function GalleryPage() {
               {/* Fullscreen expand button */}
               <button
                 onClick={() => {
-                  const c = document.querySelector<HTMLCanvasElement>('[data-lightbox-canvas]');
-                  if (c?.requestFullscreen) c.requestFullscreen();
+                  const img = document.querySelector<HTMLImageElement>(
+                    `[data-secure-img="${selectedItem.slug}-full"]`,
+                  );
+                  if (img?.requestFullscreen) img.requestFullscreen();
                 }}
                 aria-label="View fullscreen"
                 title="View fullscreen"
@@ -686,9 +686,10 @@ export default function GalleryPage() {
                   style={{ minHeight: '300px', maxHeight: '92vh' }}
                   onContextMenu={(e) => e.preventDefault()}
                   onClick={() => {
-                    // Use browser native fullscreen on the canvas via parent
-                    const c = document.querySelector<HTMLCanvasElement>('[data-lightbox-canvas]');
-                    if (c?.requestFullscreen) c.requestFullscreen();
+                    const img = document.querySelector<HTMLImageElement>(
+                      `[data-secure-img="${selectedItem.slug}-full"]`,
+                    );
+                    if (img?.requestFullscreen) img.requestFullscreen();
                   }}
                 >
                   <SecureImage
