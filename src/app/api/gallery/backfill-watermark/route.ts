@@ -2,15 +2,13 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import sharp from "sharp";
 import { embedWatermark, type WatermarkPayload } from "@/lib/image-watermark";
-import { perturbImage } from "@/lib/image-perturb";
 
 /**
  * POST /api/gallery/backfill-watermark
  *
- * Applies full security pipeline to ALL existing gallery items:
- *  - PhotoGuard-style perturbation
- *  - LSB invisible watermark (owner / slug / timestamp)
- *  - Corner signature watermark
+ * Re-embed LSB watermark + corner signature onto existing gallery items.
+ * Idempotent.  Replaces the prior perturbation step (which produced visible
+ * color corruption).
  */
 export async function POST(request: Request) {
   try {
@@ -53,31 +51,24 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // Convert to RGBA buffer regardless of input format
+        // Decode to raw RGBA
         const { data: rgba } = await img
           .ensureAlpha()
           .raw()
           .toBuffer({ resolveWithObject: true });
 
-        // Perturbation (RGBA = 4 channels)
-        const perturbed = perturbImage(new Uint8Array(rgba), w, h, {
-          seed: item.slug + ":backfill",
-          strength: 2,
-        });
-
-        // LSB watermark (RGBA)
+        // Embed LSB invisible watermark
         const payload: WatermarkPayload = {
           owner,
           slug: item.slug,
           uploadedAt: Date.now(),
         };
-        const watermarked = embedWatermark(perturbed, w, h, payload, 4);
+        const watermarked = embedWatermark(new Uint8Array(rgba), w, h, payload, 4);
 
-        // Render corner signature as PNG overlay
+        // Render corner signature
         const sigPng = await renderSignatureWatermark(owner, w, h);
 
-        // Reassemble -- sharp.raw() then composite + encode -- this works
-        // because we're starting from a raw RGBA buffer, not from a webp file.
+        // Composite then re-encode
         const base = sharp(Buffer.from(watermarked), {
           raw: { width: w, height: h, channels: 4 },
         });
@@ -86,8 +77,6 @@ export async function POST(request: Request) {
           .png()
           .toBuffer();
 
-        // If the original was webp, encode as webp; if jpeg, encode as jpeg.
-        // Convert png buffer -> target format.
         let out: Buffer;
         if (mime === "image/png") {
           out = composited;
@@ -96,9 +85,7 @@ export async function POST(request: Request) {
         } else if (mime === "image/jpeg") {
           out = await sharp(composited).jpeg({ quality: 95, mozjpeg: true }).toBuffer();
         } else {
-          // Fallback: keep as png
           out = composited;
-          console.warn(`Unknown mime ${mime}, storing as png`);
         }
 
         const newDataUrl = `data:${mime};base64,${out.toString("base64")}`;

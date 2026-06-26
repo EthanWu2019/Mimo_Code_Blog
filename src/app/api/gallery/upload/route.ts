@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import sharp from "sharp";
 import { embedWatermark, type WatermarkPayload } from "@/lib/image-watermark";
-import { perturbImage } from "@/lib/image-perturb";
 
 /**
  * POST /api/gallery/upload
@@ -76,19 +75,13 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const ownerTag = user?.email?.split("@")[0] || user?.name || "ethan";
 
-    // Apply PhotoGuard-style perturbation
-    const perturbed = perturbImage(new Uint8Array(rgba), w, h, {
-      seed: slug + ":" + userId,
-      strength: 2,
-    });
-
     // Embed LSB invisible watermark
     const payload: WatermarkPayload = {
       owner: ownerTag,
       slug,
       uploadedAt: Date.now(),
     };
-    const watermarked = embedWatermark(perturbed, w, h, payload, 4);
+    const watermarked = embedWatermark(new Uint8Array(rgba), w, h, payload, 4);
 
     // Burn subtle signature watermark into bottom-right corner.
     // Uses SVG overlay so it scales perfectly, opacity ~0.18, fits in ~6% of width.
