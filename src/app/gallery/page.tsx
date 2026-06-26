@@ -129,6 +129,7 @@ export default function GalleryPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
   const [likes, setLikes] = useState<Record<string, number>>({});
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [tab, setTab] = useState<'all' | 'sref' | 'seed'>('all');
@@ -209,11 +210,14 @@ export default function GalleryPage() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedItem(null);
+      if (e.key === 'Escape') {
+        if (isFullscreen) setIsFullscreen(false);
+        else setSelectedItem(null);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isFullscreen]);
 
   // Hero slideshow auto-rotation
   const SLIDE_SIZE = 5;
@@ -653,12 +657,7 @@ export default function GalleryPage() {
             >
               {/* Buttons — at lightbox level (top of stacking context) */}
               <button
-                onClick={() => {
-                  const img = document.querySelector<HTMLImageElement>(
-                    `[data-secure-img="${selectedItem.slug}-thumb"]`,
-                  );
-                  if (img?.requestFullscreen) img.requestFullscreen();
-                }}
+                onClick={() => setIsFullscreen(true)}
                 aria-label="View fullscreen"
                 title="View fullscreen"
                 className="absolute top-4 right-16 z-[60] w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
@@ -683,12 +682,7 @@ export default function GalleryPage() {
                   className="lg:w-2/3 relative bg-black/30 flex items-center justify-center cursor-zoom-in group"
                   style={{ minHeight: '300px', maxHeight: '92vh' }}
                   onContextMenu={(e) => e.preventDefault()}
-                  onClick={() => {
-                    const img = document.querySelector<HTMLImageElement>(
-                      `[data-secure-img="${selectedItem.slug}-thumb"]`,
-                    );
-                    if (img?.requestFullscreen) img.requestFullscreen();
-                  }}
+                  onClick={() => setIsFullscreen(true)}
                 >
                   <SecureImage
                     slug={selectedItem.slug}
@@ -735,6 +729,45 @@ export default function GalleryPage() {
                 </div>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fullscreen overlay — contain mode (image fits screen without cropping) */}
+      <AnimatePresence>
+        {isFullscreen && selectedItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 md:p-8"
+            onClick={() => setIsFullscreen(false)}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setIsFullscreen(false)}
+              aria-label="Exit fullscreen"
+              className="absolute top-4 right-4 z-[110] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            {/* Hint */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-zinc-500">
+              Click anywhere to close
+            </div>
+            {/* Image — object-contain so it fits without cropping */}
+            <img
+              src={document.querySelector<HTMLImageElement>(`[data-secure-img="${selectedItem.slug}-thumb"]`)?.src}
+              alt={selectedItem.title}
+              draggable={false}
+              className="max-w-full max-h-full object-contain select-none"
+              style={{ width: 'auto', height: 'auto' }}
+              onClick={(e) => e.stopPropagation()}
+            />
           </motion.div>
         )}
       </AnimatePresence>
