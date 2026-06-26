@@ -657,7 +657,6 @@ export default function GalleryPage() {
             >
               {/* Buttons — at lightbox level (top of stacking context) */}
               <button
-                onClick={() => setIsFullscreen(true)}
                 aria-label="View fullscreen"
                 title="View fullscreen"
                 onClick={async () => {
