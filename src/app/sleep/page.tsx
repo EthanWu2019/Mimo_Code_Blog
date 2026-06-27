@@ -186,11 +186,11 @@ export default function SleepPage() {
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 dark:bg-purple-400 animate-pulse" />
             <span className="text-xs text-zinc-600 dark:text-zinc-400">Ethan&apos;s Blog · Sleep</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.9] mb-4">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[0.9] mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-300 dark:to-indigo-300">Drift</span>
             <span className="text-zinc-400 dark:text-zinc-400"> Off</span>
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 text-lg max-w-xl mx-auto">
+          <p className="text-zinc-600 dark:text-zinc-400 text-base sm:text-lg max-w-xl mx-auto px-2">
             Soft videos and gentle audio for sleep
           </p>
         </div>
