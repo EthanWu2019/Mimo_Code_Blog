@@ -154,7 +154,7 @@ export default function SleepPage() {
   if (loading) return <SleepSkeleton />;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#0a0a0b] text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300">
       {/* Light mode: floating clouds */}
       <div className="fixed inset-0 pointer-events-none dark:hidden overflow-hidden">
         {/* Large soft clouds */}
@@ -187,9 +187,9 @@ export default function SleepPage() {
       <div className="fixed bottom-1/3 left-1/3 w-96 h-96 rounded-full bg-indigo-300/30 dark:bg-indigo-500/10 blur-[120px] pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 pt-24 pb-32 px-4 sm:px-6 max-w-6xl mx-auto">
+      <div className="relative z-10 pt-24 pb-32 px-4 sm:px-6">
         {/* Title */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 max-w-6xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] mb-5">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
             <span className="text-xs text-zinc-500 dark:text-zinc-400">Ethan&apos;s Blog · Sleep</span>
@@ -227,7 +227,7 @@ export default function SleepPage() {
         </div>
 
         {/* Content grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
           {filtered.map(item => {
             const cfg = SERIES_CONFIG[item.series];
             const isCurrent = nowPlaying?.id === item.id;
@@ -430,7 +430,7 @@ function SleepSkeleton() {
       </div>
       {/* Hero skeleton */}
       <div className="relative z-10 pt-24 pb-10 px-4 sm:px-6 max-w-6xl mx-auto">
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 max-w-6xl mx-auto">
           <div className="mx-auto w-44 h-6 rounded-full bg-white/[0.04] overflow-hidden relative mb-5">
             <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
           </div>
@@ -448,7 +448,7 @@ function SleepSkeleton() {
           </div>
         </div>
         {/* Grid skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="aspect-[4/3] rounded-2xl bg-white/[0.03] overflow-hidden relative">
               <div className="shimmer-bar absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
