@@ -42,6 +42,7 @@ const CATEGORIES = [
 ];
 
 // Initial demo content (will be filled by uploads)
+const V = 1782624222;
 const INITIAL_ENTRIES: Entry[] = [];
 
 export default function RestrictedPage() {
