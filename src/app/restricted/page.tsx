@@ -409,7 +409,7 @@ function EntryCard({ entry, index, onClick }: { entry: Entry; index: number; onC
 
 function CollectionViewer({ entry }: { entry: Collection }) {
   return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 gap-3 max-w-5xl mx-auto">
+    <div className="columns-1 sm:columns-2 gap-3 max-w-4xl mx-auto">
       {entry.images.map((img, i) => (
         <div key={i} className="break-inside-avoid mb-3">
           <img
@@ -419,6 +419,7 @@ function CollectionViewer({ entry }: { entry: Collection }) {
             draggable={false}
             onContextMenu={e => e.preventDefault()}
             className="w-full rounded-lg select-none"
+            style={{ maxHeight: 'calc(100vh - 200px)' }}
           />
         </div>
       ))}
@@ -427,14 +428,15 @@ function CollectionViewer({ entry }: { entry: Collection }) {
 }
 
 function SingleViewer({ entry }: { entry: SingleItem }) {
+  // Fit image in viewport — show full content on one screen
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center items-center w-full h-full min-h-[60vh]">
       <img
         src={entry.imageUrl}
         alt={entry.title}
         draggable={false}
         onContextMenu={e => e.preventDefault()}
-        className="max-w-full max-h-full object-contain rounded-lg select-none"
+        className="max-w-[min(95vw,1400px)] max-h-[calc(100vh-180px)] w-auto h-auto object-contain rounded-lg select-none"
       />
     </div>
   );

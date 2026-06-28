@@ -3,7 +3,21 @@ import { NextResponse } from 'next/server';
 // Static entries for now — replace with Prisma when migrating.
 // ImageData is served as public URL; if you switch to base64 storage, use the /api/restricted/image route.
 
-const ENTRIES = [
+const ENTRIES: any[] = [
+  // Placeholder collection — owner will fill in images + prompt later
+  {
+    type: 'collection',
+    data: {
+      id: 'placeholder-collection',
+      title: 'Untitled Collection',
+      category: 'Conceptual',
+      tags: ['placeholder'],
+      cover: '/restricted/demo-01.webp',
+      images: [],
+      prompt: 'Coming soon — owner is preparing the collection.',
+      date: '2026-06-25',
+    },
+  },
   {
     type: 'single',
     data: {
