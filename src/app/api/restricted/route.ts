@@ -4,17 +4,20 @@ import { NextResponse } from 'next/server';
 // ImageData is served as public URL; if you switch to base64 storage, use the /api/restricted/image route.
 
 const ENTRIES: any[] = [
-  // Placeholder collection — owner will fill in images + prompt later
+  // Active collection — 2 pieces from same prompt set
   {
     type: 'collection',
     data: {
-      id: 'placeholder-collection',
+      id: 'untitled-collection',
       title: 'Untitled Collection',
       category: 'Conceptual',
-      tags: ['placeholder'],
-      cover: '/restricted/demo-01.webp',
-      images: [],
-      prompt: 'Coming soon — owner is preparing the collection.',
+      tags: ['series'],
+      cover: '/restricted/untitled-collection/1.webp',
+      images: [
+        '/restricted/untitled-collection/1.webp',
+        '/restricted/untitled-collection/2.webp',
+      ],
+      prompt: 'Coming soon — owner will fill in the prompt.',
       date: '2026-06-25',
     },
   },
