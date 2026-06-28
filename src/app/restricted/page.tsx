@@ -4,17 +4,36 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 
-interface RestrictedItem {
+// A collection = a set of images generated with similar prompts (e.g., same ComfyUI workflow / theme)
+// Items inside a collection share metadata; some can override individually
+
+interface Collection {
+  id: string;
+  title: string;
+  category: string;
+  tags: string[];
+  cover: string;        // cover image URL
+  images: string[];     // gallery images in the collection
+  prompt: string;       // shared prompt for the collection
+  date: string;
+  description?: string;
+}
+
+interface SingleItem {
   id: string;
   title: string;
   category: string;
   tags: string[];
   imageUrl: string;
+  prompt: string;
   date: string;
 }
 
-// Independent category set — NOT shared with main gallery
-const RESTRICTED_CATEGORIES = [
+type Entry =
+  | { type: 'collection'; data: Collection }
+  | { type: 'single'; data: SingleItem };
+
+const CATEGORIES = [
   'Conceptual',
   'Experimental',
   'Abstract Bodies',
@@ -22,23 +41,16 @@ const RESTRICTED_CATEGORIES = [
   'Dark Art',
 ];
 
-const RESTRICTED_ITEMS: RestrictedItem[] = [
-  { id: 'r1', title: 'Untitled · 1', category: 'Conceptual', tags: ['study', 'monochrome'], imageUrl: 'https://picsum.photos/seed/restricted1/800/1000', date: '2026-05-12' },
-  { id: 'r2', title: 'Untitled · 2', category: 'Experimental', tags: ['collage', 'texture'], imageUrl: 'https://picsum.photos/seed/restricted2/600/800', date: '2026-05-08' },
-  { id: 'r3', title: 'Untitled · 3', category: 'Abstract Bodies', tags: ['figure', 'form'], imageUrl: 'https://picsum.photos/seed/restricted3/700/900', date: '2026-04-30' },
-  { id: 'r4', title: 'Untitled · 4', category: 'Surrealism', tags: ['dream', 'fluid'], imageUrl: 'https://picsum.photos/seed/restricted4/800/1100', date: '2026-04-22' },
-  { id: 'r5', title: 'Untitled · 5', category: 'Dark Art', tags: ['shadow', 'symbol'], imageUrl: 'https://picsum.photos/seed/restricted5/600/800', date: '2026-04-15' },
-  { id: 'r6', title: 'Untitled · 6', category: 'Conceptual', tags: ['series', 'minimal'], imageUrl: 'https://picsum.photos/seed/restricted6/700/900', date: '2026-04-08' },
-  { id: 'r7', title: 'Untitled · 7', category: 'Experimental', tags: ['mixed-media'], imageUrl: 'https://picsum.photos/seed/restricted7/800/1000', date: '2026-03-30' },
-  { id: 'r8', title: 'Untitled · 8', category: 'Abstract Bodies', tags: ['anatomy'], imageUrl: 'https://picsum.photos/seed/restricted8/600/800', date: '2026-03-22' },
-  { id: 'r9', title: 'Untitled · 9', category: 'Surrealism', tags: ['dream', 'organic'], imageUrl: 'https://picsum.photos/seed/restricted9/700/900', date: '2026-03-15' },
-];
+// Initial demo content (will be filled by uploads)
+const INITIAL_ENTRIES: Entry[] = [];
 
 export default function RestrictedPage() {
   const [loading, setLoading] = useState(true);
   const [confirmed, setConfirmed] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [selectedItem, setSelectedItem] = useState<RestrictedItem | null>(null);
+  const [entries, setEntries] = useState<Entry[]>(INITIAL_ENTRIES);
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [showPrompt, setShowPrompt] = useState(false);
 
   // Loading delay
   useEffect(() => {
@@ -46,13 +58,24 @@ export default function RestrictedPage() {
     return () => clearTimeout(t);
   }, []);
 
-  // Remember confirmation in session
+  // Confirmation state — session only
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const wasConfirmed = sessionStorage.getItem('restricted-confirmed') === '1';
-      if (wasConfirmed) setConfirmed(true);
+      const c = sessionStorage.getItem('restricted-confirmed') === '1';
+      if (c) setConfirmed(true);
     }
   }, []);
+
+  // Fetch entries from API
+  useEffect(() => {
+    if (!confirmed) return;
+    fetch('/api/restricted')
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d.entries)) setEntries(d.entries);
+      })
+      .catch(() => {});
+  }, [confirmed]);
 
   const enterZone = useCallback(() => {
     setConfirmed(true);
@@ -62,37 +85,39 @@ export default function RestrictedPage() {
   }, []);
 
   const leaveZone = useCallback(() => {
-    setConfirmed(false);
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('restricted-confirmed');
     }
-    // Navigate back to gallery
     window.location.href = '/gallery';
   }, []);
 
-  // ESC closes lightbox
+  // ESC closes
   useEffect(() => {
-    if (!selectedItem) return;
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedItem(null); };
+    if (!selectedEntry) return;
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showPrompt) setShowPrompt(false);
+        else setSelectedEntry(null);
+      }
+    };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
-  }, [selectedItem]);
+  }, [selectedEntry, showPrompt]);
 
   if (loading) return <RestrictedSkeleton />;
 
   const filtered = activeCategory === 'All'
-    ? RESTRICTED_ITEMS
-    : RESTRICTED_ITEMS.filter(i => i.category === activeCategory);
+    ? entries
+    : entries.filter(e => e.data.category === activeCategory);
 
   return (
     <div className="relative min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] text-zinc-900 dark:text-white overflow-hidden transition-colors duration-300">
-      {/* Warning decoration — red glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-red-500/5 dark:bg-red-500/10 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-amber-500/5 dark:bg-amber-500/10 blur-3xl" />
       </div>
 
-      {/* Confirmation dialog — appears if NOT confirmed */}
+      {/* Confirmation dialog */}
       <AnimatePresence>
         {!confirmed && (
           <motion.div
@@ -108,7 +133,6 @@ export default function RestrictedPage() {
               transition={{ type: 'spring', damping: 22, stiffness: 280 }}
               className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#1a1a1f] border border-zinc-200 dark:border-white/[0.08] p-8 shadow-2xl"
             >
-              {/* Warning icon */}
               <div className="flex justify-center mb-5">
                 <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
                   <svg className="w-8 h-8 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -116,7 +140,6 @@ export default function RestrictedPage() {
                   </svg>
                 </div>
               </div>
-
               <h2 className="text-2xl font-bold text-center text-zinc-900 dark:text-white mb-2">
                 Restricted Zone
               </h2>
@@ -126,7 +149,6 @@ export default function RestrictedPage() {
               <p className="text-zinc-400 dark:text-zinc-500 text-center text-xs mb-8">
                 View at your own discretion. Please confirm to continue.
               </p>
-
               <div className="flex gap-3">
                 <button
                   onClick={leaveZone}
@@ -138,10 +160,9 @@ export default function RestrictedPage() {
                   onClick={enterZone}
                   className="flex-1 px-5 py-3 rounded-full bg-gradient-to-r from-red-500 to-amber-500 text-white font-medium hover:shadow-lg hover:shadow-red-500/20 transition-all"
                 >
-                  Confirm & Enter
+                  Confirm &amp; Enter
                 </button>
               </div>
-
               <p className="text-zinc-400 dark:text-zinc-600 text-center text-[10px] mt-6">
                 This confirmation is recorded in this session only.
               </p>
@@ -150,10 +171,9 @@ export default function RestrictedPage() {
         )}
       </AnimatePresence>
 
-      {/* Main content — only visible when confirmed */}
+      {/* Main content */}
       {confirmed && (
         <>
-          {/* Hero */}
           <div className="relative z-10 pt-24 pb-8 px-4 sm:px-6">
             <div className="text-center mb-10 max-w-3xl mx-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 mb-4">
@@ -165,11 +185,11 @@ export default function RestrictedPage() {
                 <span className="text-zinc-400 dark:text-zinc-400"> Works</span>
               </h1>
               <p className="text-zinc-500 dark:text-zinc-400 text-base sm:text-lg max-w-xl mx-auto px-2">
-                A separate collection outside the main gallery. Independent categories, independent rules.
+                A separate collection outside the main gallery. Each piece shows the prompt used to generate it.
               </p>
             </div>
 
-            {/* Category filter — own set, NOT shared with main gallery */}
+            {/* Category filter */}
             <div className="flex justify-center mb-10">
               <div className="glass-nav-acrylic rounded-full px-3 py-2 flex items-center gap-1 max-w-3xl overflow-x-auto scrollbar-hide">
                 <button
@@ -182,7 +202,7 @@ export default function RestrictedPage() {
                 >
                   All
                 </button>
-                {RESTRICTED_CATEGORIES.map(cat => (
+                {CATEGORIES.map(cat => (
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
@@ -199,83 +219,222 @@ export default function RestrictedPage() {
             </div>
 
             {/* Grid */}
-            <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 max-w-6xl mx-auto space-y-4">
-              {filtered.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                  className="break-inside-avoid group cursor-pointer"
-                  onClick={() => setSelectedItem(item)}
-                >
-                  <div className="relative rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.06] hover:border-red-500/50 dark:hover:border-red-500/30 transition-all bg-white dark:bg-white/[0.02]">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      loading="lazy"
-                      draggable={false}
-                      className="w-full object-cover select-none pointer-events-none"
-                      onContextMenu={(e) => e.preventDefault()}
-                    />
-                    {/* Subtle warning tint */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-red-900/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {/* Info */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-white/95 via-white/70 to-transparent dark:from-black/80 dark:via-black/40 dark:to-transparent">
-                      <p className="text-zinc-900 dark:text-white font-medium text-sm">{item.title}</p>
-                      <p className="text-zinc-500 dark:text-zinc-400 text-xs">
-                        {item.category} · {item.tags.join(', ')}
-                      </p>
-                    </div>
-                    {/* Restricted tag */}
-                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-red-500/80 backdrop-blur-sm text-[10px] text-white uppercase tracking-wider">
-                      18+
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {filtered.length === 0 ? (
+              <div className="text-center py-20 text-zinc-400 dark:text-zinc-500 text-sm">
+                No entries yet. Upload via /admin or POST /api/restricted.
+              </div>
+            ) : (
+              <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 max-w-6xl mx-auto space-y-4">
+                {filtered.map((entry, i) => (
+                  <EntryCard
+                    key={entry.data.id}
+                    entry={entry}
+                    index={i}
+                    onClick={() => setSelectedEntry(entry)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Lightbox */}
+          {/* Detail lightbox */}
           <AnimatePresence>
-            {selectedItem && (
+            {selectedEntry && !showPrompt && (
               <motion.div
+                key="viewer"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setSelectedItem(null)}
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl"
+                className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-xl"
+                onClick={() => setSelectedEntry(null)}
               >
-                <button
-                  onClick={() => setSelectedItem(null)}
-                  aria-label="Close"
-                  className="absolute top-4 right-4 z-[60] w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                {/* Top bar */}
+                <div className="flex items-center justify-between px-4 sm:px-6 py-3 flex-shrink-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-[10px] uppercase tracking-wider text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">
+                      {selectedEntry.data.category}
+                    </span>
+                    <h3 className="text-white font-medium text-sm truncate">
+                      {selectedEntry.data.title}
+                    </h3>
+                    {selectedEntry.type === 'collection' && (
+                      <span className="text-zinc-400 text-xs">
+                        · {selectedEntry.data.images.length} images
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowPrompt(true); }}
+                      className="px-3 py-1.5 rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 text-xs font-medium transition-colors flex items-center gap-1.5"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                      View Prompt
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSelectedEntry(null); }}
+                      aria-label="Close"
+                      className="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Image area */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6" onClick={e => e.stopPropagation()}>
+                  {selectedEntry.type === 'collection' ? (
+                    <CollectionViewer entry={selectedEntry.data} />
+                  ) : (
+                    <SingleViewer entry={selectedEntry.data} />
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Prompt viewer */}
+            {selectedEntry && showPrompt && (
+              <motion.div
+                key="prompt"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl"
+                onClick={() => setShowPrompt(false)}
+              >
                 <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
+                  initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
                   onClick={e => e.stopPropagation()}
-                  className="relative max-w-[90vw] max-h-[85vh] rounded-2xl overflow-hidden"
+                  className="relative w-full max-w-2xl max-h-[80vh] rounded-2xl bg-[#0a0a0b] border border-white/[0.08] p-6 overflow-hidden flex flex-col"
                 >
-                  <img
-                    src={selectedItem.imageUrl}
-                    alt={selectedItem.title}
-                    draggable={false}
-                    onContextMenu={e => e.preventDefault()}
-                    className="max-w-full max-h-[85vh] object-contain select-none"
-                  />
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                      <h3 className="text-white font-medium">Generation Prompt</h3>
+                    </div>
+                    <button
+                      onClick={() => setShowPrompt(false)}
+                      className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="overflow-y-auto flex-1 p-4 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                    <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap font-mono">
+                      {selectedEntry.data.prompt || 'No prompt recorded for this entry.'}
+                    </p>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between text-xs text-zinc-500">
+                    <span>{selectedEntry.data.date}</span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard?.writeText(selectedEntry.data.prompt || '');
+                      }}
+                      className="px-2 py-1 rounded bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 transition-colors"
+                    >
+                      Copy
+                    </button>
+                  </div>
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </>
       )}
+    </div>
+  );
+}
+
+function EntryCard({ entry, index, onClick }: { entry: Entry; index: number; onClick: () => void }) {
+  const cover = entry.type === 'collection' ? entry.data.cover : entry.data.imageUrl;
+  const isCollection = entry.type === 'collection';
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.5) }}
+      className="break-inside-avoid group cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="relative rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.06] hover:border-red-500/50 dark:hover:border-red-500/30 transition-all bg-white dark:bg-white/[0.02]">
+        <img
+          src={cover}
+          alt={entry.data.title}
+          loading="lazy"
+          draggable={false}
+          className="w-full object-cover select-none pointer-events-none"
+          onContextMenu={(e) => e.preventDefault()}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-red-900/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        {/* Info */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-white/95 via-white/70 to-transparent dark:from-black/80 dark:via-black/40 dark:to-transparent pointer-events-none">
+          <p className="text-zinc-900 dark:text-white font-medium text-sm">{entry.data.title}</p>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs flex items-center gap-1">
+            {entry.data.category}
+            {isCollection && <>· <span className="text-red-500">图集</span> {entry.data.images.length} images</>}
+          </p>
+        </div>
+        {/* Top badges */}
+        <div className="absolute top-2 right-2 flex gap-1 pointer-events-none">
+          <span className="px-2 py-0.5 rounded-full bg-red-500/80 backdrop-blur-sm text-[10px] text-white uppercase tracking-wider">
+            18+
+          </span>
+        </div>
+        {isCollection && (
+          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-purple-500/80 backdrop-blur-sm text-[10px] text-white">
+            <svg className="w-2.5 h-2.5 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            Collection
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function CollectionViewer({ entry }: { entry: Collection }) {
+  return (
+    <div className="columns-1 sm:columns-2 lg:columns-3 gap-3 max-w-5xl mx-auto">
+      {entry.images.map((img, i) => (
+        <div key={i} className="break-inside-avoid mb-3">
+          <img
+            src={img}
+            alt={`${entry.title} #${i + 1}`}
+            loading="lazy"
+            draggable={false}
+            onContextMenu={e => e.preventDefault()}
+            className="w-full rounded-lg select-none"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SingleViewer({ entry }: { entry: SingleItem }) {
+  return (
+    <div className="flex justify-center">
+      <img
+        src={entry.imageUrl}
+        alt={entry.title}
+        draggable={false}
+        onContextMenu={e => e.preventDefault()}
+        className="max-w-full max-h-full object-contain rounded-lg select-none"
+      />
     </div>
   );
 }

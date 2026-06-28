@@ -136,3 +136,45 @@ model GalleryItem {
   @@index([featured])
   @@index([createdAt])
 }
+
+model RestrictedEntry {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  kind        String   // "single" | "collection"
+  title       String
+  category    String
+  tags        String[]
+  prompt      String   @db.Text
+  description String?  @db.Text
+  // For single:
+  imageData   String?
+  imageMime   String?
+  width       Int?
+  height      Int?
+  // For collection:
+  coverData   String?
+  coverMime   String?
+  images      RestrictedImage[]
+  date        String   // ISO date string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([kind])
+  @@index([createdAt])
+}
+
+model RestrictedImage {
+  id          String          @id @default(cuid())
+  entryId     String
+  entry       RestrictedEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  imageData   String
+  imageMime   String
+  width       Int
+  height     Int
+  position    Int             @default(0)
+  prompt      String?         @db.Text  // optional per-image override
+  createdAt   DateTime        @default(now())
+
+  @@index([entryId])
+}
