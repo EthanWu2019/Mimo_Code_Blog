@@ -150,92 +150,60 @@ body {
 }
 
 /* ============================================================
-   Theme toggle overlay — REAL DOM element (id="theme-toggle-overlay")
+   Theme toggle overlay — REAL DOM element (#theme-toggle-overlay)
+   appended to <body> on first toggle.
    ============================================================
-   We do NOT use document.startViewTransition; the spec's auto-crossfade
-   can't be cleanly suppressed, and applying CSS clip-path / mask-image
-   animations to ::view-transition-old(root) has unreliable results
-   across Chromium versions — including the dreaded full black/white
-   flash when the new snapshot is hidden.
+   The overlay is painted as the NEW theme's solid color. A circular
+   clip-path grows from 0 radius at the click point out to maxR
+   (diagonal to farthest corner). Inside the growing circle the user
+   sees the NEW-color overlay; outside, the OLD-themed real page is
+   visible.
 
-   Instead, we append a single <div id="theme-toggle-overlay"> on first
-   use, paint it as the OLD theme's background color, and use a
-   radial-gradient mask to grow a transparent circle from the click
-   point outward. INSIDE the circle the overlay is transparent → the
-   real new-theme page is visible. OUTSIDE the circle the overlay shows
-   the OLD theme's solid color (the area about to be covered anyway).
+   This is the visual: a solid disk of the new theme color expanding
+   from the click point, sweeping over the old theme.
 
-   Geometry via CSS vars: --tt-x, --tt-y (viewport px), --tt-max (radius
-   to farthest corner). 600ms total, expo-out easing, respects
-   prefers-reduced-motion. pointer-events: none — never blocks scroll.
+   Once the disk covers the full viewport, the JS handler commits the
+   class swap on <html>, removes the animation class, and clears the
+   background so the overlay becomes invisible. No flash because by the
+   time we remove the clip-path, the underlying page has already become
+   the new theme.
+
+   Geometry: --tt-x, --tt-y in viewport px, --tt-max = diagonal radius.
+   Duration 600ms, expo-out easing, respects prefers-reduced-motion.
+   pointer-events: none — never blocks scroll.
    ============================================================ */
 
-#theme-toggle-overlay {
+.theme-toggle-overlay {
   position: fixed;
   inset: 0;
   z-index: 99999;
   pointer-events: none;
-  background: transparent;
-  /* Default mask makes the overlay invisible until the .play class animates
-     it into existence. Without a mask, the background color would be shown
-     over the entire viewport. */
-  -webkit-mask: radial-gradient(
-    circle 0px at var(--tt-x, 50%) var(--tt-y, 50%),
-    transparent 0,
-    transparent 100%,
-    black 100%,
-    black 100%
-  ) no-repeat;
-  mask: radial-gradient(
-    circle 0px at var(--tt-x, 50%) var(--tt-y, 50%),
-    transparent 0,
-    transparent 100%,
-    black 100%,
-    black 100%
-  ) no-repeat;
+  background-color: transparent;
+  visibility: hidden;
+  will-change: clip-path, -webkit-clip-path;
 }
 
-@keyframes theme-overlay-reveal {
+@keyframes theme-overlay-expand {
+  /* Both states paint the overlay as the NEW-theme color; only the
+     visible disc grows. */
   from {
-    -webkit-mask: radial-gradient(
-      circle 0px at var(--tt-x, 50%) var(--tt-y, 50%),
-      transparent 0,
-      transparent 100%,
-      black 100%,
-      black 100%
-    ) no-repeat;
-    mask: radial-gradient(
-      circle 0px at var(--tt-x, 50%) var(--tt-y, 50%),
-      transparent 0,
-      transparent 100%,
-      black 100%,
-      black 100%
-    ) no-repeat;
+    visibility: visible;
+    clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%));
+    -webkit-clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%));
   }
   to {
-    -webkit-mask: radial-gradient(
-      circle var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%),
-      transparent 0,
-      transparent 100%,
-      black 100%,
-      black 100%
-    ) no-repeat;
-    mask: radial-gradient(
-      circle var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%),
-      transparent 0,
-      transparent 100%,
-      black 100%,
-      black 100%
-    ) no-repeat;
+    visibility: visible;
+    clip-path: circle(var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%));
+    -webkit-clip-path: circle(var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%));
   }
 }
 
-#theme-toggle-overlay.theme-overlay--play {
-  animation: theme-overlay-reveal 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.theme-toggle-overlay.theme-overlay--play {
+  animation: theme-overlay-expand 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #theme-toggle-overlay.theme-overlay--play {
+  .theme-toggle-overlay.theme-overlay--play {
     animation-duration: 1ms !important;
   }
 }
