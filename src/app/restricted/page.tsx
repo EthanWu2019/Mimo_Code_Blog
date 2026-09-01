@@ -367,14 +367,18 @@ function EntryCard({ entry, index, onClick }: { entry: Entry; index: number; onC
       className="break-inside-avoid group cursor-pointer"
       onClick={onClick}
     >
-      <div className="relative rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.06] hover:border-red-500/50 dark:hover:border-red-500/30 transition-all bg-white dark:bg-white/[0.02]">
+      <div className="relative rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.06] hover:border-red-500/50 dark:hover:border-red-500/30 transition-all bg-white dark:bg-white/[0.02] aspect-square">
         <img
           src={cover}
           alt={entry.data.title}
           loading="lazy"
           draggable={false}
-          className="w-full object-cover select-none pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
           onContextMenu={(e) => e.preventDefault()}
+          onError={(e) => {
+            // Fallback for any image that fails to load — show placeholder tone
+            (e.currentTarget as HTMLImageElement).style.opacity = '0.2';
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-red-900/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         {/* Info */}

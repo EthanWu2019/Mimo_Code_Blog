@@ -171,10 +171,35 @@ model RestrictedImage {
   imageData   String
   imageMime   String
   width       Int
-  height     Int
+  height      Int
   position    Int             @default(0)
   prompt      String?         @db.Text  // optional per-image override
   createdAt   DateTime        @default(now())
 
   @@index([entryId])
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  tagline     String   // short 1-line summary, shows on card
+  description String   @db.Text
+  category    String   // web | ml | mobile | systems | tooling | experiment
+  status      String   @default("shipped") // shipped | in-progress | archived
+  tech        String[] // simple string array of stack tags
+  highlights  String[] // bullet points used on card / detail
+  link        String?  // live demo url
+  repo        String?  // github / git url
+  coverImage  String?  // optional cover image url
+  featured    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  year        Int      @default(2026)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+  @@index([featured])
+  @@index([sortOrder])
 }

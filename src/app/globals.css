@@ -155,21 +155,43 @@ body {
   mix-blend-mode: normal;
 }
 
-/* 默认：黑切白 - 新主题在上层 */
+/* Theme toggle transition — origin driven by CSS vars set in ThemeProvider.
+   Direction:
+     - default (dark → light): NEW theme expands from the click point outward.
+     - .theme-toggle-reverse (light → dark): OLD theme recedes from the click point inward.
+   The pseudo-elements are position:fixed inset:0, so `at var(--theme-tx) var(--theme-ty)`
+   resolves in viewport pixel space. */
+
+@keyframes theme-expand {
+  from { clip-path: circle(0px at var(--theme-tx, 50%) var(--theme-ty, 50%)); }
+  to   { clip-path: circle(var(--theme-tmax, 1000px) at var(--theme-tx, 50%) var(--theme-ty, 50%)); }
+}
+@keyframes theme-recede {
+  from { clip-path: circle(var(--theme-tmax, 1000px) at var(--theme-tx, 50%) var(--theme-ty, 50%)); }
+  to   { clip-path: circle(0px at var(--theme-tx, 50%) var(--theme-ty, 50%)); }
+}
+
+/* dark → light: NEW (light) disk expands from the click point over the old (dark).
+   ::view-transition-new(root) animates 0 → maxR, ::view-transition-old(root) recedes (invisible behind). */
 ::view-transition-new(root) {
+  animation: theme-expand 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   z-index: 9999;
+  mix-blend-mode: normal;
 }
-
 ::view-transition-old(root) {
+  animation: theme-recede 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   z-index: 1;
+  mix-blend-mode: normal;
 }
 
-/* 反转：白切黑 - 旧主题在上层 */
-.theme-toggle-reverse::view-transition-old(root) {
+/* light → dark: NEW (dark) disk expands from the click point over the old (light).
+   Same direction conceptually — only the easing differs. */
+.theme-toggle-reverse::view-transition-new(root) {
+  animation: theme-expand 500ms cubic-bezier(0.55, 0.06, 0.75, 0.52) forwards;
   z-index: 9999;
 }
-
-.theme-toggle-reverse::view-transition-new(root) {
+.theme-toggle-reverse::view-transition-old(root) {
+  animation: theme-recede 500ms cubic-bezier(0.55, 0.06, 0.75, 0.52) forwards;
   z-index: 1;
 }
 

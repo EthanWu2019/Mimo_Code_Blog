@@ -70,6 +70,7 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
       else if (href === '/gallery') pendingPageName.current = "Gallery";
       else if (href === '/photography') pendingPageName.current = "Photography";
       else if (href === '/sleep') pendingPageName.current = "Sleep";
+      else if (href === '/project') pendingPageName.current = "Project";
       else if (href === '/four-oh-four') pendingPageName.current = "404";
       else if (href === '/restricted') pendingPageName.current = "Restricted";
       else if (href === '/profile') pendingPageName.current = "Profile";
