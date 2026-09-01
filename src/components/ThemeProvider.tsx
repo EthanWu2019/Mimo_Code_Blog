@@ -30,90 +30,79 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // The origin of the expanding circle is FIXED at the theme toggle button,
-  // not where the user clicks.  This matches the visual intuition of a
-  // single-purpose control: the button is the source of the reveal.
-  //
-  // We resolve the button's *visual* center every time the user clicks
-  // (rare event), accounting for scroll position / dynamic layout.  We
-  // write the result directly to the ::view-transition pseudo-element via
-  // a one-shot injected <style> tag — guarantees the snapshot read picks
-  // up the new value with no timing games.
-  const resolveOrigin = useCallback(() => {
-    const btn = document.querySelector<HTMLElement>('[data-theme-toggle]');
-    if (!btn) return null;
-    const r = btn.getBoundingClientRect();
-    return {
-      x: Math.round(r.left + r.width / 2),
-      y: Math.round(r.top + r.height / 2),
-    };
-  }, []);
+  // The origin of the expanding circle is fixed at the theme toggle button.
+    // The reliable way to set it: read the button rect in *percent* of the
+    // viewport, then write literal percent coords into the keyframe. CSS
+    // clip-path on view-transition pseudo-elements in Chromium honours
+    // percentages consistently; literal pixel values get scaled with the
+    // group during the transition and end up at viewport centre. (That is
+    // why every prior fix using px coordinates showed 'screen top centre'.)
+    const resolveOrigin = useCallback(() => {
+      const btn = document.querySelector<HTMLElement>('[data-theme-toggle]');
+      if (!btn) return null;
+      const r = btn.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      return {
+        xPct: (cx / window.innerWidth) * 100,
+        yPct: (cy / window.innerHeight) * 100,
+      };
+    }, []);
 
-  const toggleTheme = useCallback(() => {
-    const doc = document as unknown as VTDocument;
-    const root = document.documentElement;
-    const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
+    const toggleTheme = useCallback(() => {
+      const doc = document as unknown as VTDocument;
+      const root = document.documentElement;
+      const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
 
-    // 1. Resolve origin from the live button rect.
-    const origin = resolveOrigin();
-    if (!origin) {
-      // No button in DOM yet — just flip without anim.
-      root.classList.remove('dark', 'light');
-      root.classList.add(nextTheme);
-      setTheme(nextTheme);
-      localStorage.setItem('theme', nextTheme);
-      return;
-    }
+      // 1. Resolve origin as percentages of the viewport.
+      const origin = resolveOrigin();
+      if (!origin) {
+        root.classList.remove('dark', 'light');
+        root.classList.add(nextTheme);
+        setTheme(nextTheme);
+        localStorage.setItem('theme', nextTheme);
+        return;
+      }
 
-    // 2. Inject a one-shot keyframe rule with literal pixel values that
-        // exactly match the theme toggle button's center. The animation-name
-        // in globals.css is "theme-reveal-new"; we override it here so the
-        // pseudo-element runs OUR keyframe (whose clip-path centre uses the
-        // literal button px coords) instead of the 50%-placeholder.
-        const styleId = 'theme-origin-style';
-        let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
-        if (!styleEl) {
-          styleEl = document.createElement('style');
-          styleEl.id = styleId;
-          document.head.appendChild(styleEl);
-        }
-        styleEl.textContent =
-          `@keyframes theme-reveal-new-px{` +
-          `from{clip-path:circle(0% at ${origin.x}px ${origin.y}px);` +
-          `-webkit-clip-path:circle(0% at ${origin.x}px ${origin.y}px)}` +
-          `to{clip-path:circle(200% at ${origin.x}px ${origin.y}px);` +
-          `-webkit-clip-path:circle(200% at ${origin.x}px ${origin.y}px)}` +
-          `}` +
-          `::view-transition-new(root){animation-name:theme-reveal-new-px !important;}`;
+      // 2. Inject a one-shot keyframe rule with literal *percentage* coords
+      //    matching the toggle button center. Percent is the only unit we
+      //    can rely on for view-transition pseudo-element clip-path animation
+      //    in current Chromium — px gets re-scaled with the group.
+      const styleId = 'theme-origin-style';
+      let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent =
+        `@keyframes theme-reveal-new-px{` +
+        `from{clip-path:circle(0% at ${origin.xPct.toFixed(2)}% ${origin.yPct.toFixed(2)}%)}` +
+        `to  {clip-path:circle(200% at ${origin.xPct.toFixed(2)}% ${origin.yPct.toFixed(2)}%)}` +
+        `}` +
+        `::view-transition-new(root){animation-name:theme-reveal-new-px !important;}`;
 
-    // 3. Cursor dot gets the visual hint.
-    document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
+      document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
 
-    // 4. Run the transition.
-    if (!doc.startViewTransition) {
-      // No-op fallback.
-      root.classList.remove('dark', 'light');
-      root.classList.add(nextTheme);
-      setTheme(nextTheme);
-      localStorage.setItem('theme', nextTheme);
-      return;
-    }
+      if (!doc.startViewTransition) {
+        root.classList.remove('dark', 'light');
+        root.classList.add(nextTheme);
+        setTheme(nextTheme);
+        localStorage.setItem('theme', nextTheme);
+        return;
+      }
 
-    const vt = doc.startViewTransition(() => {
-      root.classList.remove('dark', 'light');
-      root.classList.add(nextTheme);
-      setTheme(nextTheme);
-      localStorage.setItem('theme', nextTheme);
-    });
+      const vt = doc.startViewTransition(() => {
+        root.classList.remove('dark', 'light');
+        root.classList.add(nextTheme);
+        setTheme(nextTheme);
+        localStorage.setItem('theme', nextTheme);
+      });
 
-    // 5. Once the transition settles, drop the one-shot <style>. The CSS
-    // keyframe in globals.css owns the animation; this injected rule only
-    // seeds the `from` clip-path at the click origin so the expanding disc
-    // starts at exactly the button center.
-    vt.finished.finally(() => {
-      if (styleEl && styleEl.parentNode) styleEl.textContent = '';
-    });
-  }, [theme, resolveOrigin]);
+      vt.finished.finally(() => {
+        if (styleEl && styleEl.parentNode) styleEl.textContent = '';
+      });
+    }, [theme, resolveOrigin]);
 
   if (!mounted) return <>{children}</>;
 
