@@ -201,11 +201,21 @@ body {
    per-click to use literal pixel coordinates of the toggle button. */
 ::view-transition-new(root) {
   animation-name: theme-reveal-new-px;
-  animation-duration: 1300ms;
-  /* Material standard easing — modest forward push in the first half,
-     then a long soft tail. Avoids both the 'sudden snap' of expo-out
-     and the equally-slow-everywhere flatness of linear. */
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  /* 1600ms — extra length is essential: the second control point sits
+     at y=1, x=0.2 which means the last 80% of the curve lives in
+     roughly the last 60% of the duration; that's ~960ms of perceptible
+     deceleration tail. 1300ms wasn't enough runway for the tail to
+     actually register. */
+  animation-duration: 1600ms;
+  /* cubic-bezier(0.3, 0.85, 0.2, 1)
+     Control 1 = (0.3, 0.85):  the curve is already at y=0.85 by x=0.3,
+     so the first 30% of duration covers ~85% of the disc expansion —
+     the visible "snap" the user wants.
+     Control 2 = (0.2, 1):  the curve hits y=1 by x=0.2 of the
+     remaining range; from there to x=1 the curve rides right along
+     y=1 — a long flat tail the user feels as "easing off" rather
+     than a sudden stop. */
+  animation-timing-function: cubic-bezier(0.3, 0.85, 0.2, 1);
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   mix-blend-mode: normal;
