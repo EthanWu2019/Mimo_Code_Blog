@@ -14,18 +14,20 @@ const ThemeContext = createContext<ThemeContextValue>({
   toggleTheme: () => {},
 });
 
-interface DocumentVT {
-  startViewTransition?: (callback: () => void) => ViewTransitionLike;
-}
-interface ViewTransitionLike {
-  ready: Promise<void>;
-  finished: Promise<void>;
-}
+const ANIM_MS = 600;
+// Color tokens for the overlay backdrop. The overlay is the OLD theme's
+// representative color — only visible OUTSIDE the growing circle, where it's
+// destined to be covered anyway.
+const OLD_THEME_BG: Record<Theme, string> = {
+  dark: '#0a0a0b',
+  light: '#fafafa',
+};
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
   const animatingRef = useRef(false);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('theme') as Theme;
@@ -35,65 +37,82 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    // Lazy-create the overlay once and reuse across toggles.
+    if (typeof document === 'undefined') return;
+    if (!overlayRef.current) {
+      const el = document.createElement('div');
+      el.id = 'theme-toggle-overlay';
+      el.style.cssText =
+        'position:fixed;inset:0;z-index:99999;pointer-events:none;' +
+        'background:transparent;will-change:mask-image,-webkit-mask-image;' +
+        'mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;';
+      // Default mask paints the entire element transparent (no mask shape) →
+      // it's invisible until we set --tt-r to drive the radius.
+      document.body.appendChild(el);
+      overlayRef.current = el;
+    }
+  }, []);
+
   const toggleTheme = useCallback((x?: number, y?: number) => {
     if (animatingRef.current) return;
 
-    // 1. Origin in viewport px — clicked SVG center.
-    //    Defensive: the button may have CSS transitions that perturb rect.top on
-    //    hover, so we DON'T read getBoundingClientRect on the live element.
-    //    Instead, every click is the *current* runtime cursor position captured
-    //    via event.clientX/Y upstream. We pull them from the explicit args here
-    //    — and if absent, fall back to viewport center (e.g. keyboard shortcut).
     const cx = Math.round(x ?? window.innerWidth / 2);
     const cy = Math.round(y ?? window.innerHeight / 2);
 
-    const doc = document as unknown as DocumentVT;
-    if (!doc.startViewTransition) {
-      // Graceful degrade: instant theme flip with no animation.
-      const fallbackNext: Theme = theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.classList.remove('dark', 'light');
-      document.documentElement.classList.add(fallbackNext);
-      setTheme(fallbackNext);
-      localStorage.setItem('theme', fallbackNext);
-      return;
-    }
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    // Diagonal from origin to farthest corner — guarantees full coverage at end.
+    const maxR = Math.ceil(Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)));
 
     const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
     animatingRef.current = true;
 
-    // Cursor dot gets a visual hint that a transition is starting.
     document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
 
-    // 2. Geometry: the circle that "uncovers" the new theme must be large enough
-    //    to swallow the entire viewport diagonally, otherwise the old theme
-    //    bleeds through the corners.
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const maxR = Math.ceil(Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)));
-
-    // 3. Publish origin to CSS so ::view-transition-old(root) can clip from it.
-    const root = document.documentElement;
-    root.style.setProperty('--tt-x', `${cx}px`);
-    root.style.setProperty('--tt-y', `${cy}px`);
-    root.style.setProperty('--tt-max', `${maxR}px`);
-
-    // 4. Run the transition. Inside the callback we swap the class on <html> so
-    //    Chromium captures the *new* theme into the NEW snapshot. Both snapshots
-    //    are rendered as ::view-transition-old(root) / -new(root) pseudo layers.
-    //    We disable the built-in group animation (replaced by our clipPath) and
-    //    pare down the new layer to fully transparent so the old layer's clip
-    //    animation IS the visible effect.
-    const vt = doc.startViewTransition(() => {
-      root.classList.remove('dark', 'light');
-      root.classList.add(nextTheme);
+    const overlay = overlayRef.current;
+    if (!overlay) {
+      // Pathological — fall back to a plain class swap.
+      document.documentElement.classList.remove('dark', 'light');
+      document.documentElement.classList.add(nextTheme);
       setTheme(nextTheme);
       localStorage.setItem('theme', nextTheme);
-    });
-
-    vt.finished.finally(() => {
-      // Always release the lock — animationend guards on rapid clicks.
       animatingRef.current = false;
-    });
+      return;
+    }
+
+    // Paint the overlay as the *old* theme background OUTSIDE the masked circle.
+    // Where the mask is transparent (inside the circle), the overlay is invisible
+    // and the user sees the real DOM — which we are about to swap to the new theme.
+    overlay.style.background = OLD_THEME_BG[theme];
+    overlay.style.setProperty('--tt-x', `${cx}px`);
+    overlay.style.setProperty('--tt-y', `${cy}px`);
+    overlay.style.setProperty('--tt-max', `${maxR}px`);
+
+    // Re-arm the CSS animation. Force a reflow before re-adding the class,
+    // otherwise back-to-back toggles skip the keyframe restart.
+    overlay.classList.remove('theme-overlay--play');
+    void overlay.offsetWidth;
+    overlay.classList.add('theme-overlay--play');
+
+    // Commit the class change so the real DOM underneath is the NEW theme.
+    // Visually: at this instant, the overlay's mask is still ~0 radius, so
+    // the user is still looking at the OLD theme through it. As the mask
+    // circle grows, more and more of the OLD overlay (color) is hidden,
+    // revealing the NEW-themed page underneath.
+    document.documentElement.classList.remove('dark', 'light');
+    document.documentElement.classList.add(nextTheme);
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+
+    // Cleanup lock after the anim ends. We can rely on either animationend or
+    // the timeout, whichever fires first.
+    const done = () => {
+      overlay.classList.remove('theme-overlay--play');
+      animatingRef.current = false;
+    };
+    window.setTimeout(done, ANIM_MS + 60);
+    overlay.addEventListener('animationend', done, { once: true });
   }, [theme]);
 
   if (!mounted) return <>{children}</>;
