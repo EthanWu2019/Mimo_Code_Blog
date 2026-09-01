@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 type Theme = 'dark' | 'light';
 
@@ -14,25 +14,13 @@ const ThemeContext = createContext<ThemeContextValue>({
   toggleTheme: () => {},
 });
 
-const RIPPLE_MS = 1100;
-
-// Solid colour for the expanding disc. Inside the disc the user sees
-// this colour; outside, the live DOM (which has not yet been class-
-// swapped). When the disc fully covers the viewport we swap the class
-// and remove the overlay. Concurrent clicks create concurrent overlays
-// (each on its own z-index); that's the ripple.
-const THEME_FG: Record<Theme, string> = {
-  dark: '#0a0a0b',
-  light: '#fafafa',
-};
+interface VTDocument {
+  startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> };
+}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
-  // Counter to assign z-index to concurrent ripples. Older ripples stay
-  // animating underneath the newest, like stacked water-drops on a still
-  // surface.
-  const zCounter = useRef(0);
 
   useEffect(() => {
     const saved = localStorage.getItem('theme') as Theme;
@@ -42,64 +30,79 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    const root = document.documentElement;
-    const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
-
-    // Resolve origin from the live button rect. Percent of viewport.
-    const btn = document.querySelector<HTMLElement>('[data-theme-toggle]');
-    let xPct = 50;
-    let yPct = 50;
-    if (btn) {
+  // The origin of the expanding circle is fixed at the theme toggle button.
+    // The reliable way to set it: read the button rect in *percent* of the
+    // viewport, then write literal percent coords into the keyframe. CSS
+    // clip-path on view-transition pseudo-elements in Chromium honours
+    // percentages consistently; literal pixel values get scaled with the
+    // group during the transition and end up at viewport centre. (That is
+    // why every prior fix using px coordinates showed 'screen top centre'.)
+    const resolveOrigin = useCallback(() => {
+      const btn = document.querySelector<HTMLElement>('[data-theme-toggle]');
+      if (!btn) return null;
       const r = btn.getBoundingClientRect();
-      xPct = ((r.left + r.width / 2) / window.innerWidth) * 100;
-      yPct = ((r.top + r.height / 2) / window.innerHeight) * 100;
-    }
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      return {
+        xPct: (cx / window.innerWidth) * 100,
+        yPct: (cy / window.innerHeight) * 100,
+      };
+    }, []);
 
-    // Brand new overlay per click — the "ripple" stack grows as the
-    // user clicks faster. Each overlay animates independently to its
-    // full coverage; later clicks always sit on top.
-    const z = (zCounter.current = (zCounter.current + 1) % 8);
-    const overlay = document.createElement('div');
-    overlay.className = 'theme-ripple';
-    overlay.style.setProperty('--ripple-x', `${xPct.toFixed(2)}%`);
-    overlay.style.setProperty('--ripple-y', `${yPct.toFixed(2)}%`);
-    overlay.style.zIndex = String(99990 + z);
-    overlay.style.background = THEME_FG[nextTheme];
-    document.body.appendChild(overlay);
-    // Defer to next frame so the keyframe-from state is captured before
-    // the animation actually starts. (Without this the first frame after
-    // mounting is the keyframe's `from` state, but Chromium sometimes
-    // composites the element unrolled instead.)
-    requestAnimationFrame(() => {
-      overlay.style.animation = `theme-ripple-grow ${RIPPLE_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`;
-    });
+    const toggleTheme = useCallback(() => {
+      const doc = document as unknown as VTDocument;
+      const root = document.documentElement;
+      const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
 
-    // Commit the theme swap at the visual midpoint: when the disc covers
-    // ~half the screen, switch the live DOM underneath. That way the
-    // user never sees a sharp switch of OLD theme → NEW theme; what they
-    // see is the disc gradually covering everything, and at the end the
-    // disc colour matches the live DOM colour regardless of how many
-    // quick clicks happened.
-    window.setTimeout(() => {
-      root.classList.remove('dark', 'light');
-      root.classList.add(nextTheme);
-      setTheme(nextTheme);
-      localStorage.setItem('theme', nextTheme);
-    }, Math.round(RIPPLE_MS * 0.6));
+      // 1. Resolve origin as percentages of the viewport.
+      const origin = resolveOrigin();
+      if (!origin) {
+        root.classList.remove('dark', 'light');
+        root.classList.add(nextTheme);
+        setTheme(nextTheme);
+        localStorage.setItem('theme', nextTheme);
+        return;
+      }
 
-    // Cleanup the overlay element after the ripple is fully complete.
-    // Do NOT gate future clicks on this; concurrent ripples handle
-    // themselves.
-    window.setTimeout(() => {
-      overlay.classList.add('theme-ripple--done');
-      window.setTimeout(() => {
-        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-      }, 100);
-    }, RIPPLE_MS + 60);
+      // 2. Inject a one-shot keyframe rule with literal *percentage* coords
+      //    matching the toggle button center. Percent is the only unit we
+      //    can rely on for view-transition pseudo-element clip-path animation
+      //    in current Chromium — px gets re-scaled with the group.
+      const styleId = 'theme-origin-style';
+      let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent =
+        `@keyframes theme-reveal-new-px{` +
+        `from{clip-path:circle(0% at ${origin.xPct.toFixed(2)}% ${origin.yPct.toFixed(2)}%)}` +
+        `to  {clip-path:circle(200% at ${origin.xPct.toFixed(2)}% ${origin.yPct.toFixed(2)}%)}` +
+        `}` +
+        `::view-transition-new(root){animation-name:theme-reveal-new-px !important;}`;
 
-    document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
-  }, [theme]);
+      document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
+
+      if (!doc.startViewTransition) {
+        root.classList.remove('dark', 'light');
+        root.classList.add(nextTheme);
+        setTheme(nextTheme);
+        localStorage.setItem('theme', nextTheme);
+        return;
+      }
+
+      const vt = doc.startViewTransition(() => {
+        root.classList.remove('dark', 'light');
+        root.classList.add(nextTheme);
+        setTheme(nextTheme);
+        localStorage.setItem('theme', nextTheme);
+      });
+
+      vt.finished.finally(() => {
+        if (styleEl && styleEl.parentNode) styleEl.textContent = '';
+      });
+    }, [theme, resolveOrigin]);
 
   if (!mounted) return <>{children}</>;
 
