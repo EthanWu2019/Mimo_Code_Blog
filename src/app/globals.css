@@ -150,46 +150,84 @@ body {
 }
 
 /* ============================================================
-   Theme toggle overlay
+   Theme toggle — driven by document.startViewTransition in ThemeProvider.
    --------------------------------------------------------------
-   Single real <div id="theme-toggle-overlay"> that JS appends to <body>.
-   The expanding/receding circle is a CSS clip-path animation fed by
-   CSS variables --tt-x, --tt-y, --tt-max set in ThemeProvider.
-   We deliberately do NOT use document.startViewTransition here:
-   that API auto-crossfades old/new snapshots, which the user reads as a
-   "fade", destroying the expanding-circle effect.
+   The transition does the heavy lifting of capturing the *new* theme's
+   rendered DOM as ::view-transition-new(root). We only need to animate the
+   *old* theme's snapshot so it carves away from the click point outward,
+   revealing the new-theme page underneath.
+
+   Geometry: --tt-x, --tt-y (viewport px), --tt-max (diagonal radius).
+   Tuned fast: 700ms total, expo-out easing.
    ============================================================ */
 
-#theme-toggle-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  pointer-events: none;          /* never intercepts scroll or clicks */
-  clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%));
-  -webkit-clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%));
-  will-change: clip-path;
-  background: var(--tt-bg, #0a0a0b);
+@keyframes theme-reveal {
+  /* The OLD-theme snapshot covers the viewport. We mask out a circle at the
+     click point that *grows* from 0 to full coverage. Where the mask is
+     transparent, the OLD snapshot is hidden — revealing the real page
+     below (already switched to the NEW theme inside startViewTransition's
+     callback). So:
+       inside circle  → transparent mask → OLD snapshot hidden → see NEW page
+       outside circle → opaque mask      → OLD snapshot visible
+     Growing the circle from 0 to maxR gives the expanding-disk effect. */
+  from {
+    -webkit-mask-image: radial-gradient(
+      circle 0px at var(--tt-x, 50%) var(--tt-y, 50%),
+      transparent 0,
+      transparent 100%,
+      black 100%,
+      black 100%
+    );
+    mask-image: radial-gradient(
+      circle 0px at var(--tt-x, 50%) var(--tt-y, 50%),
+      transparent 0,
+      transparent 100%,
+      black 100%,
+      black 100%
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  to {
+    -webkit-mask-image: radial-gradient(
+      circle var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%),
+      transparent 0,
+      transparent 100%,
+      black 100%,
+      black 100%
+    );
+    mask-image: radial-gradient(
+      circle var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%),
+      transparent 0,
+      transparent 100%,
+      black 100%,
+      black 100%
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+}
+
+/* The OLD snapshot masks away from the click point outward, exposing the
+   new-theme page underneath. The NEW snapshot is hidden — it exists only
+   to satisfy the View Transitions spec; we never want to see it. */
+::view-transition-old(root) {
+  animation: theme-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: none;
   visibility: hidden;
+  mix-blend-mode: normal;
 }
 
-#theme-toggle-overlay.theme-overlay--light { --tt-bg: #fafafa; }
-#theme-toggle-overlay.theme-overlay--dark  { --tt-bg: #0a0a0b; }
-
-/* While playing, the overlay fills the viewport in 1500ms via clip-path 0 → maxR.
-   The .theme-overlay--play class is removed at the end of the animation, snapping
-   the overlay back to invisible state without flashing. */
-@keyframes theme-toggle-expand {
-  from { clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%)); visibility: visible; }
-  to   { clip-path: circle(var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%)); visibility: visible; }
-}
-
-#theme-toggle-overlay.theme-overlay--play {
-  visibility: visible;
-  animation: theme-toggle-expand 1500ms cubic-bezier(0.83, 0, 0.17, 1) forwards;
+::view-transition-group(root) {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #theme-toggle-overlay.theme-overlay--play {
+  ::view-transition-old(root) {
     animation-duration: 1ms;
   }
 }

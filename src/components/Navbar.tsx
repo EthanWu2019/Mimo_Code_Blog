@@ -77,8 +77,10 @@ export default function Navbar() {
 
             <button
               onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                toggleTheme(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                // Pass the click point from the event itself — not the button rect,
+                // which can be perturbed by CSS hover/focus transitions on press.
+                // clientX/Y is the exact viewport coordinate of the click.
+                toggleTheme(e.clientX, e.clientY);
               }}
               className="ml-1 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-300"
               aria-label="Toggle theme"
