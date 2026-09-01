@@ -202,7 +202,10 @@ body {
 ::view-transition-new(root) {
   animation-name: theme-reveal-new-px;
   animation-duration: 1300ms;
-  animation-timing-function: cubic-bezier(0.83, 0, 0.17, 1);
+  /* Material standard easing — modest forward push in the first half,
+     then a long soft tail. Avoids both the 'sudden snap' of expo-out
+     and the equally-slow-everywhere flatness of linear. */
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   mix-blend-mode: normal;
