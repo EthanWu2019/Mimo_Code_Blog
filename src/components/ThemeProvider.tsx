@@ -6,7 +6,7 @@ type Theme = 'dark' | 'light';
 
 interface ThemeContextValue {
   theme: Theme;
-  toggleTheme: (x?: number, y?: number) => void;
+  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -30,22 +30,34 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  const toggleTheme = useCallback((x?: number, y?: number) => {
+  // The origin of the expanding circle is FIXED at the theme toggle button,
+  // not where the user clicks.  This matches the visual intuition of a
+  // single-purpose control: the button is the source of the reveal.
+  //
+  // We resolve the button's *visual* center every time the user clicks
+  // (rare event), accounting for scroll position / dynamic layout.  We
+  // write the result directly to the ::view-transition pseudo-element via
+  // a one-shot injected <style> tag — guarantees the snapshot read picks
+  // up the new value with no timing games.
+  const resolveOrigin = useCallback(() => {
+    const btn = document.querySelector<HTMLElement>('[data-theme-toggle]');
+    if (!btn) return null;
+    const r = btn.getBoundingClientRect();
+    return {
+      x: Math.round(r.left + r.width / 2),
+      y: Math.round(r.top + r.height / 2),
+    };
+  }, []);
+
+  const toggleTheme = useCallback(() => {
     const doc = document as unknown as VTDocument;
     const root = document.documentElement;
     const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
 
-    // Always persist coords to root CSS vars.  The CSS animation reads them.
-    if (typeof x === 'number' && typeof y === 'number') {
-      root.style.setProperty('--tt-x', `${x}px`);
-      root.style.setProperty('--tt-y', `${y}px`);
-    }
-
-    // Hint CursorGlow to fade out for the duration.
-    document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
-
-    if (!doc.startViewTransition) {
-      // No-op fallback: just flip the class.
+    // 1. Resolve origin from the live button rect.
+    const origin = resolveOrigin();
+    if (!origin) {
+      // No button in DOM yet — just flip without anim.
       root.classList.remove('dark', 'light');
       root.classList.add(nextTheme);
       setTheme(nextTheme);
@@ -53,24 +65,55 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // The transition:
-    //   1. Captures OLD-theme full DOM screenshot into ::view-transition-old(root).
-    //   2. Runs the callback, which swaps the .dark/.light class on <html>.
-    //   3. Captures NEW-theme full DOM screenshot into ::view-transition-new(root).
-    //   4. Plays CSS animations on the pseudo layers for the duration.
-    //
-    // Our CSS animates ::view-transition-new(root) with clip-path: circle(0) → circle(200%)
-    // at the click point. ::view-transition-old(root) is unanimated — it stays full-screen
-    // visible while the new layer is clipped to a small dot at t=0, then expands.
-    // Net visual: the new theme reveals itself through a growing circular window,
-    // centered on the click point. The OLD snapshot is gone outside that circle.
-    doc.startViewTransition(() => {
+    // 2. Inject a one-shot keyframe rule with literal pixel values that
+        // exactly match the theme toggle button's center. The animation-name
+        // in globals.css is "theme-reveal-new"; we override it here so the
+        // pseudo-element runs OUR keyframe (whose clip-path centre uses the
+        // literal button px coords) instead of the 50%-placeholder.
+        const styleId = 'theme-origin-style';
+        let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+        if (!styleEl) {
+          styleEl = document.createElement('style');
+          styleEl.id = styleId;
+          document.head.appendChild(styleEl);
+        }
+        styleEl.textContent =
+          `@keyframes theme-reveal-new-px{` +
+          `from{clip-path:circle(0% at ${origin.x}px ${origin.y}px);` +
+          `-webkit-clip-path:circle(0% at ${origin.x}px ${origin.y}px)}` +
+          `to{clip-path:circle(200% at ${origin.x}px ${origin.y}px);` +
+          `-webkit-clip-path:circle(200% at ${origin.x}px ${origin.y}px)}` +
+          `}` +
+          `::view-transition-new(root){animation-name:theme-reveal-new-px !important;}`;
+
+    // 3. Cursor dot gets the visual hint.
+    document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
+
+    // 4. Run the transition.
+    if (!doc.startViewTransition) {
+      // No-op fallback.
+      root.classList.remove('dark', 'light');
+      root.classList.add(nextTheme);
+      setTheme(nextTheme);
+      localStorage.setItem('theme', nextTheme);
+      return;
+    }
+
+    const vt = doc.startViewTransition(() => {
       root.classList.remove('dark', 'light');
       root.classList.add(nextTheme);
       setTheme(nextTheme);
       localStorage.setItem('theme', nextTheme);
     });
-  }, [theme]);
+
+    // 5. Once the transition settles, drop the one-shot <style>. The CSS
+    // keyframe in globals.css owns the animation; this injected rule only
+    // seeds the `from` clip-path at the click origin so the expanding disc
+    // starts at exactly the button center.
+    vt.finished.finally(() => {
+      if (styleEl && styleEl.parentNode) styleEl.textContent = '';
+    });
+  }, [theme, resolveOrigin]);
 
   if (!mounted) return <>{children}</>;
 

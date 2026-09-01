@@ -152,70 +152,73 @@ body {
 /* ============================================================
    Theme toggle — View Transitions API + clip-path reveal
    --------------------------------------------------------------
-   Strategy (Chromium-native, no JS animation orchestration):
+   Strategy (Chromium-native, zero JS animation orchestration):
      1. ThemeProvider calls document.startViewTransition(callback).
         The callback flips .dark/.light on <html>.
      2. Chromium captures the OLD theme's full DOM as
         ::view-transition-old(root) and the NEW theme's full DOM as
         ::view-transition-new(root).
-     3. We disable the default crossfade on BOTH layers — the entire
-        visual is driven by animating ::view-transition-new(root) with
-        a clip-path that grows from circle(0%) to circle(200%) at the
-        click point.
-     4. Read out: ::view-transition-old(root) is fully visible at all
-        times (no animation, no opacity changes), so the OLD theme
-        stays on screen. The NEW theme is clipped to a growing disc;
-        inside the disc, the user sees the captured NEW-theme DOM
-        (real pages, real content — not a flat colour).
+     3. We disable the default crossfade on the group; the visual is
+        driven entirely by animating ::view-transition-new(root) with a
+        clip-path keyframe that grows from circle(0%) to circle(200%)
+        centred on the theme toggle button.
+     4. Read-out: ::view-transition-old(root) is fully visible at all
+        times; ::view-transition-new(root) is clipped to a growing disc
+        centered on the toggle button. Inside the disc, the user sees
+        the captured NEW-theme DOM (real pages, real text, real images
+        — not a flat colour). Outside the disc, the OLD theme stays
+        visible until the disc covers everything.
      5. When the disc covers the viewport, the group is destroyed and
-        the underlying live DOM (now also the NEW theme thanks to the
-        callback) is shown. No flash because both surfaces are the
-        same color by that point.
+        the live DOM (now also the NEW theme thanks to the callback)
+        is shown. No flash because both surfaces are the same colour
+        at that point.
 
-   Geometry: --tt-x / --tt-y in viewport px (set in ThemeProvider).
-   200% radius guarantees coverage of any viewport — circle(200% at P)
-   covers the largest diagonal from P. Duration 700ms, expo-out easing.
-   pointer-events:none implicit on view-transition pseudo layers.
+   Origin:  The animation keyframe below uses the placeholder defaults
+            (50%, 50%) — ThemeProvider overrides the FROM clip-path
+            each click by injecting a one-shot <style> rule with literal
+            pixel coordinates of the theme toggle button. This sidesteps
+            any subtle timing issue with CSS-variable resolution while
+            Chromium is preparing the snapshot.
+
+   Duration: 1300ms — long enough to feel like a deliberate reveal.
+   Easing:   cubic-bezier(0.83, 0, 0.17, 1) — gentle in, decisive out.
+   Geometry: 200% radius — guaranteed to cover any viewport from any
+             click point.
    ============================================================ */
 
-@keyframes theme-reveal-new {
-  from {
-    clip-path: circle(0% at var(--tt-x, 50%) var(--tt-y, 50%));
-    -webkit-clip-path: circle(0% at var(--tt-x, 50%) var(--tt-y, 50%));
-  }
-  to {
-    clip-path: circle(200% at var(--tt-x, 50%) var(--tt-y, 50%));
-    -webkit-clip-path: circle(200% at var(--tt-x, 50%) var(--tt-y, 50%));
-  }
-}
-
-/* Kill the default crossfade on both layers and tell them to fill forwards
-   so they don't snap back. Crucially we DO NOT apply the clip-path keyframe
-   to ::view-transition-old(root) — keeping it fully visible at all times so
-   the OLD theme stays on screen until the NEW layer's growing disc covers
-   the viewport. Only the NEW layer uses the keyframe. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-fill-mode: forwards;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Stop the default ~250ms crossfade on the OLD layer — leave it visible,
-   motionless. */
+/* ===== Theme toggle — works alongside the rest of the page transitions.
+   The OLD-layer snapshot captures the old themed DOM and must stay fully
+   visible (NOT crossfaded) throughout the entire clip-reveal, so that the
+   OLD theme stays on the screen outside the growing new-theme disc. */
 ::view-transition-old(root) {
-  animation-name: none;
-  animation-duration: 700ms;
+  animation: none !important;
+  opacity: 1;
+  mix-blend-mode: normal;
 }
 
-/* Real animation lives here — ::view-transition-new(root). */
+/* The NEW-layer snapshot is clipped to a growing disc. We point
+   animation-name at `theme-reveal-new-px`, which ThemeProvider overrides
+   per-click to use literal pixel coordinates of the toggle button. */
 ::view-transition-new(root) {
-  animation-name: theme-reveal-new;
-  animation-duration: 700ms;
+  animation-name: theme-reveal-new-px;
+  animation-duration: 1300ms;
+  animation-timing-function: cubic-bezier(0.83, 0, 0.17, 1);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  mix-blend-mode: normal;
 }
 
-/* Stop default crossfade on the group container too. */
+/* The default group fade is what causes the visible flash on cleanup —
+   disable it. */
 ::view-transition-group(root) {
-  animation-duration: 0s;
+  animation: none !important;
+}
+
+/* Placeholder keyframe — ThemeProvider writes a per-click override with
+   the actual literal coordinates of the toggle button. */
+@keyframes theme-reveal-new-px {
+  from { clip-path: circle(0% at 50% 50%); }
+  to   { clip-path: circle(200% at 50% 50%); }
 }
 
 @media (prefers-reduced-motion: reduce) {

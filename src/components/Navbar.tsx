@@ -72,19 +72,15 @@ export default function Navbar() {
               Project
             </Link>
             <Link href="/blog" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
-              Blog
-            </Link>
+                          Blog
+                        </Link>
 
-            <button
-              onClick={(e) => {
-                // Pass the click point from the event itself — not the button rect,
-                // which can be perturbed by CSS hover/focus transitions on press.
-                // clientX/Y is the exact viewport coordinate of the click.
-                toggleTheme(e.clientX, e.clientY);
-              }}
-              className="ml-1 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-300"
-              aria-label="Toggle theme"
-            >
+                        <button
+                          data-theme-toggle
+                          onClick={() => toggleTheme()}
+                          className="ml-1 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-300"
+                          aria-label="Toggle theme"
+                        >
               <div className="relative w-5 h-5 overflow-hidden">
                 <svg
                   className={`absolute inset-0 w-5 h-5 text-amber-500 transition-all duration-300 ease-out ${
