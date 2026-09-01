@@ -201,26 +201,31 @@ body {
    per-click to use literal pixel coordinates of the toggle button. */
 ::view-transition-new(root) {
   animation-name: theme-reveal-new-px;
-  /* 1400ms — slightly shorter than before; the curve shifts the
-     visible motion forward so the perceptual time of the run
-     matches what the user expects. The last 30% of duration is the
-     long brake, not visual no-op. */
-  animation-duration: 1400ms;
-  /* cubic-bezier(0.4, 0.6, 0.75, 1) — "front-load + early brake"
-     P1 (0.4, 0.6)  → by 40% of duration the disc is already at 60%
-                       of its final radius; opening has perceptible
-                       forward motion.
-     P2 (0.75, 1)   → by 75% of duration the disc is essentially at
-                       the final radius — the curve has a clear,
-                       visible "settling" zone in the last quarter.
-                       Tangent at the end has slope (1-1)/(1-0.75) = 0,
-                       so the disc actually *stops* rather than just
-                       riding y=1 with infinitesimal tail velocity.
-     Net read: when the visible disc has reached roughly the
-     bottom-left third of the screen, the user feels the animation
-     commit a clear deceleration and settle, not "line crossed at
-     full speed, then I sat in a parked frame for 500ms". */
-  animation-timing-function: cubic-bezier(0.4, 0.6, 0.75, 1);
+  /* 1000ms — short enough that the three phases (start / cruise / brake)
+     each occupy a perceptible fraction: ~150ms start, ~350ms cruise,
+     ~500ms brake. If we keep 1300-1400ms the user reads the whole
+     thing as 'a long drawn-out transition' and loses the punch. */
+  animation-duration: 1000ms;
+  /* cubic-bezier(0.15, 0.45, 0.5, 1) — "fast start, even cruise, soft brake"
+     P1 = (0.15, 0.45)  →  initial tangent slope = 0.45 / 0.15 = 3.0
+                           (chest of the kick — the disc is already at
+                           45% of its final radius by 15% of duration.
+                           That's the 'start a bit fast' the user wants.)
+     P1 → P2 segment    →  roughly straight line from (0.15, 0.45) to
+                           (0.5, 1). Average slope ≈ (1 - 0.45) /
+                           (0.5 - 0.15) = 1.57. Close enough to 1.0
+                           that the eye reads it as 'cruising' rather
+                           than 'still accelerating' or 'decelerating'.
+     P2 = (0.5, 1)      →  end tangent slope = (1 - 1) / (1 - 0.5) = 0.
+                           The last 50% of duration is dedicated to
+                           getting the disc from ~95% to 100% radius
+                           with velocity tapering to zero — that's the
+                           'elegant stop' the user asks for.
+     Net: the user feels three distinct phases — a punchy opening,
+     a steady cruise in the middle, and a gentle settle at the
+     bottom-left of the screen — without any 'sudden snap' or
+     'sat in a parked frame' artifacts. */
+  animation-timing-function: cubic-bezier(0.15, 0.45, 0.5, 1);
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   mix-blend-mode: normal;
