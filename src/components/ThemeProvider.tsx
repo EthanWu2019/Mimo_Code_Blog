@@ -4,27 +4,22 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 
 type Theme = 'dark' | 'light';
 
-interface Document {
-  startViewTransition?: (callback: () => void) => ViewTransition;
-}
-
-interface ViewTransition {
-  ready: Promise<void>;
-  finished: Promise<void>;
-}
-
-const ThemeContext = createContext<{
+interface ThemeContextValue {
   theme: Theme;
   toggleTheme: (x?: number, y?: number) => void;
-}>({
+}
+
+const ThemeContext = createContext<ThemeContextValue>({
   theme: 'dark',
   toggleTheme: () => {},
 });
 
+const ANIM_MS = 1500;
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
-  const isAnimatingRef = useRef(false);
+  const animatingRef = useRef(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('theme') as Theme;
@@ -35,61 +30,72 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleTheme = useCallback((x?: number, y?: number) => {
-    if (isAnimatingRef.current) return;
+    if (animatingRef.current) return;
 
-    // 1. Compute origin in CSS px relative to viewport (button center if provided, else viewport center)
     const cx = Math.round(x ?? window.innerWidth / 2);
     const cy = Math.round(y ?? window.innerHeight / 2);
-
-    // 2. Compute the maximum radius needed to cover any corner from the origin.
-    //    viewport width/height at the time of click — stable for the duration of the transition.
     const w = window.innerWidth;
     const h = window.innerHeight;
+    // Diagonal from origin → farthest corner. Guarantees the circle sweeps the
+    // entire viewport so the swap can be made invisibly at the end of the anim.
     const maxR = Math.ceil(Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)));
 
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    const isLightToDark = theme === 'light';
+    const newTheme: Theme = theme === 'dark' ? 'light' : 'dark';
+    animatingRef.current = true;
 
-    // 3. Persist the origin + radius to CSS custom properties on <html>.
-    //    The View Transition pseudo-elements (::view-transition-old/new(root))
-    //    are position:fixed inset:0, so `var(--theme-tx)` / `var(--theme-ty)`
-    //    resolve in viewport pixel space — exactly the coordinates of the click.
-    //    CSS @keyframes (`theme-expand` / `theme-recede`) read these directly
-    //    — no further coordination is needed inside the startViewTransition callback.
-    const root = document.documentElement;
-    root.style.setProperty('--theme-tx', `${cx}px`);
-    root.style.setProperty('--theme-ty', `${cy}px`);
-    root.style.setProperty('--theme-tmax', `${maxR}px`);
-    // Toggle the direction marker so CSS picks the right easing branch.
-    root.classList.toggle('theme-toggle-reverse', isLightToDark);
+    document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
 
-    // 4. If the browser supports View Transitions, drive everything via CSS @keyframes.
-    if (document.startViewTransition) {
-      isAnimatingRef.current = true;
+    // Find or create the overlay element.
+    let overlay = document.getElementById('theme-toggle-overlay') as HTMLDivElement | null;
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'theme-toggle-overlay';
+      document.body.appendChild(overlay);
+    }
 
-      // Notify cursor component to hide before snapshot.
-      document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
+    // Pick overlay color = NEW theme color. This way during the animation the
+    // user sees the new color sweeping out from the click point.
+    overlay.classList.toggle('theme-overlay--light', newTheme === 'light');
+    overlay.classList.toggle('theme-overlay--dark', newTheme === 'dark');
 
-      const transition = document.startViewTransition(() => {
-        root.classList.remove('dark', 'light');
-        root.classList.add(newTheme);
-        setTheme(newTheme);
-        localStorage.setItem('theme', newTheme);
-      });
+    // Geometry: where the circle starts, and the radius it must reach.
+    overlay.style.setProperty('--tt-x', `${cx}px`);
+    overlay.style.setProperty('--tt-y', `${cy}px`);
+    overlay.style.setProperty('--tt-max', `${maxR}px`);
 
-      transition.finished.then(() => {
-        requestAnimationFrame(() => {
-          root.classList.remove('theme-toggle-reverse');
-          isAnimatingRef.current = false;
-        });
-      });
-    } else {
-      // Fallback: no animation, just swap classes.
-      root.classList.remove('dark', 'light');
-      root.classList.add(newTheme);
+    // Force reflow before re-arming the animation — without this a fast successive
+    // toggle that hits while the overlay is still in its previous state would skip
+    // the keyframe restart.
+    overlay.classList.remove('theme-overlay--play');
+    void overlay.offsetWidth;
+    overlay.classList.add('theme-overlay--play');
+
+    // The page underneath is still the OLD theme during the entire 1.5s.
+    // Once the overlay has fully covered the screen, we swap the class so the
+    // page underneath matches the overlay — then snap the overlay back to 0
+    // radius and the user sees no visual change at all.
+    const finalize = () => {
+      document.documentElement.classList.remove('dark', 'light');
+      document.documentElement.classList.add(newTheme);
       setTheme(newTheme);
       localStorage.setItem('theme', newTheme);
-    }
+
+      // Reset overlay to radius 0 — invisible again — ready for next toggle.
+      overlay?.classList.remove('theme-overlay--play');
+      // No forced reflow needed here; the next toggle will do it.
+      animatingRef.current = false;
+    };
+
+    const handle = window.setTimeout(finalize, ANIM_MS);
+
+    // If something cancels the animation (tab switch, paused media query),
+    // fall back via animationend so we never get stuck animating=true.
+    const onEnd = () => {
+      window.clearTimeout(handle);
+      if (animatingRef.current) finalize();
+      overlay?.removeEventListener('animationend', onEnd);
+    };
+    overlay.addEventListener('animationend', onEnd, { once: true });
   }, [theme]);
 
   if (!mounted) return <>{children}</>;

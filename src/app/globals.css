@@ -149,58 +149,49 @@ body {
   animation: glass-shimmer 3s ease-in-out infinite;
 }
 
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none !important;
-  mix-blend-mode: normal;
+/* ============================================================
+   Theme toggle overlay
+   --------------------------------------------------------------
+   Single real <div id="theme-toggle-overlay"> that JS appends to <body>.
+   The expanding/receding circle is a CSS clip-path animation fed by
+   CSS variables --tt-x, --tt-y, --tt-max set in ThemeProvider.
+   We deliberately do NOT use document.startViewTransition here:
+   that API auto-crossfades old/new snapshots, which the user reads as a
+   "fade", destroying the expanding-circle effect.
+   ============================================================ */
+
+#theme-toggle-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;          /* never intercepts scroll or clicks */
+  clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%));
+  -webkit-clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%));
+  will-change: clip-path;
+  background: var(--tt-bg, #0a0a0b);
+  visibility: hidden;
 }
 
-/* Theme toggle transition — origin driven by CSS vars set in ThemeProvider.
-   Direction:
-     - default (dark → light): NEW theme expands from the click point outward.
-     - .theme-toggle-reverse (light → dark): OLD theme recedes from the click point inward.
-   The pseudo-elements are position:fixed inset:0, so `at var(--theme-tx) var(--theme-ty)`
-   resolves in viewport pixel space. */
+#theme-toggle-overlay.theme-overlay--light { --tt-bg: #fafafa; }
+#theme-toggle-overlay.theme-overlay--dark  { --tt-bg: #0a0a0b; }
 
-@keyframes theme-expand {
-  from { clip-path: circle(0px at var(--theme-tx, 50%) var(--theme-ty, 50%)); }
-  to   { clip-path: circle(var(--theme-tmax, 1000px) at var(--theme-tx, 50%) var(--theme-ty, 50%)); }
-}
-@keyframes theme-recede {
-  from { clip-path: circle(var(--theme-tmax, 1000px) at var(--theme-tx, 50%) var(--theme-ty, 50%)); }
-  to   { clip-path: circle(0px at var(--theme-tx, 50%) var(--theme-ty, 50%)); }
+/* While playing, the overlay fills the viewport in 1500ms via clip-path 0 → maxR.
+   The .theme-overlay--play class is removed at the end of the animation, snapping
+   the overlay back to invisible state without flashing. */
+@keyframes theme-toggle-expand {
+  from { clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%)); visibility: visible; }
+  to   { clip-path: circle(var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%)); visibility: visible; }
 }
 
-/* dark → light: NEW (light) disk expands from the click point over the old (dark).
-   ::view-transition-new(root) animates 0 → maxR, ::view-transition-old(root) recedes (invisible behind). */
-::view-transition-new(root) {
-  animation: theme-expand 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  z-index: 9999;
-  mix-blend-mode: normal;
-}
-::view-transition-old(root) {
-  animation: theme-recede 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  z-index: 1;
-  mix-blend-mode: normal;
+#theme-toggle-overlay.theme-overlay--play {
+  visibility: visible;
+  animation: theme-toggle-expand 1500ms cubic-bezier(0.83, 0, 0.17, 1) forwards;
 }
 
-/* light → dark: NEW (dark) disk expands from the click point over the old (light).
-   Same direction conceptually — only the easing differs. */
-.theme-toggle-reverse::view-transition-new(root) {
-  animation: theme-expand 500ms cubic-bezier(0.55, 0.06, 0.75, 0.52) forwards;
-  z-index: 9999;
-}
-.theme-toggle-reverse::view-transition-old(root) {
-  animation: theme-recede 500ms cubic-bezier(0.55, 0.06, 0.75, 0.52) forwards;
-  z-index: 1;
-}
-
-::view-transition-group(root) {
-  animation: none;
-}
-
-::view-transition-image-pair(root) {
-  isolation: auto;
+@media (prefers-reduced-motion: reduce) {
+  #theme-toggle-overlay.theme-overlay--play {
+    animation-duration: 1ms;
+  }
 }
 
 /* Scrollbar hide utility */
