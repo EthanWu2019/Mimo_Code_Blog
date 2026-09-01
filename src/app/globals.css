@@ -202,7 +202,8 @@ body {
 ::view-transition-new(root) {
   animation-name: theme-reveal-new-px;
   animation-duration: 1300ms;
-  animation-timing-function: cubic-bezier(0.83, 0, 0.17, 1);
+  /* ease-out-expo: starts very fast, lands softly at the end — classic "silky" curve. */
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   mix-blend-mode: normal;
