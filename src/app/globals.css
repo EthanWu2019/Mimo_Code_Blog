@@ -150,60 +150,77 @@ body {
 }
 
 /* ============================================================
-   Theme toggle overlay — REAL DOM element (#theme-toggle-overlay)
-   appended to <body> on first toggle.
-   ============================================================
-   The overlay is painted as the NEW theme's solid color. A circular
-   clip-path grows from 0 radius at the click point out to maxR
-   (diagonal to farthest corner). Inside the growing circle the user
-   sees the NEW-color overlay; outside, the OLD-themed real page is
-   visible.
+   Theme toggle — View Transitions API + clip-path reveal
+   --------------------------------------------------------------
+   Strategy (Chromium-native, no JS animation orchestration):
+     1. ThemeProvider calls document.startViewTransition(callback).
+        The callback flips .dark/.light on <html>.
+     2. Chromium captures the OLD theme's full DOM as
+        ::view-transition-old(root) and the NEW theme's full DOM as
+        ::view-transition-new(root).
+     3. We disable the default crossfade on BOTH layers — the entire
+        visual is driven by animating ::view-transition-new(root) with
+        a clip-path that grows from circle(0%) to circle(200%) at the
+        click point.
+     4. Read out: ::view-transition-old(root) is fully visible at all
+        times (no animation, no opacity changes), so the OLD theme
+        stays on screen. The NEW theme is clipped to a growing disc;
+        inside the disc, the user sees the captured NEW-theme DOM
+        (real pages, real content — not a flat colour).
+     5. When the disc covers the viewport, the group is destroyed and
+        the underlying live DOM (now also the NEW theme thanks to the
+        callback) is shown. No flash because both surfaces are the
+        same color by that point.
 
-   This is the visual: a solid disk of the new theme color expanding
-   from the click point, sweeping over the old theme.
-
-   Once the disk covers the full viewport, the JS handler commits the
-   class swap on <html>, removes the animation class, and clears the
-   background so the overlay becomes invisible. No flash because by the
-   time we remove the clip-path, the underlying page has already become
-   the new theme.
-
-   Geometry: --tt-x, --tt-y in viewport px, --tt-max = diagonal radius.
-   Duration 600ms, expo-out easing, respects prefers-reduced-motion.
-   pointer-events: none — never blocks scroll.
+   Geometry: --tt-x / --tt-y in viewport px (set in ThemeProvider).
+   200% radius guarantees coverage of any viewport — circle(200% at P)
+   covers the largest diagonal from P. Duration 700ms, expo-out easing.
+   pointer-events:none implicit on view-transition pseudo layers.
    ============================================================ */
 
-.theme-toggle-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  pointer-events: none;
-  background-color: transparent;
-  visibility: hidden;
-  will-change: clip-path, -webkit-clip-path;
-}
-
-@keyframes theme-overlay-expand {
-  /* Both states paint the overlay as the NEW-theme color; only the
-     visible disc grows. */
+@keyframes theme-reveal-new {
   from {
-    visibility: visible;
-    clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%));
-    -webkit-clip-path: circle(0px at var(--tt-x, 50%) var(--tt-y, 50%));
+    clip-path: circle(0% at var(--tt-x, 50%) var(--tt-y, 50%));
+    -webkit-clip-path: circle(0% at var(--tt-x, 50%) var(--tt-y, 50%));
   }
   to {
-    visibility: visible;
-    clip-path: circle(var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%));
-    -webkit-clip-path: circle(var(--tt-max, 1200px) at var(--tt-x, 50%) var(--tt-y, 50%));
+    clip-path: circle(200% at var(--tt-x, 50%) var(--tt-y, 50%));
+    -webkit-clip-path: circle(200% at var(--tt-x, 50%) var(--tt-y, 50%));
   }
 }
 
-.theme-toggle-overlay.theme-overlay--play {
-  animation: theme-overlay-expand 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+/* Kill the default crossfade on both layers and tell them to fill forwards
+   so they don't snap back. Crucially we DO NOT apply the clip-path keyframe
+   to ::view-transition-old(root) — keeping it fully visible at all times so
+   the OLD theme stays on screen until the NEW layer's growing disc covers
+   the viewport. Only the NEW layer uses the keyframe. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Stop the default ~250ms crossfade on the OLD layer — leave it visible,
+   motionless. */
+::view-transition-old(root) {
+  animation-name: none;
+  animation-duration: 700ms;
+}
+
+/* Real animation lives here — ::view-transition-new(root). */
+::view-transition-new(root) {
+  animation-name: theme-reveal-new;
+  animation-duration: 700ms;
+}
+
+/* Stop default crossfade on the group container too. */
+::view-transition-group(root) {
+  animation-duration: 0s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .theme-toggle-overlay.theme-overlay--play {
+  ::view-transition-new(root),
+  ::view-transition-old(root) {
     animation-duration: 1ms !important;
   }
 }

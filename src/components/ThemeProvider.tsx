@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 type Theme = 'dark' | 'light';
 
@@ -14,22 +14,13 @@ const ThemeContext = createContext<ThemeContextValue>({
   toggleTheme: () => {},
 });
 
-const ANIM_MS = 600;
-// The NEW theme's representative color painted on the expanding overlay.
-// Where the overlay is visible (inside a growing circle starting at the
-// click point), the user sees this NEW color. Where the overlay is hidden
-// (outside the circle, until it grows past), the user sees the OLD themed
-// real page underneath.
-const NEW_THEME_BG: Record<Theme, string> = {
-  dark: '#0a0a0b',
-  light: '#fafafa',
-};
+interface VTDocument {
+  startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> };
+}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
-  const animatingRef = useRef(false);
-  const overlayRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('theme') as Theme;
@@ -39,94 +30,47 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Lazy-create the overlay on first user interaction. Creating it eagerly
-  // via a useEffect ran into the case where the user can click the toggle
-  // before React commits the effect — resulting in a missing overlay and a
-  // blank screen. Creating on-demand guarantees it exists before we animate.
-  const ensureOverlay = useCallback((): HTMLDivElement => {
-    if (overlayRef.current && overlayRef.current.isConnected) {
-      return overlayRef.current;
-    }
-    const el = document.createElement('div');
-    el.id = 'theme-toggle-overlay';
-    el.className = 'theme-toggle-overlay';
-    document.body.appendChild(el);
-    overlayRef.current = el;
-    return el;
-  }, []);
-
   const toggleTheme = useCallback((x?: number, y?: number) => {
-    if (animatingRef.current) return;
-
-    const cx = Math.round(x ?? window.innerWidth / 2);
-    const cy = Math.round(y ?? window.innerHeight / 2);
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    // Diagonal distance from origin to the farthest corner — guarantees the
-    // expanding circle fully covers the viewport by end of animation.
-    const maxR = Math.ceil(Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)));
-
+    const doc = document as unknown as VTDocument;
+    const root = document.documentElement;
     const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
-    animatingRef.current = true;
 
+    // Always persist coords to root CSS vars.  The CSS animation reads them.
+    if (typeof x === 'number' && typeof y === 'number') {
+      root.style.setProperty('--tt-x', `${x}px`);
+      root.style.setProperty('--tt-y', `${y}px`);
+    }
+
+    // Hint CursorGlow to fade out for the duration.
     document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
 
-    const overlay = ensureOverlay();
-    overlay.style.setProperty('--tt-x', `${cx}px`);
-    overlay.style.setProperty('--tt-y', `${cy}px`);
-    overlay.style.setProperty('--tt-max', `${maxR}px`);
-    // Paint the OVERLAY as the NEW theme's background color. Inside the
-    // growing circle, the user sees this NEW color. Outside, they see the
-    // real page still in the OLD theme (we have NOT yet switched the class).
-    overlay.style.backgroundColor = NEW_THEME_BG[nextTheme];
-
-    // Re-arm the CSS keyframe animation. The standard incantation:
-    // remove the .play class, force a reflow, then re-add it so the
-    // browser restarts the keyframe from the FROM state.
-    overlay.classList.remove('theme-overlay--play');
-    void overlay.offsetWidth;
-    overlay.classList.add('theme-overlay--play');
-
-    // The class on <html> stays on the OLD theme during the animation so
-    // that "outside the circle" really is the OLD-themed real page. We
-    // commit the switch only when the overlay has fully covered the
-    // viewport — see finalize() below.
-    const finalize = () => {
-      // Now the real page (still OLD theme) is fully covered by the
-      // NEW-colored overlay. Swapping classes flips the underlying page
-      // to NEW theme, then we remove the .play class — the overlay's
-      // animation has been `forwards` and clipped the whole viewport,
-      // so snapping back to clip-path: circle(0) at this moment would
-      // expose the OLD-themed page through the now-no-longer-painted
-      // overlay. To avoid a flash, we first remove the background-color
-      // and remove the overlay entirely at the same instant — the snap
-      // from circle(maxR) [covering all] back to circle(0) [nothing]
-      // is irrelevant because we delete the element first.
-      document.documentElement.classList.remove('dark', 'light');
-      document.documentElement.classList.add(nextTheme);
+    if (!doc.startViewTransition) {
+      // No-op fallback: just flip the class.
+      root.classList.remove('dark', 'light');
+      root.classList.add(nextTheme);
       setTheme(nextTheme);
       localStorage.setItem('theme', nextTheme);
+      return;
+    }
 
-      // Hide overlay for next toggle restart; force reflow on next use.
-      overlay.classList.remove('theme-overlay--play');
-      // Reset to default (invisible) clip-path so the element is invisible
-      // before the next animation. Setting background-color to transparent
-      // ensures even if the element paints a frame before cleanup it shows
-      // nothing.
-      overlay.style.backgroundColor = 'transparent';
-      animatingRef.current = false;
-    };
-
-    let released = false;
-    const release = () => {
-      if (released) return;
-      released = true;
-      finalize();
-      overlay.removeEventListener('animationend', release);
-    };
-    window.setTimeout(release, ANIM_MS + 80);
-    overlay.addEventListener('animationend', release, { once: true });
-  }, [theme, ensureOverlay]);
+    // The transition:
+    //   1. Captures OLD-theme full DOM screenshot into ::view-transition-old(root).
+    //   2. Runs the callback, which swaps the .dark/.light class on <html>.
+    //   3. Captures NEW-theme full DOM screenshot into ::view-transition-new(root).
+    //   4. Plays CSS animations on the pseudo layers for the duration.
+    //
+    // Our CSS animates ::view-transition-new(root) with clip-path: circle(0) → circle(200%)
+    // at the click point. ::view-transition-old(root) is unanimated — it stays full-screen
+    // visible while the new layer is clipped to a small dot at t=0, then expands.
+    // Net visual: the new theme reveals itself through a growing circular window,
+    // centered on the click point. The OLD snapshot is gone outside that circle.
+    doc.startViewTransition(() => {
+      root.classList.remove('dark', 'light');
+      root.classList.add(nextTheme);
+      setTheme(nextTheme);
+      localStorage.setItem('theme', nextTheme);
+    });
+  }, [theme]);
 
   if (!mounted) return <>{children}</>;
 
