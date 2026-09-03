@@ -137,14 +137,15 @@ function PillaLink({
   external?: boolean;
 }) {
   const base =
-    'inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-medium transition-all duration-150 active:scale-[0.98]';
+    'inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium transition-all duration-150 active:scale-[0.98]';
+  // Site-wide palette (zinc + one blue accent) — no purple or pink here.
   const variants = {
     solid:
-      'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-100 shadow-sm',
+      'bg-zinc-900 text-white border border-zinc-900 hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:border-white dark:hover:bg-zinc-100 shadow-sm',
     soft:
-      'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60',
+      'bg-zinc-100 text-zinc-700 border border-zinc-200 hover:bg-zinc-200 hover:border-zinc-300 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800 dark:hover:border-zinc-700',
     ghost:
-      'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white',
+      'bg-transparent text-zinc-500 border border-transparent hover:bg-zinc-100 hover:text-zinc-900 hover:border-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100 dark:hover:border-zinc-800',
   };
   return (
     <a
@@ -162,27 +163,27 @@ function ProjectActions({ p, layout }: { p: ProjectItem; layout: 'major' | 'vibe
   const hasRepo = !!p.repo;
   const hasLive = !!p.link;
   return (
-    <div className="mt-3 flex items-center gap-2 flex-wrap">
+    <div className="mt-3 flex items-center gap-1.5 flex-wrap">
       <PillaLink
         href={`/project/${p.slug}`}
         icon={<ArrowRightIcon className="w-3 h-3" />}
-        label={layout === 'major' ? 'Case study' : 'Open'}
+        label="Read"
         variant={layout === 'major' ? 'soft' : 'ghost'}
       />
       {hasLive && (
         <PillaLink
           href={p.link as string}
           icon={<ExternalIcon className="w-3 h-3" />}
-          label="Live"
-          variant={layout === 'major' ? 'soft' : 'solid'}
+          label="Open"
+          variant={layout === 'major' ? 'soft' : 'soft'}
           external
         />
       )}
       {hasRepo && (
         <PillaLink
           href={p.repo as string}
-          icon={<GithubIcon className="w-3 h-3" />}
-          label="Source"
+          icon={<GithubIcon className="w-3.5 h-3.5" />}
+          label="GitHub"
           variant={layout === 'major' ? 'solid' : 'soft'}
           external
         />
