@@ -65,7 +65,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     link: null,
     repo: null,
     coverImage:
-      'https://images.unsplash.com/photo-1536240478700-869232e884ea?w=1600&q=80&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1600&q=80&auto=format&fit=crop',
     featured: false,
     sortOrder: 1,
     year: 2026,
@@ -182,7 +182,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     link: null,
     repo: 'https://github.com/EthanWu2019/v0-echo-chamber',
     coverImage:
-      'https://images.unsplash.com/photo-1557682250-33d709cdaed6?w=1600&q=80&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=1600&q=80&auto=format&fit=crop',
     featured: true,
     sortOrder: 3,
     year: 2026,
@@ -190,21 +190,21 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
 
   // ────────────────────── VIBE ──────────────────────
   {
-    id: 'fallback-vibe-1',
+    id: 'fallback-macos-dock-clock',
     slug: 'macos-dock-clock',
     title: 'macOS Dock Clock',
     tagline: 'iOS StandBy-style flip clock for the dock',
     description:
-      'Vite + React dock-resident flip clock with iOS StandBy gradient themes and 16 fonts.',
+      'Vite + React dock-resident flip clock with iOS StandBy gradient themes and 16 fonts. Deployed at clock.ethanshermes.com.',
     category: 'web',
     tier: 'vibe',
     status: 'shipped',
     tech: ['Vite', 'React', 'Framer Motion'],
     highlights: [],
-    link: null,
+    link: 'https://clock.ethanshermes.com',
     repo: null,
     coverImage:
-      'https://images.unsplash.com/photo-1499332345490-a412a3411b52?w=800&q=80&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1494173853739-c21f58b16055?w=800&q=80&auto=format&fit=crop',
     featured: false,
     sortOrder: 0,
     year: 2026,
@@ -224,30 +224,60 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     link: null,
     repo: null,
     coverImage:
-      'https://images.unsplash.com/photo-1629654297299-c8506221ba62?w=800&q=80&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=800&q=80&auto=format&fit=crop',
     featured: false,
     sortOrder: 1,
     year: 2025,
   },
   {
-    id: 'fallback-vibe-3',
-    slug: 'cf-tunnel-dashboard',
-    title: 'Hermes Dashboard',
-    tagline: 'A small Vite+React dashboard for Hermes / Cloudflare setup',
+    id: 'fallback-vibe-hermes-control-room',
+    slug: 'hermes-control-room',
+    title: 'Hermes Control Room',
+    tagline:
+      'A live operations dashboard for the personal AI agent — token flow, sessions, system load, alerts',
     description:
-      'Single-page dashboard exposing Hermes service status, health metrics, and Cloudflare Tunnel config. Built as a hobby dashboard.',
+      'A vanilla-JS operations dashboard for the Hermes Agent gateway running on a Mac mini. Live wires to the gateway via Server-Sent Events: per-day token breakdown (input / cache read / output / reasoning), per-provider quota tracking, real-time conversation monitor for the top 20 sessions, host CPU/memory/disk/thermal-core view, system load average, and cron-job status. Toggles dark/light, embeds a 30-day token-spend chart, and surfaces an alerts panel. Deployed at ethanshermes.com. The owner built this as the public face of the gateway — not a polished product, just the panels the owner actually needs at a glance.',
     category: 'web',
     tier: 'vibe',
     status: 'shipped',
-    tech: ['Vite', 'React', 'Cloudflare'],
-    highlights: [],
+    tech: ['Vanilla JS', 'Server-Sent Events', 'Chart.js'],
+    highlights: [
+      'SSE-wired dashboard refreshed live from the gateway process',
+      'Per-provider quota, host load, and per-session tool-call metrics',
+      'Built and shipped as the personal face of the home Mac mini',
+    ],
     link: 'https://ethanshermes.com',
     repo: null,
     coverImage:
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 2,
-    year: 2025,
+    sortOrder: 3,
+    year: 2026,
+  },
+  {
+    id: 'fallback-vibe-canvas-pulse',
+    slug: 'canvas-assignment-pulse',
+    title: 'Canvas Assignment Pulse',
+    tagline:
+      'A weekly / monthly WashU Canvas assignment tracker refreshed every 30 minutes from the ICS feed',
+    description:
+      'A single-page WashU Canvas dashboard that turns the institutional ICS feed into a week / 2-weeks / month / term view. A cron job (d9552b9f65ba) runs every 30 minutes: pull ICS → parse → SQLite → expose a tiny JSON endpoint the page reads. Each upcoming assignment links straight to the Canvas deep-link; the term-overview panel maps each course onto its date band so you can see "what is due in the next 17 weeks" at a glance. Deployed at canvas.ethanshermes.com.',
+    category: 'web',
+    tier: 'vibe',
+    status: 'shipped',
+    tech: ['Python', 'SQLite', 'ICS', 'vanilla JS'],
+    highlights: [
+      'Cron-driven 30-min refresh from WashU Canvas ICS — no manual sync',
+      'Three read modes: next week / next two weeks / month / term overview',
+      'Built to solve one problem: "what is due before next Friday"',
+    ],
+    link: 'https://canvas.ethanshermes.com',
+    repo: null,
+    coverImage:
+      'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=800&q=80&auto=format&fit=crop',
+    featured: false,
+    sortOrder: 4,
+    year: 2026,
   },
 ];
 
