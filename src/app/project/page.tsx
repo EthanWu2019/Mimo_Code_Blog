@@ -93,6 +93,104 @@ function SearchInput({
   );
 }
 
+/* ───────────────────────────── link buttons ───────────────────────────── */
+
+function GithubIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fillRule="evenodd"
+        d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function ExternalIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7M21 5v6h-6M10 5H7a2 2 0 002 2v10a2 2 0 002 2h10a2 2 0 002-2v-3" />
+    </svg>
+  );
+}
+
+function ArrowRightIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+    </svg>
+  );
+}
+
+function PillaLink({
+  href,
+  icon,
+  label,
+  variant = 'soft',
+  external = false,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  variant?: 'solid' | 'soft' | 'ghost';
+  external?: boolean;
+}) {
+  const base =
+    'inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-medium transition-all duration-150 active:scale-[0.98]';
+  const variants = {
+    solid:
+      'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-100 shadow-sm',
+    soft:
+      'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60',
+    ghost:
+      'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white',
+  };
+  return (
+    <a
+      href={href}
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      className={`${base} ${variants[variant]}`}
+    >
+      {icon}
+      <span>{label}</span>
+    </a>
+  );
+}
+
+function ProjectActions({ p, layout }: { p: ProjectItem; layout: 'major' | 'vibe' }) {
+  const hasRepo = !!p.repo;
+  const hasLive = !!p.link;
+  return (
+    <div className="mt-3 flex items-center gap-2 flex-wrap">
+      <PillaLink
+        href={`/project/${p.slug}`}
+        icon={<ArrowRightIcon className="w-3 h-3" />}
+        label={layout === 'major' ? 'Case study' : 'Open'}
+        variant={layout === 'major' ? 'soft' : 'ghost'}
+      />
+      {hasLive && (
+        <PillaLink
+          href={p.link as string}
+          icon={<ExternalIcon className="w-3 h-3" />}
+          label="Live"
+          variant={layout === 'major' ? 'soft' : 'solid'}
+          external
+        />
+      )}
+      {hasRepo && (
+        <PillaLink
+          href={p.repo as string}
+          icon={<GithubIcon className="w-3 h-3" />}
+          label="Source"
+          variant={layout === 'major' ? 'solid' : 'soft'}
+          external
+        />
+      )}
+    </div>
+  );
+}
+
 /* ───────────────────────────── MAJOR card ───────────────────────────── */
 
 function MajorCard({ p }: { p: ProjectItem }) {
@@ -157,33 +255,8 @@ function MajorCard({ p }: { p: ProjectItem }) {
           ))}
         </div>
 
-        <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
-          <Link
-            href={`/project/${p.slug}`}
-            className="text-xs font-medium text-zinc-900 dark:text-white hover:underline"
-          >
-            Read case study →
-          </Link>
-          {p.link && (
-            <a
-              href={p.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-            >
-              Live ↗
-            </a>
-          )}
-          {p.repo && (
-            <a
-              href={p.repo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-            >
-              Source ↗
-            </a>
-          )}
+        <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <ProjectActions p={p} layout="major" />
         </div>
       </div>
     </article>
@@ -215,55 +288,67 @@ function MajorSkeleton() {
 
 function VibeRow({ p }: { p: ProjectItem }) {
   return (
-    <Link
-      href={`/project/${p.slug}`}
-      className="group flex gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
-    >
-      <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-        {p.coverImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.coverImage}
-            alt={p.title}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-[10px] uppercase tracking-wider">
-            No cover
-          </div>
-        )}
-      </div>
-      <div className="min-w-0 flex-1 flex flex-col">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <h4
-            className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors"
-            dangerouslySetInnerHTML={{ __html: p.title }}
-          />
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0">
-            {p.year}
-          </span>
-        </div>
-        <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 mb-3">
-          {p.tagline}
-        </p>
-        <div className="flex flex-wrap gap-1 mt-auto">
-          {p.tech.slice(0, 4).map((t) => (
-            <span
-              key={t}
-              className="px-1.5 py-0.5 text-[10px] text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 rounded-md"
-            >
-              {t}
-            </span>
-          ))}
-          {p.tech.length > 4 && (
-            <span className="px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-500 rounded-md">
-              +{p.tech.length - 4}
-            </span>
+    <article className="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 flex flex-col p-3">
+      {/* Top row: cover + meta. Not a full-row <Link> so the action
+          buttons below can each have their own <a> with target=_blank. */}
+      <div className="flex gap-4">
+        <Link
+          href={`/project/${p.slug}`}
+          aria-label={`Open ${p.title} case study`}
+          className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900 group/cover"
+        >
+          {p.coverImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={p.coverImage}
+              alt={p.title}
+              loading="lazy"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover/cover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-[10px] uppercase tracking-wider">
+              No cover
+            </div>
           )}
+        </Link>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <Link href={`/project/${p.slug}`} className="block min-w-0">
+              <h4
+                className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors"
+                dangerouslySetInnerHTML={{ __html: p.title }}
+              />
+            </Link>
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0">
+              {p.year}
+            </span>
+          </div>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 mb-3">
+            {p.tagline}
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {p.tech.slice(0, 3).map((t) => (
+              <span
+                key={t}
+                className="px-1.5 py-0.5 text-[10px] text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 rounded-md"
+              >
+                {t}
+              </span>
+            ))}
+            {p.tech.length > 3 && (
+              <span className="px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-500 rounded-md">
+                +{p.tech.length - 3}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-    </Link>
+      {/* Bottom action bar: GitHub + Live + Detail. Glassy chip row
+          separated by a soft hairline divider. */}
+      <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/70">
+        <ProjectActions p={p} layout="vibe" />
+      </div>
+    </article>
   );
 }
 
