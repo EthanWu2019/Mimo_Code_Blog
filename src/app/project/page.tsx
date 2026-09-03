@@ -159,7 +159,7 @@ function PillaLink({
   );
 }
 
-function ProjectActions({ p, layout }: { p: ProjectItem; layout: 'major' | 'vibe' }) {
+function ProjectActions({ p }: { p: ProjectItem }) {
   const hasRepo = !!p.repo;
   const hasLive = !!p.link;
   return (
@@ -168,14 +168,14 @@ function ProjectActions({ p, layout }: { p: ProjectItem; layout: 'major' | 'vibe
         href={`/project/${p.slug}`}
         icon={<ArrowRightIcon className="w-3 h-3" />}
         label="Read"
-        variant={layout === 'major' ? 'soft' : 'ghost'}
+        variant="soft"
       />
       {hasLive && (
         <PillaLink
           href={p.link as string}
           icon={<ExternalIcon className="w-3 h-3" />}
           label="Open"
-          variant={layout === 'major' ? 'soft' : 'soft'}
+          variant="soft"
           external
         />
       )}
@@ -184,7 +184,7 @@ function ProjectActions({ p, layout }: { p: ProjectItem; layout: 'major' | 'vibe
           href={p.repo as string}
           icon={<GithubIcon className="w-3.5 h-3.5" />}
           label="GitHub"
-          variant={layout === 'major' ? 'solid' : 'soft'}
+          variant="solid"
           external
         />
       )}
@@ -257,7 +257,7 @@ function MajorCard({ p }: { p: ProjectItem }) {
         </div>
 
         <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800">
-          <ProjectActions p={p} layout="major" />
+          <ProjectActions p={p} />
         </div>
       </div>
     </article>
@@ -344,10 +344,10 @@ function VibeRow({ p }: { p: ProjectItem }) {
           </div>
         </div>
       </div>
-      {/* Bottom action bar: GitHub + Live + Detail. Glassy chip row
-          separated by a soft hairline divider. */}
+      {/* Bottom action bar: same component as MajorCard — Read / Open
+          / GitHub on a hairline separator. */}
       <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/70">
-        <ProjectActions p={p} layout="vibe" />
+        <ProjectActions p={p} />
       </div>
     </article>
   );
