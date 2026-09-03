@@ -95,7 +95,7 @@ function SearchInput({
 
 /* ───────────────────────────── link buttons ───────────────────────────── */
 
-function GithubIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path
@@ -107,51 +107,31 @@ function GithubIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   );
 }
 
-function ExternalIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+function ExternalIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7M21 5v6h-6M10 5H7a2 2 0 002 2v10a2 2 0 002 2h10a2 2 0 002-2v-3" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7M21 5v6h-6M10 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-3" />
     </svg>
   );
 }
 
-function ArrowRightIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-    </svg>
-  );
-}
-
-function PillaLink({
+/* Minimal icon-link: just icon + label, single zinc tone. No variants,
+   no shadow, no rounded-md chrome — these are buttons, not pills. */
+function IconLink({
   href,
   icon,
   label,
-  variant = 'soft',
-  external = false,
 }: {
   href: string;
   icon: React.ReactNode;
   label: string;
-  variant?: 'solid' | 'soft' | 'ghost';
-  external?: boolean;
 }) {
-  const base =
-    'inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium transition-all duration-150 active:scale-[0.98]';
-  // Site-wide palette (zinc + one blue accent) — no purple or pink here.
-  const variants = {
-    solid:
-      'bg-zinc-900 text-white border border-zinc-900 hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:border-white dark:hover:bg-zinc-100 shadow-sm',
-    soft:
-      'bg-zinc-100 text-zinc-700 border border-zinc-200 hover:bg-zinc-200 hover:border-zinc-300 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800 dark:hover:border-zinc-700',
-    ghost:
-      'bg-transparent text-zinc-500 border border-transparent hover:bg-zinc-100 hover:text-zinc-900 hover:border-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100 dark:hover:border-zinc-800',
-  };
   return (
     <a
       href={href}
-      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-      className={`${base} ${variants[variant]}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
     >
       {icon}
       <span>{label}</span>
@@ -159,33 +139,27 @@ function PillaLink({
   );
 }
 
+/* Project cards expose at most two links: the deployed site (Open)
+   and the source repo (GitHub). If neither is present we render
+   nothing — no fake "Read more" link. */
 function ProjectActions({ p }: { p: ProjectItem }) {
   const hasRepo = !!p.repo;
   const hasLive = !!p.link;
+  if (!hasRepo && !hasLive) return null;
   return (
-    <div className="mt-3 flex items-center gap-1.5 flex-wrap">
-      <PillaLink
-        href={`/project/${p.slug}`}
-        icon={<ArrowRightIcon className="w-3 h-3" />}
-        label="Read"
-        variant="soft"
-      />
+    <div className="mt-4 flex items-center gap-5">
       {hasLive && (
-        <PillaLink
+        <IconLink
           href={p.link as string}
-          icon={<ExternalIcon className="w-3 h-3" />}
+          icon={<ExternalIcon className="w-4 h-4" />}
           label="Open"
-          variant="soft"
-          external
         />
       )}
       {hasRepo && (
-        <PillaLink
+        <IconLink
           href={p.repo as string}
-          icon={<GithubIcon className="w-3.5 h-3.5" />}
+          icon={<GithubIcon className="w-4 h-4" />}
           label="GitHub"
-          variant="solid"
-          external
         />
       )}
     </div>
