@@ -183,15 +183,16 @@ model Project {
   id          String   @id @default(cuid())
   slug        String   @unique
   title       String
-  tagline     String   // short 1-line summary, shows on card
+  tagline     String   // short 1-line summary, shows on card (subtitle)
   description String   @db.Text
   category    String   // web | ml | mobile | systems | tooling | experiment
+  tier        String   @default("major") // major | vibe — separates "big work I want to show recruiters" from quick vibe-coded side experiments
   status      String   @default("shipped") // shipped | in-progress | archived
-  tech        String[] // simple string array of stack tags
+  tech        String[] // tag list
   highlights  String[] // bullet points used on card / detail
   link        String?  // live demo url
   repo        String?  // github / git url
-  coverImage  String?  // optional cover image url
+  coverImage  String?  // cover image url (mandatory to display on cards)
   featured    Boolean  @default(false)
   sortOrder   Int      @default(0)
   year        Int      @default(2026)
@@ -200,6 +201,7 @@ model Project {
 
   @@index([slug])
   @@index([category])
+  @@index([tier])
   @@index([featured])
   @@index([sortOrder])
 }
