@@ -137,8 +137,55 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1457364887197-9150188c107b?w=1600&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 3,
+    sortOrder: 4,
     year: 2024,
+  },
+
+  // ──── MAJOR (newer) ────
+  {
+    // Personal / portfolio piece — a Next.js 16 + v0 app that
+    // simulates the dynamic of a hostile social-media feed and lets
+    // players experience an "echo chamber" first-hand. Initial v0
+    // commit 2026-04-13; DeepSeek integration landed on day two with
+    // a deterministic mock fallback so the app stays playable even
+    // when the upstream model is rate-limited.
+    id: 'fallback-mono-echo-chamber',
+    slug: 'echo-chamber-cyberbullying-simulator',
+    title: 'EchoChamber — Cyber-bullying Simulator',
+    tagline:
+      'An interactive social-media simulator where 6 personality archetypes gaslight, fawn over or pile on what you just posted',
+    description:
+      'A single-page Next.js 16 + v0-generated app that simulates a hostile social-media feed. The user posts something; six AI archetypes (hater, stan, logic-lord, moral-knight, spam-bot, normal) reply in real time, weighted toward negative personalities. A live sentiment meter drifts the player\'s reputation; pulls toward negative unlocks achievements ("first flamed", "sentiment crashed") and DM harassment events; recovery unlocks a different set. A story-mode panel ships hand-authored scenarios (easy/medium/hard). LLM calls route through /api/generate-comments using DeepSeek with a 35% hater / 15% stan / 20% logic-lord / 20% moral-knight / 10% spam-bot weighting baked into the system prompt; the local mock-ai library keeps the experience intact when the API is unreachable. Bilingual zh/en UI with a per-component i18n table, screen-shake on harsh comments, sound effects, idle overlay, account stats, block / report / mute, and light/dark themes.',
+    category: 'web',
+    tier: 'major',
+    status: 'shipped',
+    tech: [
+      'Next.js',
+      'React 19',
+      'TypeScript',
+      'Tailwind v4',
+      'Framer Motion',
+      'Radix UI',
+      'DeepSeek API',
+      'framer-motion',
+      'recharts',
+      'socket.io',
+      'zustand-style local storage',
+    ],
+    highlights: [
+      'Per-personality system prompts run through DeepSeek to keep replies stylistically distinct',
+      'Local mock-ai fallback keeps the demo fully playable offline / when rate-limited',
+      'Sentiment-driven achievement system with branches for "flamed" and "recovered" arcs',
+      'Story-mode with 3 hand-authored difficulty tiers for short, focused sessions',
+      'Trilingual (zh / en) UI with per-component translation tables',
+    ],
+    link: null,
+    repo: 'https://github.com/EthanWu2019/v0-echo-chamber',
+    coverImage:
+      'https://images.unsplash.com/photo-1557682250-33d709cdaed6?w=1600&q=80&auto=format&fit=crop',
+    featured: true,
+    sortOrder: 3,
+    year: 2026,
   },
 
   // ────────────────────── VIBE ──────────────────────
