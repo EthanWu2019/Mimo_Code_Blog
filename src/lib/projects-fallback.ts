@@ -95,6 +95,52 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     year: 2025,
   },
 
+  // ────────────────────── OLDER MAJOR (kept for seniority order) ──────────────────────
+  {
+    // Undergraduate capstone project — on-board AI for Earth-observation
+    // satellites. Owner was the platform lead; the system coordinates
+    // tasking → onboard inference → ground station → analytics over
+    // a custom FPGA + Cambricon MLU220 compute stack (Jiguang-1000/2000/5000
+    // edge servers). Includes a digital-twin for ground simulation.
+    id: 'fallback-mono-4',
+    slug: 'satellite-onboard-ai-platform',
+    title: 'Onboard Satellite AI Platform (星载智能算法平台)',
+    tagline:
+      'A satellite-edge AI platform: Earth-observation tasking → onboard inference → ground station → analytics',
+    description:
+      'An end-to-end satellite-edge AI platform: front-end (React + Vite + satellite.js + react-globe.gl) for satellite-pass visualisation and tasking; Python back-end (Flask + SQLAlchemy + PyTorch) coordinating the Jiguang-1000 onboard computer (FPGA + Cambricon NPU) and the Jiguang-2000 MLU220 inference cluster; TIFF/UTIF pipeline for cloud-mask, target-detection and image-compression modules; a parallel-twin ground simulator for hardware-in-the-loop testing; admin dashboard, auth, and Socket.IO real-time data visualisations.',
+    category: 'ml',
+    tier: 'major',
+    status: 'shipped',
+    tech: [
+      'React',
+      'Vite',
+      'Flask',
+      'SQLAlchemy',
+      'PyTorch',
+      'satellite.js',
+      'UTIF/UTIFF',
+      'socket.io',
+      'react-globe.gl',
+      'three.js',
+      'FPGA',
+      'Cambricon MLU220',
+    ],
+    highlights: [
+      'Onboard inference over Cambricon MLU220 (80 TOPS int8) with a 32-TOPS FPGA-accelerated preprocessor',
+      'WebSocket-backed ground visualisations of orbital passes, telemetry and algorithm outputs',
+      'Hardware-in-the-loop parallel-twin simulator so operators can dry-run tasking payloads before uplink',
+      'TIFF upload + UTIF decoding pipeline feeding cloud-mask, target-detection and image-compression modules',
+    ],
+    link: null,
+    repo: 'https://github.com/EthanWu2019/Ai_Platform',
+    coverImage:
+      'https://images.unsplash.com/photo-1457364887197-9150188c107b?w=1600&q=80&auto=format&fit=crop',
+    featured: false,
+    sortOrder: 3,
+    year: 2024,
+  },
+
   // ────────────────────── VIBE ──────────────────────
   {
     id: 'fallback-vibe-1',
@@ -159,6 +205,10 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
 ];
 
 export function getFallbackProjects(tier?: 'major' | 'vibe'): ProjectItem[] {
-  if (!tier) return FALLBACK_PROJECTS;
-  return FALLBACK_PROJECTS.filter((p) => p.tier === tier);
+  const list = tier ? FALLBACK_PROJECTS.filter((p) => p.tier === tier) : FALLBACK_PROJECTS;
+  // Match the DB ORDER BY — by sortOrder asc, then latest first.
+  return [...list].sort((a, b) => {
+    if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+    return (b.year ?? 0) - (a.year ?? 0);
+  });
 }
