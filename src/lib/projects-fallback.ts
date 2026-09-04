@@ -63,7 +63,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'MLX-accelerated frame interpolation on Apple Silicon',
     ],
     link: null,
-    repo: null,
+    repo: 'https://github.com/EthanWu2019/SemiProject-AIVideoPipeline',
     coverImage:
       'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1600&q=80&auto=format&fit=crop',
     featured: false,
@@ -87,7 +87,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Per-tenant rate limiting via leaky-bucket algorithm',
     ],
     link: null,
-    repo: null,
+    repo: 'https://github.com/EthanWu2019/SemiProject-DistributedTaskOrchestrator',
     coverImage:
       'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1600&q=80&auto=format&fit=crop',
     featured: false,
@@ -133,7 +133,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'TIFF upload + UTIF decoding pipeline feeding cloud-mask, target-detection and image-compression modules',
     ],
     link: null,
-    repo: 'https://github.com/EthanWu2019/Ai_Platform',
+    repo: 'https://github.com/EthanWu2019/SemiProject-SatelliteOnboardAI',
     coverImage:
       'https://images.unsplash.com/photo-1457364887197-9150188c107b?w=1600&q=80&auto=format&fit=crop',
     featured: false,
@@ -180,7 +180,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Trilingual (zh / en) UI with per-component translation tables',
     ],
     link: null,
-    repo: 'https://github.com/EthanWu2019/v0-echo-chamber',
+    repo: 'https://github.com/EthanWu2019/SemiProject-EchoChamberSimulator',
     coverImage:
       'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=1600&q=80&auto=format&fit=crop',
     featured: true,
@@ -202,7 +202,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     tech: ['Vite', 'React', 'Framer Motion'],
     highlights: [],
     link: 'https://clock.ethanshermes.com',
-    repo: null,
+    repo: 'https://github.com/EthanWu2019/SemiProject-MacOSDockClock',
     coverImage:
       'https://images.unsplash.com/photo-1494173853739-c21f58b16055?w=800&q=80&auto=format&fit=crop',
     featured: false,
@@ -222,7 +222,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     tech: ['Python', 'curses'],
     highlights: [],
     link: null,
-    repo: null,
+    repo: 'https://github.com/EthanWu2019/SemiProject-TerminalTyper',
     coverImage:
       'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=800&q=80&auto=format&fit=crop',
     featured: false,
@@ -247,7 +247,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Built and shipped as the personal face of the home Mac mini',
     ],
     link: 'https://ethanshermes.com',
-    repo: null,
+    repo: 'https://github.com/EthanWu2019/SemiProject-HermesControlRoom',
     coverImage:
       'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80&auto=format&fit=crop',
     featured: false,
@@ -272,7 +272,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Built to solve one problem: "what is due before next Friday"',
     ],
     link: 'https://canvas.ethanshermes.com',
-    repo: null,
+    repo: 'https://github.com/EthanWu2019/SemiProject-CanvasAssignmentPulse',
     coverImage:
       'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=800&q=80&auto=format&fit=crop',
     featured: false,
