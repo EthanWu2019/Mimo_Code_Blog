@@ -54,21 +54,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const root = document.documentElement;
       const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
 
-      // Apply the new theme SYNCHRONOUSLY. Previously we deferred the class
-      // swap until startViewTransition's callback ran, which made rapid
-      // mashing of the toggle feel "throttled" (Chromium queues view
-      // transitions: only one at a time, new ones wait for the prior to
-      // finish). By swapping immediately, the click feels instant;
-      // the view-transition (when it can run) is purely decorative.
-      root.classList.remove('dark', 'light');
-      root.classList.add(nextTheme);
+      // Update React state + persisted preference synchronously so the
+      // button label and any themable UI reflect the click immediately.
+      // The view-transition API call below is purely decorative; the
+      // className swap happens inside its callback so Chromium's
+      // capture/animate pipeline has a real "old" → "new" diff to reveal.
       setTheme(nextTheme);
       localStorage.setItem('theme', nextTheme);
       document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
 
       // Resolve the clip-path origin (percent-based) for the reveal anim.
       const origin = resolveOrigin();
-      if (!origin || !doc.startViewTransition) return;
+      if (!origin || !doc.startViewTransition) {
+        // Reduced-motion / no-support fallback: imperative class swap,
+        // no animation.
+        root.classList.remove('dark', 'light');
+        root.classList.add(nextTheme);
+        return;
+      }
 
       // Inject a one-shot keyframe so the new root pseudo-element reveals
       // from the toggle button. Percent is the only unit reliable for
@@ -88,10 +91,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         `}` +
         `::view-transition-new(root){animation-name:theme-reveal-new-px !important;}`;
 
+      // The callback runs SYNCHRONOUSLY when startViewTransition is
+      // called — Chromium captures the "old" snapshot before the cb and
+      // the "new" one after. Doing the className swap here gives the
+      // animation a real diff to reveal. setTheme() above already updated
+      // React; the cb only needs to swap the DOM.
       const vt = doc.startViewTransition(() => {
-        // empty callback — the snapshot is taken here, the swap already
-        // happened synchronously above. This produces a "new" snapshot
-        // that the keyframe reveal animates over.
+        root.classList.remove('dark', 'light');
+        root.classList.add(nextTheme);
       });
       vt.finished.finally(() => {
         if (styleEl && styleEl.parentNode) styleEl.textContent = '';
