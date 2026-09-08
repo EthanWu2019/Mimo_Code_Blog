@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [pwMsg, setPwMsg] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [avatarError, setAvatarError] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -181,7 +182,13 @@ export default function ProfilePage() {
           <div className="bg-white/50 dark:bg-white/[0.03] backdrop-blur-xl border border-zinc-200/50 dark:border-white/[0.06] rounded-2xl p-6">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Account</h3>
             <p className="text-xs text-zinc-500 dark:text-white/30 mb-4">Signed in as <span className="font-medium text-zinc-700 dark:text-white/60">{profile.email}</span></p>
-            <button onClick={() => signOut({ callbackUrl: '/' })} className="px-4 py-2 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">Sign out</button>
+            <button
+                type="button"
+                onClick={() => setShowSignOutConfirm(true)}
+                className="px-4 py-2 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+              >
+                Sign out
+              </button>
           </div>
         </div>
       )}
@@ -190,6 +197,48 @@ export default function ProfilePage() {
           onCrop={handleAvatarUpload}
           onCancel={() => setShowCropper(false)}
         />
+      )}
+
+      {showSignOutConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="signout-title"
+          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+        >
+          {/* Backdrop — click cancels so an accidental click is recoverable */}
+          <div
+            className="absolute inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowSignOutConfirm(false)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-sm bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/60 dark:border-white/[0.08] rounded-2xl shadow-2xl shadow-zinc-900/10 dark:shadow-black/40 p-6">
+            <h2 id="signout-title" className="text-base font-semibold text-zinc-900 dark:text-white">
+              Sign out of Ethan Wu?
+            </h2>
+            <p className="text-sm text-zinc-500 dark:text-white/40 mt-2">
+              You&apos;ll need to sign in again with Google, GitHub, or your
+              email and password to access your account.
+            </p>
+            <div className="flex items-center justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowSignOutConfirm(false)}
+                autoFocus
+                className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-white/70 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

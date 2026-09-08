@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { useTheme } from '@/components/ThemeProvider';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -12,6 +13,13 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
+  // OAuth + Create account buttons share the same color treatment that
+  // flips with the active theme, so all primary actions look uniform.
+  const primaryBtn =
+    theme === 'dark'
+      ? 'bg-white text-zinc-900 hover:bg-zinc-100 border border-zinc-200 dark:border-white/[0.08]'
+      : 'bg-zinc-900 text-white hover:bg-zinc-800 border border-zinc-900';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +111,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black text-sm font-medium rounded-lg hover:bg-zinc-700 dark:hover:bg-white/90 disabled:opacity-50 transition-colors"
+            className={`w-full py-2.5 text-sm font-medium rounded-lg disabled:opacity-50 transition-colors ${primaryBtn}`}
           >
             {loading ? 'Creating account...' : 'Create account'}
           </button>
@@ -113,7 +121,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={() => signIn('google', { callbackUrl: '/' })}
-            className="w-full inline-flex items-center justify-center gap-2.5 py-2.5 border border-zinc-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] hover:bg-zinc-50 dark:hover:bg-white/[0.06] rounded-lg text-sm font-medium text-zinc-900 dark:text-white transition-colors"
+            className={`w-full inline-flex items-center justify-center gap-2.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${primaryBtn}`}
           >
             <svg className="w-4 h-4" viewBox="0 0 48 48" aria-hidden="true">
               <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.9-6.9C35.9 2.4 30.3 0 24 0 14.6 0 6.4 5.4 2.5 13.3l8 6.2C12.3 13.3 17.7 9.5 24 9.5z"/>
@@ -126,7 +134,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={() => signIn('github', { callbackUrl: '/' })}
-            className="w-full inline-flex items-center justify-center gap-2.5 py-2.5 border border-zinc-200 dark:border-white/[0.08] bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-100 rounded-lg text-sm font-medium transition-colors"
+            className={`w-full inline-flex items-center justify-center gap-2.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${primaryBtn}`}
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2.9-.3 1.9-.4 2.9-.4s2 .1 2.9.4C16.4 4.7 17.4 5 17.4 5c.6 1.6.2 2.8.1 3.1.7.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9 0-6.3-5.2-11.5-11.5-11.5z"/>
