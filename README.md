@@ -97,3 +97,6 @@ This site runs on Vercel. Domain `ethanwu.work` is registered at Tencent Cloud
 HTTPS terminates at Vercel with Let's Encrypt; `mimo-code-blog.vercel.app` 308-redirects
 to apex via `next.config.ts`. Required env on Vercel production: `DATABASE_URL`,
 `NEXTAUTH_SECRET`, `NEXTAUTH_URL=https://ethanwu.work`, optional OAuth client IDs/secrets.
+
+
+<!-- cache-invalidation: bump sha -->
