@@ -104,7 +104,25 @@ async function compileWithLatexOnline(tex: string): Promise<Buffer> {
   if (buf.slice(0, 4).toString() !== "%PDF") {
     throw new Error("LaTeXOnline did not return a PDF: " + buf.slice(0, 200).toString("utf8"));
   }
-  return buf;
+
+  // LaTeXOnline /builds/sync returns a PDF whose xref table is offset by
+  // one object number (startxref points to obj #68 instead of the xref
+  // keyword). Chrome's PDFium refuses to render that and shows a sad-face
+  // icon. macOS Preview forgives it; Chromium does not. Reload + save via
+  // pdf-lib, which regenerates the xref correctly. Cost: a few hundred ms
+  // and a few KB more bytes — acceptable for a once-per-edit resume.
+  try {
+    const { PDFDocument } = await import("pdf-lib");
+    const doc = await PDFDocument.load(buf, { updateMetadata: false } as any);
+    const repaired = await doc.save({ useObjectStreams: false } as any);
+    return Buffer.from(repaired);
+  } catch (e) {
+    // If pdf-lib can't parse (rare: corrupt PDF body), return the
+    // un-repaired buffer. Better to show a working PDF in 99% of cases
+    // than to break the page for the 1% where repair fails.
+    console.warn("pdf-lib repair failed, returning raw PDF:", e);
+    return buf;
+  }
 }
 
 export async function GET(request: Request) {
