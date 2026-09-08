@@ -322,7 +322,7 @@ export default function GalleryPage() {
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#bf5af2]"></span>
                 </span>
                 <span className="text-[10px] font-medium tracking-[0.18em] uppercase text-zinc-600 dark:text-zinc-400">
-                  Ethan's Blog · Generative
+                  Ethan Wu · Generative
                 </span>
               </motion.div>
 

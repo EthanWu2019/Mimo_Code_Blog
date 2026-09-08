@@ -25,7 +25,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
   {
     id: 'fallback-mono-1',
     slug: 'ethan-blog-platform',
-    title: 'Ethan&apos;s Blog Platform',
+    title: 'Ethan Wu Platform',
     tagline: 'A Next.js + Prisma blog with view-transitions theming',
     description:
       'Full-stack personal blog built on Next.js 16, Prisma, Neon Postgres, and a custom document.startViewTransition theme animation. Includes auth, comments, gallery, restricted collections, and a project showcase page.',

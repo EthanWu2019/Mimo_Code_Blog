@@ -1,6 +1,8 @@
-# My Blog
+# Ethan's Blog
 
 A personal blog built with Next.js, PostgreSQL, and Redis.
+
+> Live site: see [`ethanwu.work`](https://ethanwu.work) (the `mimo-code-blog.vercel.app` preview URL still works and 301-redirects here).
 
 ## Tech Stack
 

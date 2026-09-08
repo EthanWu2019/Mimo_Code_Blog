@@ -157,7 +157,7 @@ export default function PhotographyPage() {
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-[1px] bg-amber-500 dark:bg-amber-400" />
-            <span className="text-xs uppercase tracking-[0.3em] text-amber-500 dark:text-amber-400 font-medium">Ethan&apos;s Blog · Photography</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-amber-500 dark:text-amber-400 font-medium">Ethan Wu · Photography</span>
           </div>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-zinc-900 dark:text-white tracking-tight leading-[0.95]">
             Through<br />

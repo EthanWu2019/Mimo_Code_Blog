@@ -6,6 +6,32 @@ import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from './ThemeProvider';
 import Navbar from './Navbar';
 
+// Map URL pathname -> the right-side label shown in the page-transition
+// overlay. Used both as the default for the initial render of the overlay
+// (fixing "the loading page on /login or /register shows empty") and inside
+// the click handler below.
+//
+// Falls through to `""` for unknown routes so the right side quietly hides
+// instead of showing a stale/incorrect name.
+function pageNameFor(path: string): string {
+  if (path === '/') return 'Home';
+  if (path === '/blog' || path.startsWith('/posts/')) return 'Blog';
+  if (path === '/gallery' || path.startsWith('/gallery/')) return 'AI Gallery';
+  if (path === '/photography') return 'Photography';
+  if (path === '/project' || path.startsWith('/project/')) return 'Project';
+  if (path === '/profile' || path.startsWith('/profile/')) return 'Profile';
+  if (path === '/login') return 'Login';
+  if (path === '/register') return 'Register';
+  if (path === '/admin' || path.startsWith('/admin/')) return 'Admin';
+  if (path === '/restricted') return 'Restricted';
+  if (path === '/four-oh-four') return '404';
+  // Pages that exist but are intentionally hidden from the navbar
+  // (Podcast, Sleep) — still reachable by direct URL.
+  if (path === '/podcast') return 'Podcast';
+  if (path === '/sleep') return 'Sleep';
+  return '';
+}
+
 function TransitionOverlay({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -14,7 +40,7 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
   const textRef = useRef<HTMLSpanElement>(null);
   const isAnimating = useRef(false);
   const pendingHref = useRef<string | null>(null);
-  const pendingPageName = useRef<string>("Ethan's Blog");
+  const pendingPageName = useRef<string>(pageNameFor(pathname));
   const prevPath = useRef(pathname);
 
   // Handle route change after animation
@@ -64,18 +90,7 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
       isAnimating.current = true;
       pendingHref.current = href;
       // Determine overlay right-side text based on destination
-      if (href === '/') pendingPageName.current = "Home";
-      else if (href === '/blog') pendingPageName.current = "Blog";
-      else if (href === '/podcast') pendingPageName.current = "Podcast";
-      else if (href === '/gallery') pendingPageName.current = "Gallery";
-      else if (href === '/photography') pendingPageName.current = "Photography";
-      else if (href === '/sleep') pendingPageName.current = "Sleep";
-      else if (href === '/project') pendingPageName.current = "Project";
-      else if (href === '/four-oh-four') pendingPageName.current = "404";
-      else if (href === '/restricted') pendingPageName.current = "Restricted";
-      else if (href === '/profile') pendingPageName.current = "Profile";
-      else if (href.startsWith('/posts/')) pendingPageName.current = "Article";
-      else pendingPageName.current = "";
+      pendingPageName.current = pageNameFor(href);
 
       const ov = overlayRef.current;
       const ct = contentRef.current;
@@ -126,11 +141,11 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
         <div ref={contentRef} className="flex flex-col items-center" style={{ opacity: 0 }}>
           <div className="flex items-center">
             <span className="text-xl font-medium tracking-tight select-none text-right" style={{ color: 'var(--foreground)', minWidth: '140px' }}>
-              Ethan&apos;s Blog
+              Ethan Wu
             </span>
             <span className="text-xl font-light mx-4 select-none" style={{ color: 'var(--foreground)', opacity: 0.4 }}>|</span>
             <span ref={textRef} className="text-xl font-medium tracking-tight select-none text-left" style={{ color: 'var(--foreground)', minWidth: '140px' }}>
-              Blog
+              {pendingPageName.current || 'Loading'}
             </span>
           </div>
         </div>

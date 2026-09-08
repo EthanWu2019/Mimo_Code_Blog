@@ -53,27 +53,21 @@ export default function Navbar() {
           }}
         >
           <Link href="/" className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Ethan&apos;s Blog
+            Ethan Wu
           </Link>
           <nav className="flex items-center gap-1">
-            <Link href="/podcast" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
-              Podcast
-            </Link>
             <Link href="/gallery" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
               AI Gallery
             </Link>
             <Link href="/photography" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
               Photography
             </Link>
-            <Link href="/sleep" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
-              Sleep
-            </Link>
             <Link href="/project" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
               Project
             </Link>
             <Link href="/blog" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
-                          Blog
-                        </Link>
+              Blog
+            </Link>
 
                         <button
                           data-theme-toggle

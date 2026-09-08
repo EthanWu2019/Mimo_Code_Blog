@@ -17,8 +17,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ethan's Blog",
-  description: "Thoughts on software engineering, design, and building products.",
+  title: {
+    default: "Ethan Wu",
+    template: "%s · Ethan Wu",
+  },
+  description:
+    "Ethan Wu — software engineer based in St. Louis. Full-stack product engineering, ML systems, and selected writing on the craft of building software.",
+  metadataBase: new URL("https://ethanwu.work"),
+  openGraph: {
+    type: "website",
+    siteName: "Ethan Wu",
+    url: "https://ethanwu.work",
+    title: "Ethan Wu",
+    description:
+      "Software engineer based in St. Louis. Full-stack product engineering, ML systems, and selected writing on the craft of building software.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ethan Wu",
+    description:
+      "Software engineer based in St. Louis. Full-stack product engineering, ML systems, and selected writing on the craft of building software.",
+  },
+  alternates: {
+    canonical: "https://ethanwu.work",
+  },
 };
 
 // Cookie cleaner script to prevent 494 errors
