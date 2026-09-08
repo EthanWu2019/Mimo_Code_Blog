@@ -34,8 +34,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# prisma
-/prisma/migrations/
+# prisma — keep migration directory tracked so Vercel builds can run `prisma migrate deploy` cleanly.
+!/prisma/migrations/.gitkeep
+!/prisma/migrations/*/migration.sql
 
 # uploads
 /public/uploads/*
