@@ -7,8 +7,8 @@ import Link from 'next/link';
 import gsap from 'gsap';
 import LiquidGlassIndicator from '@/components/LiquidGlassIndicator';
 
-interface CommentType { id: string; content: string; createdAt: string; pinned: boolean; likeCount: number; liked: boolean; author: { id: string; name: string | null; avatar: string | null; role: string }; replies?: CommentType[]; }
-interface Post { id: string; title: string; slug: string; content: string; excerpt: string | null; viewCount: number; createdAt: string; author: { id: string; name: string | null; avatar: string | null }; tags: { id: string; name: string }[]; comments: CommentType[]; }
+interface CommentType { id: string; content: string; createdAt: string; pinned: boolean; likeCount: number; liked: boolean; author: { id: string; name: string | null; image: string | null; role: string }; replies?: CommentType[]; }
+interface Post { id: string; title: string; slug: string; content: string; excerpt: string | null; viewCount: number; createdAt: string; author: { id: string; name: string | null; image: string | null }; tags: { id: string; name: string }[]; comments: CommentType[]; }
 interface RelatedPost { id: string; title: string; slug: string; excerpt: string | null; tags: { id: string; name: string }[]; }
 
 function CommentItem({ comment, postId, depth = 0, postAuthorId }: { comment: CommentType; postId: string; depth?: number; postAuthorId: string }) {
@@ -27,7 +27,7 @@ function CommentItem({ comment, postId, depth = 0, postAuthorId }: { comment: Co
     <div ref={ref} className={depth > 0 ? 'ml-5 pl-4 border-l-2 border-zinc-100 dark:border-white/[0.06]' : ''}>
       <div className={`py-3 px-3 rounded-xl ${pinned ? 'bg-amber-50/60 dark:bg-amber-500/[0.06] border border-amber-200/40 dark:border-amber-500/10 mb-2' : 'mb-1'}`}>
         <div className="flex items-center gap-2 mb-1.5">
-          {comment.author.avatar ? <img src={comment.author.avatar} alt="" className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-[9px] font-medium text-zinc-500 dark:text-white/50">{comment.author.name?.[0] || '?'}</div>}
+          {comment.author.image ? <img src={comment.author.image} alt="" className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-[9px] font-medium text-zinc-500 dark:text-white/50">{comment.author.name?.[0] || '?'}</div>}
           <span className="text-[13px] font-semibold text-zinc-800 dark:text-white/80">{comment.author.name || 'Anonymous'}</span>
           {comment.author.role === 'admin' && <span className="px-1 py-px text-[8px] font-bold uppercase glass rounded leading-none text-zinc-700 dark:text-white/70">Admin</span>}
           {pinned && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-0.5"><svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2l2.5 5 5.5.8-4 3.9.9 5.3L10 14.5 5.1 17l.9-5.3-4-3.9 5.5-.8z" /></svg>Pinned</span>}
@@ -188,7 +188,7 @@ export default function PostPage() {
             <div className="flex flex-wrap gap-2 mb-4">{post.tags.map(t => <span key={t.id} className="px-2.5 py-0.5 text-[11px] font-medium text-zinc-500 dark:text-white/40 glass rounded-full">{t.name}</span>)}</div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4 leading-tight">{post.title}</h1>
             <div className="flex items-center gap-3 text-sm text-zinc-500 dark:text-white/40">
-              {post.author.avatar && <img src={post.author.avatar} alt="" className="w-7 h-7 rounded-full" />}
+              {post.author.image && <img src={post.author.image} alt="" className="w-7 h-7 rounded-full" />}
               <span className="font-medium text-zinc-700 dark:text-white/60">{post.author.name || 'Anonymous'}</span>
               <span className="text-zinc-300 dark:text-white/15">&middot;</span>
               <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>

@@ -7,7 +7,7 @@ export async function GET() {
       where: { published: true },
       include: {
         author: {
-          select: { id: true, name: true, avatar: true },
+          select: { id: true, name: true, image: true },
         },
         tags: true,
         _count: {

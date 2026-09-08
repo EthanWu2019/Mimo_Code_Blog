@@ -19,7 +19,7 @@ export default function Navbar() {
   const isProject = pathname === '/project';
 
   useEffect(() => {
-    if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.avatar)).catch(() => {});
+    if (session?.user) fetch('/api/user/profile').then(r => r.json()).then(d => setAvatar(d.image)).catch(() => {});
   }, [session]);
 
   useEffect(() => {

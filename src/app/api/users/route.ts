@@ -8,7 +8,7 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
-        avatar: true,
+        image: true,
         createdAt: true,
       },
     });
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       data: {
         name,
         email,
-        avatar,
+        image: avatar,
       },
     });
 

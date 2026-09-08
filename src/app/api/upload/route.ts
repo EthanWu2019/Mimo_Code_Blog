@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const userId = (session.user as any).id;
     await prisma.user.update({
       where: { id: userId },
-      data: { avatar: dataUrl },
+      data: { image: dataUrl },
     });
 
     return NextResponse.json({ url: dataUrl });

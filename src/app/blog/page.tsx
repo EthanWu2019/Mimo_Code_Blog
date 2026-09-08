@@ -7,7 +7,7 @@ import BlogSkeleton from '@/components/BlogSkeleton';
 
 interface Post {
   id: string; title: string; slug: string; excerpt: string | null; viewCount: number; createdAt: string;
-  author: { id: string; name: string | null; avatar: string | null }; tags: { id: string; name: string }[]; _count: { comments: number };
+  author: { id: string; name: string | null; image: string | null }; tags: { id: string; name: string }[]; _count: { comments: number };
 }
 
 const tagColors: Record<string, string> = {

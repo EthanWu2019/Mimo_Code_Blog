@@ -17,7 +17,7 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
-        avatar: true,
+        image: true,
         role: true,
         createdAt: true,
         posts: {
@@ -68,8 +68,8 @@ export async function PUT(request: Request) {
 
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { name, avatar },
-      select: { id: true, name: true, avatar: true },
+      data: { name, image: avatar },
+      select: { id: true, name: true, image: true },
     });
 
     return NextResponse.json(user);

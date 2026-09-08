@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         name: name || email.split("@")[0],
         email,
         password: hashedPassword,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`,
+        image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`,
         role: email === "admin@blog.com" ? "admin" : "user",
       },
     });

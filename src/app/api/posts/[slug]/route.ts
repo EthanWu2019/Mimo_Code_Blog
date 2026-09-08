@@ -14,7 +14,7 @@ export async function GET(
     const post = await prisma.post.findUnique({
       where: { slug },
       include: {
-        author: { select: { id: true, name: true, avatar: true } },
+        author: { select: { id: true, name: true, image: true } },
         tags: true,
       },
     });
@@ -26,19 +26,19 @@ export async function GET(
     const comments = await prisma.comment.findMany({
       where: { postId: post.id, parentId: null },
       include: {
-        author: { select: { id: true, name: true, avatar: true, role: true } },
+        author: { select: { id: true, name: true, image: true, role: true } },
         likes: { select: { userId: true } },
         replies: {
           include: {
-            author: { select: { id: true, name: true, avatar: true, role: true } },
+            author: { select: { id: true, name: true, image: true, role: true } },
             likes: { select: { userId: true } },
             replies: {
               include: {
-                author: { select: { id: true, name: true, avatar: true, role: true } },
+                author: { select: { id: true, name: true, image: true, role: true } },
                 likes: { select: { userId: true } },
                 replies: {
                   include: {
-                    author: { select: { id: true, name: true, avatar: true, role: true } },
+                    author: { select: { id: true, name: true, image: true, role: true } },
                     likes: { select: { userId: true } },
                   },
                   orderBy: [{ pinned: 'desc' }, { createdAt: 'asc' }],

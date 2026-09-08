@@ -70,7 +70,7 @@ export async function PUT(
     const post = await prisma.post.update({
       where: { slug },
       data: updateData,
-      include: { author: { select: { id: true, name: true, avatar: true } }, tags: true },
+      include: { author: { select: { id: true, name: true, image: true } }, tags: true },
     });
 
     return NextResponse.json(post);

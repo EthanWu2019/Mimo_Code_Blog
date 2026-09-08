@@ -14,19 +14,19 @@ export async function GET(request: Request) {
     const comments = await prisma.comment.findMany({
       where: { postId, parentId: null },
       include: {
-        author: { select: { id: true, name: true, avatar: true, role: true } },
+        author: { select: { id: true, name: true, image: true, role: true } },
         likes: { select: { userId: true } },
         replies: {
           include: {
-            author: { select: { id: true, name: true, avatar: true, role: true } },
+            author: { select: { id: true, name: true, image: true, role: true } },
             likes: { select: { userId: true } },
             replies: {
               include: {
-                author: { select: { id: true, name: true, avatar: true, role: true } },
+                author: { select: { id: true, name: true, image: true, role: true } },
                 likes: { select: { userId: true } },
                 replies: {
                   include: {
-                    author: { select: { id: true, name: true, avatar: true, role: true } },
+                    author: { select: { id: true, name: true, image: true, role: true } },
                     likes: { select: { userId: true } },
                   },
                   orderBy: [{ pinned: "desc" }, { createdAt: "asc" }],
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     const comment = await prisma.comment.create({
       data: { content, postId, authorId: userId, parentId: parentId || null },
       include: {
-        author: { select: { id: true, name: true, avatar: true, role: true } },
+        author: { select: { id: true, name: true, image: true, role: true } },
         likes: { select: { userId: true } },
       },
     });

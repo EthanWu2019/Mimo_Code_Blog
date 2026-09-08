@@ -9,7 +9,7 @@ interface AdminUser {
   id: string;
   name: string | null;
   email: string;
-  avatar: string | null;
+  image: string | null;
   role: string;
   createdAt: string;
   _count: { posts: number; comments: number };
@@ -195,8 +195,8 @@ export default function AdminPage() {
           {users.map((user) => (
             <div key={user.id} className="flex items-center justify-between py-3 px-3 -mx-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-white/[0.02] group">
               <div className="flex items-center gap-3">
-                {user.avatar ? (
-                  <img src={user.avatar} alt="" className="w-8 h-8 rounded-full" />
+                {user.image ? (
+                  <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-xs font-medium text-zinc-500 dark:text-white/50">{user.name?.[0] || '?'}</div>
                 )}

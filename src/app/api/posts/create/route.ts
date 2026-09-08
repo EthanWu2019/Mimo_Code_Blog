@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       },
       include: {
         tags: true,
-        author: { select: { id: true, name: true, email: true, avatar: true } },
+        author: { select: { id: true, name: true, email: true, image: true } },
       },
     });
 
