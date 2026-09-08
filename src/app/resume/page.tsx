@@ -70,14 +70,17 @@ export default async function ResumePage() {
               </div>
             </div>
             {/*
-              The PDF viewer inside <iframe> draws its own surface that
-              intercepts mousemove and stops our global cursor dot from
-              painting. We layer a transparent overlay that has
-              pointer-events: none — events still reach the iframe for
-              scrolling/zooming, but the dot sits on the topmost layer
-              and the cursor can keep tracking across the region.
+              The global cursor dot paints at z-201 (high), but Chrome's
+              PDF viewer inside the iframe draws its own surface that
+              can occlude the dot visually because the iframe is its own
+              containing block. To keep the dot readable while leaving the
+              PDF viewer fully interactive (scroll/zoom/text select), we
+              wrap the iframe in a positioned container and rely on the
+              dot's own high z-index. No pointer-events tweaks on the
+              iframe — that broke Chrome's sad-face fallback in earlier
+              iterations.
             */}
-            <div className="relative">
+            <div className="relative isolate" style={{ zIndex: 0 }}>
               <iframe
                 key={isAdmin ? "admin" : "guest"}
                 src="/api/resume/pdf"
@@ -87,13 +90,6 @@ export default async function ResumePage() {
                   height: "calc(100dvh - 360px)",
                   minHeight: 720,
                   border: 0,
-                  // Chrome's PDF viewer is a shadow-DOM surface that traps
-                  // mousemove and stops the global cursor dot from tracking.
-                  // Disabling pointer events here lets the cursor continue
-                  // moving across the region. PDF interaction (scroll/zoom/
-                  // text select) is disabled by design; viewers use the
-                  // Download PDF button and read the file locally.
-                  pointerEvents: "none",
                 }}
               />
             </div>
