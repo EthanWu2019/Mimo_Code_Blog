@@ -29,6 +29,10 @@ function pageNameFor(path: string): string {
   // (Podcast, Sleep) — still reachable by direct URL.
   if (path === '/podcast') return 'Podcast';
   if (path === '/sleep') return 'Sleep';
+  // Resume: view + edit both show "Resume" on the right side of the
+  // overlay so the user knows where they are going. The page itself
+  // differentiates view vs edit visually.
+  if (path === '/resume' || path.startsWith('/resume/')) return 'Resume';
   return '';
 }
 

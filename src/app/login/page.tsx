@@ -78,6 +78,32 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <div className="mt-6 grid gap-2.5">
+          <button
+            type="button"
+            onClick={() => signIn('google', { callbackUrl: '/' })}
+            className="w-full inline-flex items-center justify-center gap-2.5 py-2.5 border border-zinc-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] hover:bg-zinc-50 dark:hover:bg-white/[0.06] rounded-lg text-sm font-medium text-zinc-900 dark:text-white transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.9-6.9C35.9 2.4 30.3 0 24 0 14.6 0 6.4 5.4 2.5 13.3l8 6.2C12.3 13.3 17.7 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4 6.9-9.9 6.9-17.6z"/>
+              <path fill="#FBBC05" d="M10.5 28.5c-.6-1.8-1-3.7-1-5.7s.4-3.9 1-5.7l-8-6.2C.9 14.4 0 18.1 0 22c0 3.9.9 7.6 2.5 10.9l8-6.4z"/>
+              <path fill="#34A853" d="M24 46c6.2 0 11.4-2 15.2-5.6l-7.6-5.9c-2.1 1.4-4.8 2.3-7.6 2.3-6.3 0-11.7-3.8-13.5-9.4l-8 6.2C6.4 42.6 14.6 46 24 46z"/>
+            </svg>
+            Continue with Google
+          </button>
+          <button
+            type="button"
+            onClick={() => signIn('github', { callbackUrl: '/' })}
+            className="w-full inline-flex items-center justify-center gap-2.5 py-2.5 border border-zinc-200 dark:border-white/[0.08] bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-100 rounded-lg text-sm font-medium transition-colors"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2.9-.3 1.9-.4 2.9-.4s2 .1 2.9.4C16.4 4.7 17.4 5 17.4 5c.6 1.6.2 2.8.1 3.1.7.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9 0-6.3-5.2-11.5-11.5-11.5z"/>
+            </svg>
+            Continue with GitHub
+          </button>
+        </div>
+
         <p className="mt-6 text-center text-sm text-zinc-500 dark:text-white/30">
           Don&apos;t have an account?{' '}
           <Link href="/register" className="text-zinc-900 dark:text-white font-medium hover:underline">
@@ -85,11 +111,6 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        <div className="mt-8 p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] rounded-lg">
-          <p className="text-xs text-zinc-500 dark:text-white/30 text-center">
-            Demo admin: <span className="font-mono text-zinc-700 dark:text-white/50">admin@blog.com</span> / <span className="font-mono text-zinc-700 dark:text-white/50">admin</span>
-          </p>
-        </div>
       </div>
     </div>
   );

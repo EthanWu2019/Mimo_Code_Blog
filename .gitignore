@@ -41,3 +41,10 @@ next-env.d.ts
 /public/uploads/*
 !/public/uploads/.gitkeep
 .env*
+!.env.example
+
+# Resume runtime state — keep examples committed
+!/data/resume/seed.tex
+!/data/resume/.gitkeep
+/data/resume/source.tex
+

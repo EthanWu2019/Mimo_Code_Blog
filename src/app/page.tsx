@@ -53,8 +53,8 @@ export default function Home() {
                 transition={{ duration: 0.3, delay: 0.3, ease: 'easeOut' }}
                 className="flex items-center gap-6"
               >
-                <a
-                  href="/blog"
+                <Link
+                  href="/project"
                   className="group inline-flex items-center gap-3 text-sm font-medium text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors duration-150"
                 >
                   <span className="w-10 h-10 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-150">
@@ -62,14 +62,14 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </span>
-                  Read the blog
-                </a>
+                  View Projects
+                </Link>
                 <span className="w-[1px] h-4 bg-zinc-200 dark:bg-zinc-800" />
                 <Link
-                  href="/register"
+                  href="/resume"
                   className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors duration-150"
                 >
-                  Join community
+                  Resume · PDF
                 </Link>
               </motion.div>
             </div>
