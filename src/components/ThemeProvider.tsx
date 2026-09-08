@@ -54,20 +54,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const root = document.documentElement;
       const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
 
-      // 1. Resolve origin as percentages of the viewport.
-      const origin = resolveOrigin();
-      if (!origin) {
-        root.classList.remove('dark', 'light');
-        root.classList.add(nextTheme);
-        setTheme(nextTheme);
-        localStorage.setItem('theme', nextTheme);
-        return;
-      }
+      // Apply the new theme SYNCHRONOUSLY. Previously we deferred the class
+      // swap until startViewTransition's callback ran, which made rapid
+      // mashing of the toggle feel "throttled" (Chromium queues view
+      // transitions: only one at a time, new ones wait for the prior to
+      // finish). By swapping immediately, the click feels instant;
+      // the view-transition (when it can run) is purely decorative.
+      root.classList.remove('dark', 'light');
+      root.classList.add(nextTheme);
+      setTheme(nextTheme);
+      localStorage.setItem('theme', nextTheme);
+      document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
 
-      // 2. Inject a one-shot keyframe rule with literal *percentage* coords
-      //    matching the toggle button center. Percent is the only unit we
-      //    can rely on for view-transition pseudo-element clip-path animation
-      //    in current Chromium — px gets re-scaled with the group.
+      // Resolve the clip-path origin (percent-based) for the reveal anim.
+      const origin = resolveOrigin();
+      if (!origin || !doc.startViewTransition) return;
+
+      // Inject a one-shot keyframe so the new root pseudo-element reveals
+      // from the toggle button. Percent is the only unit reliable for
+      // view-transition clip-path in current Chromium — px gets re-scaled
+      // with the group.
       const styleId = 'theme-origin-style';
       let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
       if (!styleEl) {
@@ -82,23 +88,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         `}` +
         `::view-transition-new(root){animation-name:theme-reveal-new-px !important;}`;
 
-      document.dispatchEvent(new CustomEvent('hermes:theme-toggle'));
-
-      if (!doc.startViewTransition) {
-        root.classList.remove('dark', 'light');
-        root.classList.add(nextTheme);
-        setTheme(nextTheme);
-        localStorage.setItem('theme', nextTheme);
-        return;
-      }
-
       const vt = doc.startViewTransition(() => {
-        root.classList.remove('dark', 'light');
-        root.classList.add(nextTheme);
-        setTheme(nextTheme);
-        localStorage.setItem('theme', nextTheme);
+        // empty callback — the snapshot is taken here, the swap already
+        // happened synchronously above. This produces a "new" snapshot
+        // that the keyframe reveal animates over.
       });
-
       vt.finished.finally(() => {
         if (styleEl && styleEl.parentNode) styleEl.textContent = '';
       });

@@ -59,8 +59,7 @@ export default async function ResumePage() {
                   </Link>
                 )}
                 <a
-                  href="/api/resume/pdf"
-                  download="Ethan_Wu_Resume.pdf"
+                  href="/api/resume/pdf?download=1"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-900 dark:text-white"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -70,13 +69,34 @@ export default async function ResumePage() {
                 </a>
               </div>
             </div>
-            <iframe
-              key={isAdmin ? "admin" : "guest"}
-              src="/api/resume/pdf"
-              title="Ethan Wu — Resume"
-              className="w-full"
-              style={{ height: "calc(100dvh - 360px)", minHeight: 720, border: 0 }}
-            />
+            {/*
+              The PDF viewer inside <iframe> draws its own surface that
+              intercepts mousemove and stops our global cursor dot from
+              painting. We layer a transparent overlay that has
+              pointer-events: none — events still reach the iframe for
+              scrolling/zooming, but the dot sits on the topmost layer
+              and the cursor can keep tracking across the region.
+            */}
+            <div className="relative">
+              <iframe
+                key={isAdmin ? "admin" : "guest"}
+                src="/api/resume/pdf"
+                title="Ethan Wu — Resume"
+                className="w-full"
+                style={{
+                  height: "calc(100dvh - 360px)",
+                  minHeight: 720,
+                  border: 0,
+                  // Chrome's PDF viewer is a shadow-DOM surface that traps
+                  // mousemove and stops the global cursor dot from tracking.
+                  // Disabling pointer events here lets the cursor continue
+                  // moving across the region. PDF interaction (scroll/zoom/
+                  // text select) is disabled by design; viewers use the
+                  // Download PDF button and read the file locally.
+                  pointerEvents: "none",
+                }}
+              />
+            </div>
           </div>
           <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-3">
             If the preview doesn&apos;t reflect a recent edit, hit Reload — the

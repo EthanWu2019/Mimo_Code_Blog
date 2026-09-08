@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { signInWithOverlay } from '@/components/AuthOverlay';
 import { useTheme } from '@/components/ThemeProvider';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -120,7 +121,7 @@ export default function RegisterPage() {
         <div className="mt-6 grid gap-2.5">
           <button
             type="button"
-            onClick={() => signIn('google', { callbackUrl: '/' })}
+            onClick={() => signInWithOverlay('google', { callbackUrl: '/' })}
             className={`w-full inline-flex items-center justify-center gap-2.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${primaryBtn}`}
           >
             <svg className="w-4 h-4" viewBox="0 0 48 48" aria-hidden="true">
@@ -133,7 +134,7 @@ export default function RegisterPage() {
           </button>
           <button
             type="button"
-            onClick={() => signIn('github', { callbackUrl: '/' })}
+            onClick={() => signInWithOverlay('github', { callbackUrl: '/' })}
             className={`w-full inline-flex items-center justify-center gap-2.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${primaryBtn}`}
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">

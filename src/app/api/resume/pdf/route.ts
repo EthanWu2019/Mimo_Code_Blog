@@ -107,19 +107,24 @@ async function compileWithLatexOnline(tex: string): Promise<Buffer> {
   return buf;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // ?download=1 forces attachment (saves a file). Default is inline
+  // so the <iframe> in /resume can render the PDF in Chrome's built-in
+  // viewer without also triggering a download dialog.
+  const wantDownload = new URL(request.url).searchParams.get('download') === '1';
+
   try {
     const tex = await readSource();
     const h = hashSource(tex);
     const now = Date.now();
 
     if (cache && cache.sourceHash === h && now - cache.builtAt < CACHE_TTL_MS) {
-      return pdfResponse(cache.pdf);
+      return pdfResponse(cache.pdf, wantDownload);
     }
 
     const pdf = await compileWithLatexOnline(tex);
     cache = { pdf, builtAt: now, sourceHash: h };
-    return pdfResponse(pdf);
+    return pdfResponse(pdf, wantDownload);
   } catch (e: any) {
     return NextResponse.json(
       { error: "Failed to compile resume", detail: e?.message ?? String(e) },
@@ -128,16 +133,22 @@ export async function GET() {
   }
 }
 
-function pdfResponse(pdf: Buffer) {
+function pdfResponse(pdf: Buffer, download: boolean) {
   // NextResponse / fetch BodyInit on this runtime expects a Blob or
   // string — Buffer/Uint8Array are accepted at runtime but TypeScript's
   // edge types do not declare it. Convert to a Blob so both compile
   // and runtime are happy.
   const blob = new Blob([new Uint8Array(pdf)], { type: "application/pdf" });
+  // inline (default) lets the <iframe> in /resume render the PDF in
+  // Chrome's built-in viewer. attachment (?download=1) sets
+  // Content-Disposition so the explicit Download button saves the file.
+  const disposition = download
+    ? 'attachment; filename="Ethan_Wu_Resume.pdf"'
+    : 'inline; filename="Ethan_Wu_Resume.pdf"';
   return new NextResponse(blob, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": 'attachment; filename="Ethan_Wu_Resume.pdf"',
+      "Content-Disposition": disposition,
       "Cache-Control": "no-store",
       "Content-Length": String(pdf.length),
     },

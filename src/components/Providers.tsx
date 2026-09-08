@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from './ThemeProvider';
+import AuthOverlay from './AuthOverlay';
 import Navbar from './Navbar';
 
 // Map URL pathname -> the right-side label shown in the page-transition
@@ -167,6 +168,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <main>{children}</main>
         </TransitionOverlay>
       </ThemeProvider>
+        {/* Global OAuth sign-in loading overlay. Pushed by
+            signInWithOverlay so any "Continue with Google/GitHub" button
+            shows a spinner instead of a dead click. */}
+        <AuthOverlay />
     </SessionProvider>
   );
 }
