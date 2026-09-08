@@ -36,6 +36,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // a JWT strategy, so we use JWT for the whole app and manage OAuth
   // users through the adapter on a per-event basis. See events.signIn.
   adapter: PrismaAdapter(prisma),
+  // NextAuth v5 + Vercel: the preview URL must be trusted so OAuth
+  // signinUrl / callbackUrl are built against our canonical production
+  // domain (https://ethanwu.work) instead of the *.vercel.app preview URL.
+  // Without this, OAuth providers reject the callback_url mismatch.
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
