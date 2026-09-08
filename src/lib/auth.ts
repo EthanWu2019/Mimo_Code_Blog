@@ -35,20 +35,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // PrismaAdapter requires database sessions. Credentials provider forces
   // a JWT strategy, so we use JWT for the whole app and manage OAuth
   // users through the adapter on a per-event basis. See events.signIn.
-  // DEBUG: log runtime env to see if Vercel injected it
-      if (process.env.NODE_ENV === "production") {
-        console.log("[next-auth init]",
-          "NEXTAUTH_URL=", process.env.NEXTAUTH_URL,
-          "AUTH_URL=", process.env.AUTH_URL,
-          "VERCEL_URL=", process.env.VERCEL_URL,
-        );
-      }
-      adapter: PrismaAdapter(prisma),
-      // NextAuth v5 + Vercel: the preview URL must be trusted so OAuth
-      // signinUrl / callbackUrl are built against our canonical production
-      // domain (https://ethanwu.work) instead of the *.vercel.app preview URL.
-      // Without this, OAuth providers reject the callback_url mismatch.
-      trustHost: true,
+  adapter: PrismaAdapter(prisma),
+  // NextAuth v5 + Vercel: the preview URL must be trusted so OAuth
+  // signinUrl / callbackUrl are built against our canonical production
+  // domain (https://ethanwu.work) instead of the *.vercel.app preview URL.
+  // Without this, OAuth providers reject the callback_url mismatch.
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
