@@ -171,6 +171,14 @@ function pdfResponse(pdf: Buffer, download: boolean) {
       "Content-Disposition": disposition,
       "Cache-Control": "no-store",
       "Content-Length": String(pdf.length),
+      // Override the middleware-injected frame-ancestors / X-Frame-Options
+      // headers on the PDF response. Both are set to 'deny' by the
+      // middleware for general site hardening, but the PDF must be
+      // embeddable in our own /resume page's iframe. Without the
+      // override, Chrome's PDFium refuses to render the iframe content
+      // and falls back to the sad-face placeholder.
+      "X-Frame-Options": "SAMEORIGIN",
+      "Content-Security-Policy": "default-src 'self'; frame-ancestors 'self' https://ethanwu.work",
     },
   });
 }
