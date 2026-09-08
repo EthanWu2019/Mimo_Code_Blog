@@ -34,16 +34,26 @@ const SOURCE_PATH = path.join(process.cwd(), "data", "resume", "source.tex");
 const SEED_PATH = path.join(process.cwd(), "data", "resume", "seed.tex");
 
 async function ensureSourceFile(): Promise<string> {
+  // Same Vercel-fallback strategy as /api/resume/pdf:
+  //   /tmp/source.tex  >  data/resume/source.tex  >  data/resume/seed.tex
+  // The `source.tex` write is intentionally a "try" — Vercel's serverless
+  // runtime fs is read-only except /tmp on Hobby tier, so we degrade
+  // gracefully when the persisted copy cannot be created.
+  try {
+    return await fs.readFile("/tmp/source.tex", "utf8");
+  } catch (e: any) {
+    if (e.code !== "ENOENT") {
+      console.warn("[/tmp/source.tex read failed]", e.code, e.message);
+    }
+  }
   try {
     return await fs.readFile(SOURCE_PATH, "utf8");
   } catch (e: any) {
     if (e.code === "ENOENT") {
-      // First access — seed from seed.tex if present, else return minimal stub
+      // Fall back to seed verbatim — don't try to write source.tex, since
+      // that fails on Vercel Hobby tier and just produces noise in logs.
       try {
-        const seed = await fs.readFile(SEED_PATH, "utf8");
-        await fs.mkdir(path.dirname(SOURCE_PATH), { recursive: true });
-        await fs.writeFile(SOURCE_PATH, seed);
-        return seed;
+        return await fs.readFile(SEED_PATH, "utf8");
       } catch {
         return "\\documentclass{article}\\begin{document}\\end{document}";
       }
@@ -83,7 +93,13 @@ export async function PUT(req: Request) {
       { status: 400 }
     );
   }
-  await fs.mkdir(path.dirname(SOURCE_PATH), { recursive: true });
-  await fs.writeFile(SOURCE_PATH, tex);
+  await fs.mkdir("/tmp", { recursive: true }).catch(() => {});
+  await fs.writeFile("/tmp/source.tex", tex);
+  // Also attempt the persistent copy as a no-op-friendly step —
+  // it will throw EROFS on Vercel Hobby but succeed on local dev.
+  await fs.mkdir(path.dirname(SOURCE_PATH), { recursive: true }).catch(() => {});
+  await fs.writeFile(SOURCE_PATH, tex).catch(() => {
+    // Vercel Hobby /tmp-only — silent fallback
+  });
   return NextResponse.json({ ok: true, bytes: tex.length });
 }

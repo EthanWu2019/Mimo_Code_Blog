@@ -32,19 +32,39 @@ type Cache = { pdf: Buffer; builtAt: number; sourceHash: string };
 let cache: Cache | null = null;
 
 async function readSource(): Promise<string> {
+  // Vercel Hobby tier runs each route in a serverless function whose
+  // filesystem is **read-only at runtime** — we can read files we shipped
+  // (seed.tex is committed to the repo), but we cannot reliably `writeFile`
+  // to anything outside `/tmp`. The admin edit flow therefore *cannot*
+  // persist source.tex on production Vercel with this strategy.
+  //
+  // Mitigation layers (each tried in order):
+  //   1. If /tmp/source.tex exists (some Vercel versions allow /tmp writes),
+  //      prefer it — admin edits survive across warm invocations.
+  //   2. Else fall back to data/resume/source.tex — committed; zero-edits state.
+  //   3. Else fall back to data/resume/seed.tex — the original seed; this
+  //      is what unconfigured deployments render.
+  try {
+    return await fs.readFile("/tmp/source.tex", "utf8");
+  } catch (e: any) {
+    if (e.code !== "ENOENT") {
+      // EROFS / EACCES — log and keep falling back.
+      console.warn("[/tmp/source.tex read failed]", e.code, e.message);
+    }
+  }
   try {
     return await fs.readFile(SOURCE_PATH, "utf8");
   } catch (e: any) {
     if (e.code !== "ENOENT") throw e;
-    try {
-      const seed = await fs.readFile(SEED_PATH, "utf8");
-      await fs.mkdir(path.dirname(SOURCE_PATH), { recursive: true });
-      await fs.writeFile(SOURCE_PATH, seed);
-      return seed;
-    } catch {
-      return "\\documentclass{article}\\begin{document}\\end{document}";
-    }
+    return fs.readFile(SEED_PATH, "utf8");
   }
+}
+
+async function readSourceFromSeedOnly(): Promise<string> {
+  // For /api/resume/source's *read* endpoint we want visitors to see the
+  // seed when no admin edits exist yet, so we don't accidentally leak any
+  // /tmp scratch. Returns the seed verbatim.
+  return fs.readFile(SEED_PATH, "utf8");
 }
 
 function hashSource(tex: string): string {
