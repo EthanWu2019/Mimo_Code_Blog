@@ -37,7 +37,7 @@ export default async function ResumePage() {
           {/* Left: description / meta / contact. Sticks to top of viewport
               when there is room so it doesn't fly off-screen on a long
               PDF scroll. */}
-          <aside className="lg:sticky lg:top-24 lg:self-start space-y-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <aside className="lg:self-start space-y-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
             <p className="text-base">
               Single-page LaTeX résumé. Compiled on every request via{" "}
               <span className="text-zinc-900 dark:text-white font-medium">LaTeXOnline</span>{" "}
