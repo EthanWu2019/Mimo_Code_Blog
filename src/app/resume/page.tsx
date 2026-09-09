@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import Link from "next/link";
+import PdfIframeForwarder from "./PdfIframeForwarder";
 
 export const metadata = {
   title: "Resume",
@@ -70,29 +71,22 @@ export default async function ResumePage() {
               </div>
             </div>
             {/*
-              The global cursor dot paints at z-201 (high), but Chrome's
-              PDF viewer inside the iframe draws its own surface that
-              can occlude the dot visually because the iframe is its own
-              containing block. To keep the dot readable while leaving the
-              PDF viewer fully interactive (scroll/zoom/text select), we
-              wrap the iframe in a positioned container and rely on the
-              dot's own high z-index. No pointer-events tweaks on the
-              iframe — that broke Chrome's sad-face fallback in earlier
-              iterations.
+              The global cursor dot listens for `mousemove` on `document`.
+              When the cursor is over an iframe, the parent document does
+              NOT receive mousemove events (HTML spec: events are owned
+              by the document inside the iframe). The dot would freeze
+              while the cursor is over our PDF preview. We render the
+              PDF inside a small client component (PdfIframeForwarder)
+              that bridges mouse events from the iframe back to the
+              parent document so CursorGlow keeps tracking — without
+              modifying CursorGlow itself. The dot's existing z-index
+              (z-201) and I-beam / colour-decide logic continue to work
+              unchanged.
             */}
-            <div className="relative isolate" style={{ zIndex: 0 }}>
-              <iframe
-                key={isAdmin ? "admin" : "guest"}
-                src="/api/resume/pdf"
-                title="Ethan Wu — Resume"
-                className="w-full"
-                style={{
-                  height: "calc(100dvh - 360px)",
-                  minHeight: 720,
-                  border: 0,
-                }}
-              />
-            </div>
+            <PdfIframeForwarder
+              isAdmin={isAdmin}
+              src="/api/resume/pdf"
+            />
           </div>
           <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-3">
             If the preview doesn&apos;t reflect a recent edit, hit Reload — the
