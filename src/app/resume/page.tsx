@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import Link from "next/link";
-import PdfIframeForwarder from "./PdfIframeForwarder";
+import PdfSection from "./PdfSection";
 
 export const metadata = {
   title: "Resume",
@@ -84,9 +84,9 @@ export default async function ResumePage() {
               )}
               <a
                 href="/api/resume/pdf?download=1"
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-900 dark:text-white"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-colors shadow-sm"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" />
                 </svg>
                 Download PDF
@@ -103,21 +103,7 @@ export default async function ResumePage() {
               the left column's h1 "Resume", so the top of the PDF
               preview aligns with the top of the page title. */}
           <section>
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 overflow-hidden">
-              <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-white/[0.02]">
-                <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
-                  <span>Live preview</span>
-                </div>
-                <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                  PDF
-                </span>
-              </div>
-              <PdfIframeForwarder
-                isAdmin={isAdmin}
-                src="/api/resume/pdf"
-              />
-            </div>
+            <PdfSection isAdmin={isAdmin} src="/api/resume/pdf" />
           </section>
         </div>
       </div>
