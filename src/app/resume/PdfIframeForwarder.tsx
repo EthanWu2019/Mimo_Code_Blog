@@ -65,8 +65,18 @@ export default function PdfIframeForwarder({
         title="Ethan Wu — Resume"
         className="w-full"
         style={{
-          height: 'calc(100dvh - 360px)',
-          minHeight: 720,
+          // Single-page A4 / letter sheet @ 96 DPI is 816 x 1056 px.
+          // The user wants the PDF to display in full with no internal
+          // scrollbar. We size the iframe to a value comfortably above
+          // the page height (1120 px) and let the surrounding page scroll
+          // if the viewport is shorter than that. 100dvh - 360px fell
+          // about 200 px short on a 1080p screen, which is exactly the
+          // kind of internal scrollbar the user reported.
+          height: '1120px',
+          width: '100%',
+          maxWidth: '816px',
+          margin: '0 auto',
+          display: 'block',
           border: 0,
         }}
       />
