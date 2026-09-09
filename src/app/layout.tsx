@@ -65,6 +65,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
       <head>
+        {/* Mobile-first responsive viewport. Without this, mobile
+            browsers render at desktop width and then downscale, which
+            makes sm:/md:/lg: breakpoints meaningless. viewport-fit=cover
+            plus safe-area-inset-* on body give us proper support for
+            notched phones (iPhone 14+, Sony Xperia) without clipping
+            the navbar under the notch. */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t)document.documentElement.classList.add(t);else document.documentElement.classList.add('dark');}catch(e){document.documentElement.classList.add('dark');}})();` }} />
       </head>
       <body style={{ background: 'var(--background)', margin: 0 }}>

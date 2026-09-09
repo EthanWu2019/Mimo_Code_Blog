@@ -11,8 +11,8 @@ export default function Home() {
     <div>
       {/* Hero - Editorial asymmetric layout */}
       <section className="relative min-h-[100dvh] flex items-center">
-        <div className="max-w-7xl mx-auto px-6 w-full pt-20 pb-32">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full pt-16 sm:pt-20 pb-20 sm:pb-32">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Left content */}
             <div className="lg:col-span-7">
               <motion.div
@@ -31,7 +31,7 @@ export default function Home() {
                 initial={reduce ? false : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
-                className="text-7xl md:text-8xl lg:text-[120px] font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.85] mb-8"
+                className="text-5xl sm:text-7xl md:text-8xl lg:text-[120px] font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.85] mb-6 sm:mb-8"
               >
                 Ethan
                 <br />
@@ -111,7 +111,7 @@ export default function Home() {
             initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="absolute bottom-8 left-0 right-0 px-6"
+            className="absolute bottom-4 sm:bottom-8 left-0 right-0 px-4 sm:px-6"
           >
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               <span className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">

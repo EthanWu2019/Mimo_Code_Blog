@@ -58,7 +58,7 @@ export default function BlogPage() {
           <div className="absolute bottom-1/3 left-[10%] w-1.5 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 w-full pt-24 pb-20 text-center relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full pt-16 sm:pt-24 pb-16 sm:pb-20 text-center relative z-10">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -76,7 +76,7 @@ export default function BlogPage() {
             initial={reduce ? false : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
-            className="text-6xl md:text-7xl lg:text-[96px] font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.9] mb-6"
+            className="text-4xl sm:text-6xl md:text-7xl lg:text-[96px] font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.9] mb-4 sm:mb-6"
           >
             Blog
           </motion.h1>
@@ -107,7 +107,7 @@ export default function BlogPage() {
       </section>
 
       {/* Posts section */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         {/* Tags */}
         {!loading && (
         <div className="flex flex-wrap gap-2 mb-8">
@@ -199,7 +199,7 @@ export default function BlogPage() {
 
       {/* Footer */}
       <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60">
-        <div className="max-w-4xl mx-auto px-6 py-8 flex items-center justify-between text-xs text-zinc-400 dark:text-zinc-500">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex items-center justify-between text-xs text-zinc-400 dark:text-zinc-500">
           <span>&copy; 2026 Ethan Wu</span>
           <span>Built with Next.js</span>
         </div>

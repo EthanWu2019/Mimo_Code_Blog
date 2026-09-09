@@ -16,13 +16,13 @@ export default async function ResumePage() {
   const isAdmin = (session?.user as any)?.role === "admin";
 
   return (
-    <div className="min-h-[100dvh] pt-20 pb-24 px-6">
+    <div className="min-h-[100dvh] pt-16 sm:pt-20 pb-16 sm:pb-24 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
         {/* Single full-width two-column grid.
             Left column: eyebrow + h1 "Resume" on top, then description /
               meta / actions below. Right column: PDF preview, its top
               edge aligned with the h1 on the left on lg+ viewports. */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-8">
+        <div className="grid grid-cols-1 md:resume-grid-ipad lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-8">
           {/* LEFT */}
           <div className="space-y-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
             <header>
