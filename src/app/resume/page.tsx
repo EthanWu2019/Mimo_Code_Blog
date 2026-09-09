@@ -16,28 +16,27 @@ export default async function ResumePage() {
   const isAdmin = (session?.user as any)?.role === "admin";
 
   return (
-    <div className="min-h-[100dvh] pt-24 pb-24 px-6">
+    <div className="min-h-[100dvh] pt-20 pb-24 px-6">
       <div className="max-w-6xl mx-auto">
-        {/* Page header — narrow, full width. Two-column body below */}
-        <header className="mb-10 max-w-2xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-[1px] bg-zinc-300 dark:bg-zinc-700" />
-            <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
-              Resume · Compiled live from LaTeX
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.95] mb-6">
-            Resume
-          </h1>
-        </header>
+        {/* Single full-width two-column grid.
+            Left column: eyebrow + h1 "Resume" on top, then description /
+              meta / actions below. Right column: PDF preview, its top
+              edge aligned with the h1 on the left on lg+ viewports. */}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-8">
+          {/* LEFT */}
+          <div className="space-y-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <header>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-[1px] bg-zinc-300 dark:bg-zinc-700" />
+                <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
+                  Resume · Compiled live from LaTeX
+                </span>
+              </div>
+              <h1 className="text-5xl md:text-6xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.95]">
+                Resume
+              </h1>
+            </header>
 
-        {/* Two-column body: left = descriptive copy, right = PDF preview.
-            On narrow viewports (<lg) we stack: copy above, PDF below. */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-10">
-          {/* Left: description / meta / contact. Sticks to top of viewport
-              when there is room so it doesn't fly off-screen on a long
-              PDF scroll. */}
-          <aside className="lg:self-start space-y-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
             <p className="text-base">
               Single-page LaTeX résumé. Compiled on every request via{" "}
               <span className="text-zinc-900 dark:text-white font-medium">LaTeXOnline</span>{" "}
@@ -46,7 +45,7 @@ export default async function ResumePage() {
               around.
             </p>
 
-            <div className="space-y-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-1">
                   Name
@@ -71,7 +70,7 @@ export default async function ResumePage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3">
               {isAdmin && (
                 <Link
                   href="/resume/edit"
@@ -98,13 +97,11 @@ export default async function ResumePage() {
               If the preview doesn&apos;t reflect a recent edit, hit Reload
               — the cache TTL is 60 seconds.
             </p>
-          </aside>
+          </div>
 
-          {/* Right: PDF preview. Toolbar at top is now scoped to the PDF
-              column; the global page header is no longer fighting with
-              it. The PDF iframe is the same as before — with the
-              client-component mouse forwarding so the global cursor
-              dot keeps tracking across the preview region. */}
+          {/* RIGHT — PDF. The wrapper card starts at the same grid row as
+              the left column's h1 "Resume", so the top of the PDF
+              preview aligns with the top of the page title. */}
           <section>
             <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 overflow-hidden">
               <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-white/[0.02]">
@@ -113,7 +110,7 @@ export default async function ResumePage() {
                   <span>Live preview</span>
                 </div>
                 <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {isAdmin ? "Edit source on the left" : "PDF"}
+                  PDF
                 </span>
               </div>
               <PdfIframeForwarder
