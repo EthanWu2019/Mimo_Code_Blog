@@ -18,7 +18,15 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
   const session = liveSession ?? initialSession;
   // `status` is 'loading' until useSession resolves; the prop is
   // the pre-hydrated value so we can render the right markup immediately.
-  const effectiveStatus = session ? 'authenticated' : status;
+  // Treat a server-resolved session as authenticated immediately; only
+  // fall back to useSession's status when we have no session data at
+  // all. This avoids a perpetual loading skeleton on first paint
+  // for users with a valid cookie.
+  const effectiveStatus = session
+    ? 'authenticated'
+    : status === 'unauthenticated'
+      ? 'unauthenticated'
+      : status;
   const { theme, toggleTheme } = useTheme();
   const [avatar, setAvatar] = useState<string | null>(null);
   // First-render session: prefer server-injected data, then the
