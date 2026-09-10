@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import { auth } from "@/lib/auth";
 import GlobalBackground from "@/components/GlobalBackground";
 import BackToTop from "@/components/BackToTop";
 import CursorGlow from "@/components/CursorGlow";
@@ -61,7 +62,12 @@ const cookieCleanerScript = `
   })();
 `;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Read the session on the server so the navbar can render the
+  // correct auth CTA (Login / Register / avatar) on the very first
+  // paint, instead of flashing a loading skeleton until the
+  // client-side useSession() resolves.
+  const session = await auth();
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
       <head>
@@ -80,7 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ background: 'var(--background)', margin: 0 }}>
         <script dangerouslySetInnerHTML={{ __html: cookieCleanerScript }} />
         <GlobalBackground />
-        <Providers>
+        <Providers initialSession={session}>
           {children}
         </Providers>
         <BackToTop />

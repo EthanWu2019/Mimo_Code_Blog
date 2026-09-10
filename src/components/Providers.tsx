@@ -159,12 +159,22 @@ function TransitionOverlay({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({
+  children,
+  initialSession,
+}: {
+  children: React.ReactNode;
+  initialSession: any; // Session | null — passed in by the server-rendered
+                    // layout so the Navbar can render the correct auth CTA
+                    // (Login / Register / avatar) on first paint instead of
+                    // flashing a loading skeleton while useSession() chases
+                    // the /api/auth/session round-trip.
+}) {
   return (
     <SessionProvider>
       <ThemeProvider>
         <TransitionOverlay>
-          <Navbar />
+          <Navbar initialSession={initialSession} />
           <main>{children}</main>
         </TransitionOverlay>
       </ThemeProvider>

@@ -2,14 +2,30 @@
 
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 import { useTheme } from './ThemeProvider';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
-export default function Navbar() {
-  const { data: session, status } = useSession();
+export default function Navbar({ initialSession }: { initialSession: Session | null } = { initialSession: null }) {
+  // Pass the server-resolved session as `initialData` so the first
+  // render after hydration reflects the actual signed-in state
+  // instead of a perpetual loading skeleton. Without this, every
+  // server-rendered page shows an empty auth-cta slot until the
+  // client-side useSession fetch completes (~100 ms in practice
+  // but the brief flash is noticeable on slow networks).
+  const { data: liveSession, status } = useSession({ required: false });
+  const session = liveSession ?? initialSession;
+  // `status` is 'loading' until useSession resolves; the prop is
+  // the pre-hydrated value so we can render the right markup immediately.
+  const effectiveStatus = session ? 'authenticated' : status;
   const { theme, toggleTheme } = useTheme();
   const [avatar, setAvatar] = useState<string | null>(null);
+  // First-render session: prefer server-injected data, then the
+  // useSession payload, then null. This way the loading skeleton
+  // is rendered only for the very brief moment useSession needs to
+  // validate the session client-side.
+  const initialSessionData = session ?? initialSession;
   const [isCompact, setIsCompact] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -132,7 +148,7 @@ export default function Navbar() {
               </button>
             </nav>
 
-            {status === 'loading' ? (
+            {effectiveStatus === 'loading' ? (
               <div className="w-9 h-9 ml-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
             ) : session?.user ? (
               <Link href="/profile" className="flex items-center gap-2 ml-1 px-2 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
