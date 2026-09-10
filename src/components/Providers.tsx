@@ -171,7 +171,7 @@ export default function Providers({
                     // the /api/auth/session round-trip.
 }) {
   return (
-    <SessionProvider>
+    <SessionProvider session={initialSession}>
       <ThemeProvider>
         <TransitionOverlay>
           <Navbar initialSession={initialSession} />
