@@ -113,7 +113,8 @@ export default function Home() {
                 transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
                 className="text-base text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed mb-10"
               >
-                Building for the web, writing about the craft.
+                I build for the web. Most of what I've made lives in /project —
+                take a look there.
               </motion.p>
 
               <motion.div
@@ -174,33 +175,6 @@ export default function Home() {
               </motion.div>
             </div>
           </div>
-
-          {/* Bottom info bar */}
-          <motion.div
-            initial={reduce ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.6 }}
-            className="absolute bottom-4 sm:bottom-8 left-0 right-0 px-4 sm:px-6"
-          >
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
-                Based in St. Louis, MO
-              </span>
-              <div className="flex items-center gap-4">
-                <span className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
-                  Scroll to explore
-                </span>
-                <motion.div
-                  animate={{ y: [0, 4, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  <svg className="w-3 h-3 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                </motion.div>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </section></div>
   );
