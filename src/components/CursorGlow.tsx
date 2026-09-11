@@ -95,6 +95,30 @@ function isTextElement(el: Element | null): boolean {
   return false;
 }
 
+
+/**
+ * Returns true if (x,y) is within `pad` pixels of any element with the
+ * data-cursor-suppress attribute. The pad value is read from the
+ * attribute (e.g. data-cursor-suppress="5") so callers can tune it
+ * per-region; falls back to 5 if absent. Used to hide the cursor dot
+ * when the user is hovering over an area where the global dot does
+ * not apply (e.g. an interactive iframe PDF preview that swallows
+ * pointer events).
+ */
+function isInSuppressZone(x: number, y: number): boolean {
+  if (typeof document === 'undefined') return false;
+  const nodes = document.querySelectorAll<HTMLElement>('[data-cursor-suppress]');
+  for (const el of Array.from(nodes)) {
+    const pad = parseFloat(el.getAttribute('data-cursor-suppress') || '5') || 5;
+    const r = el.getBoundingClientRect();
+    if (x >= r.left - pad && x <= r.right + pad &&
+        y >= r.top - pad  && y <= r.bottom + pad) {
+      return true;
+    }
+  }
+  return false;
+}
+
 const DOT_SIZE = 16;
 const IBEAM_BASE_W = 3;
 const IBEAM_BASE_H = 18;
@@ -257,6 +281,18 @@ export default function CursorGlow() {
         }
       }
       const target = e.target as Element;
+
+      // Suppression zones: hide the cursor dot when the mouse is near
+      // an element marked with [data-cursor-suppress="N"]. The N is the
+      // padding in pixels. This is the additive path that lets regions
+      // (e.g. the resume PDF iframe) opt out of the global cursor dot
+      // without modifying any core cursor behavior.
+      const suppressed = isInSuppressZone(e.clientX, e.clientY);
+      if (dotRef.current) {
+        dotRef.current.style.opacity = suppressed ? '0' : '';
+      }
+      if (suppressed) return;
+
       // Precise detection: only trigger on actual text characters
       const overText = isOverText(e.clientX, e.clientY);
       if (overText) {
