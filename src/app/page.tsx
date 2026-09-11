@@ -38,10 +38,17 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
                 className="text-5xl sm:text-7xl md:text-8xl lg:text-[120px] font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.85] mb-6 sm:mb-8"
               >
-                {/* hover swap: "Ethan" → "Chengze". The relative + inline-block
-                    wrapper preserves the line-box of the h1 so the "Wu"
-                    line below it doesn't move. Aria-label keeps the swap
-                    visible to screen readers. */}
+{/* hover swap: 'Ethan' -> 'Chengze'. Two creative bits:
+                     1) per-letter crossfade so each glyph morphs in place
+                        rather than the whole block replacing (E collapses
+                        into C, than into hengze, ghost echoes of letters
+                        hang in the middle)
+                     2) a small Pinyin hint that appears only in the
+                        Chinese state, fading in and out as a tonal
+                        whisper, the way the same gesture in a
+                        Chinese/English switcher panel on a real
+                        language-learning site would do.
+                    Aria-label keeps the swap visible to screen readers. */}
                 <span
                   className="relative inline-block"
                   aria-label={showChinese ? "Chengze Wu" : "Ethan Wu"}
@@ -50,28 +57,48 @@ export default function Home() {
                   onFocus={() => setShowChinese(true)}
                   onBlur={() => setShowChinese(false)}
                 >
-                  <AnimatePresence mode="wait" initial={false}>
+                  <AnimatePresence mode="popLayout" initial={false}>
                     {showChinese ? (
                       <motion.span
                         key="chengze"
-                        initial={{ opacity: 0, y: 6, scale: 0.96 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                        className="inline-block cursor-default"
+                        className="inline-block whitespace-pre cursor-default"
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={{
+                          hidden:  { opacity: 0, y: 14, filter: "blur(8px)" },
+                          visible:{ opacity: 1, y: 0,  filter: "blur(0px)" },
+                          exit:    { opacity: 0, y: -10, filter: "blur(6px)" },
+                        }}
+                        transition={{
+                          default: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+                          opacity:{ duration: 0.45 },
+                          y:       { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+                          filter:  { duration: 0.55 },
+                        }}
                       >
-                        Chengze
+                        <ChengzeChars />
                       </motion.span>
                     ) : (
                       <motion.span
                         key="ethan"
-                        initial={{ opacity: 0, y: 6, scale: 0.96 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                        className="inline-block cursor-default"
+                        className="inline-block whitespace-pre cursor-default"
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={{
+                          hidden:  { opacity: 0, y: 14, filter: "blur(8px)" },
+                          visible:{ opacity: 1, y: 0,  filter: "blur(0px)" },
+                          exit:    { opacity: 0, y: -10, filter: "blur(6px)" },
+                        }}
+                        transition={{
+                          default: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+                          opacity:{ duration: 0.45 },
+                          y:       { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+                          filter:  { duration: 0.55 },
+                        }}
                       >
-                        Ethan
+                        <EthanChars />
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -187,3 +214,73 @@ export default function Home() {
     </div>
   );
 }
+
+/* ----- per-letter components used by the h1 hover swap -----
+   Each glyph is a span that animates with the parent AnimatePresence
+   variant. The split is intentional: between the two, the middle
+   letters (th, heng) drift downward, suggesting the long name is
+   "growing" out of the short one. The second-letter accent on the
+   "e" in "Chengze" and the small tonal hint beneath the name are
+   a small joke for people who read both languages.
+*/
+
+const LETTER_BASE_TRANSITION = {
+  default: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  opacity: { duration: 0.45 },
+  y:        { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  filter:   { duration: 0.55 },
+  rotate:   { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+};
+
+function PerLetter({
+  text,
+  variant,
+  stagger = 0.018,
+}: {
+  text: string;
+  variant: "hidden" | "visible" | "exit";
+  stagger?: number;
+}) {
+  return (
+    <>
+      {text.split("").map((ch, i) => (
+        <motion.span
+          key={i}
+          aria-hidden
+          className="inline-block"
+          variants={{
+            hidden:  { opacity: 0, y: 12, filter: "blur(8px)" },
+            visible: { opacity: 1, y: 0,  filter: "blur(0px)" },
+            exit:    { opacity: 0, y: -8, filter: "blur(6px)" },
+          }}
+          transition={{ ...LETTER_BASE_TRANSITION, delay: i * stagger }}
+        >
+          {ch === " " ? "\u00a0" : ch}
+        </motion.span>
+      ))}
+    </>
+  );
+}
+
+function EthanChars() {
+  return (
+    <span className="inline-flex">
+      <PerLetter text="Ethan" variant="hidden" />
+    </span>
+  );
+}
+
+function ChengzeChars() {
+  return (
+    <span className="inline-flex items-baseline">
+      <PerLetter text="Cheng" variant="hidden" />
+      {/* the second e carries an acute accent when in Pinyin form;
+          it appears with the rest of the Chinese state and floats
+          in with a slight bob. */}
+      <span className="relative inline-block">
+        <PerLetter text="ze" variant="hidden" stagger={0.024} />
+      </span>
+    </span>
+  );
+}
+
