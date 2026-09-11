@@ -85,7 +85,7 @@ export default function PdfSection({
           onClick={toggleFullscreen}
           aria-label={isFs ? 'Exit fullscreen' : 'View fullscreen'}
           title={isFs ? 'Exit fullscreen' : 'View fullscreen'}
-          className="absolute bottom-3 right-3 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-zinc-900/80 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur hover:bg-zinc-900 dark:hover:bg-white transition-colors shadow-lg"
+          className="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-zinc-900/85 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur hover:bg-zinc-900 dark:hover:bg-white transition-colors shadow-lg ring-1 ring-white/10"
         >
           {isFs ? (
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
