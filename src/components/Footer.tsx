@@ -49,16 +49,6 @@ const SOCIAL: { href: string; label: string; svg: React.ReactNode }[] = [
       </svg>
     ),
   },
-  {
-    href: "mailto:ethanwucz2019@gmail.com",
-    label: "Email Ethan",
-    svg: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="m3 7 9 6 9-6" />
-      </svg>
-    ),
-  },
 ];
 
 export default function SiteFooter() {
@@ -73,7 +63,7 @@ export default function SiteFooter() {
             </p>
             <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
               <span className="text-zinc-900 dark:text-white">Chengze Wu</span>
-              {" "}(吴承泽) — also goes by Ethan. CS undergrad + grad student at WashU.
+              {" "}— also goes by Ethan. CS undergrad + grad student at WashU.
             </p>
           </div>
 
