@@ -113,32 +113,46 @@ export default function Home() {
                 transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
                 className="text-base text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed mb-10"
               >
-                I build for the web. Most of what I've made lives in /project —
-                take a look there.
+                I build full-stack software end to end — backend, frontend, infra.
+                Most of what I've shipped lives in /project.
               </motion.p>
 
               <motion.div
                 initial={reduce ? false : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.3, ease: 'easeOut' }}
-                className="flex items-center gap-6"
+                className="flex flex-wrap items-center gap-5"
               >
+                {/* Primary CTA: View Projects. This is THE button on
+                   the site — the entire hero exists to put a hiring
+                   manager one click away from the project archive.
+                   Solid black (light) / white (dark) pill, generous
+                   size, arrow icon, persistent gentle pulse to draw
+                   the eye without being annoying. */}
                 <Link
                   href="/project"
-                  className="group inline-flex items-center gap-3 text-sm font-medium text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors duration-150"
+                  aria-label="View my projects"
+                  className="group relative inline-flex items-center gap-3 h-12 px-6 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm sm:text-base font-semibold tracking-tight shadow-[0_8px_24px_-8px_rgba(24,24,27,0.45)] dark:shadow-[0_8px_24px_-8px_rgba(255,255,255,0.35)] hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200"
                 >
-                  <span className="w-10 h-10 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-150">
-                    <svg className="w-4 h-4 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  {/* subtle attention pulse */}
+                  <span className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-zinc-900/0 dark:ring-white/0 group-hover:ring-zinc-900/5 dark:group-hover:ring-white/10 transition-[box-shadow] duration-500 group-hover:shadow-[0_0_0_8px_rgba(24,24,27,0.06)] dark:group-hover:shadow-[0_0_0_8px_rgba(255,255,255,0.06)]" />
+                  View Projects
+                  <span className="inline-flex w-7 h-7 rounded-full bg-white/15 dark:bg-zinc-900/15 items-center justify-center group-hover:translate-x-0.5 transition-transform duration-200">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </span>
-                  View Projects
                 </Link>
-                <span className="w-[1px] h-4 bg-zinc-200 dark:bg-zinc-800" />
+
+                {/* Secondary: Resume · PDF — kept as a quiet text link so
+                   the primary button stays unambiguously the main CTA. */}
                 <Link
                   href="/resume"
-                  className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors duration-150"
+                  className="group inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors duration-150"
                 >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
                   Resume · PDF
                 </Link>
               </motion.div>
