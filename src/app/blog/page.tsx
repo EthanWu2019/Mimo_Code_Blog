@@ -197,13 +197,6 @@ export default function BlogPage() {
         ) : null}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex items-center justify-between text-xs text-zinc-400 dark:text-zinc-500">
-          <span>&copy; 2026 Ethan Wu</span>
-          <span>Built with Next.js</span>
-        </div>
-      </footer>
-    </div>
+      {/* Footer */}</div>
   );
 }

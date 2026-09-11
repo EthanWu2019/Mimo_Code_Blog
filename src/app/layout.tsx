@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import { auth } from "@/lib/auth";
 import GlobalBackground from "@/components/GlobalBackground";
+import SiteFooter from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CursorGlow from "@/components/CursorGlow";
 
@@ -89,6 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Providers initialSession={session}>
           {children}
         </Providers>
+        <SiteFooter />
         <BackToTop />
         <CursorGlow />
       </body>

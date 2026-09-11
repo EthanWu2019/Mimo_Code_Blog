@@ -202,16 +202,7 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
-      </section>
-
-
-      <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60">
-        <div className="max-w-4xl mx-auto px-6 py-8 flex items-center justify-between text-xs text-zinc-400 dark:text-zinc-500">
-          <span>&copy; 2026 Ethan Wu</span>
-          <span>Built with Next.js</span>
-        </div>
-      </footer>
-    </div>
+      </section></div>
   );
 }
 
@@ -283,4 +274,3 @@ function ChengzeChars() {
     </span>
   );
 }
-
