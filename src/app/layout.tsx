@@ -90,7 +90,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Providers initialSession={session}>
           {children}
         </Providers>
-        <SiteFooter />
         <BackToTop />
         <CursorGlow />
       </body>

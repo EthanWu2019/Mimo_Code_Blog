@@ -113,13 +113,6 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 tabular-nums">
-          <span>&copy; 2026 Ethan Wu</span>
-          <span className="inline-flex items-center gap-2">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Built with Next.js · Vercel</span>
-          </span>
-        </div>
       </div>
     </footer>
   );
