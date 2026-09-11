@@ -1,11 +1,16 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 export default function Home() {
   const reduce = useReducedMotion();
+  // "Ethan" → "Chengze" on hover. We keep the h1 in flow (so the
+  // eyebrow and "Wu" line below stay anchored) and overlay the two
+  // name spans absolutely inside an inline-block. The Wu line and the
+  // layout below the h1 do not move during the swap.
+  const [showChinese, setShowChinese] = useState(false);
 
   return (
     <div>
@@ -33,7 +38,44 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
                 className="text-5xl sm:text-7xl md:text-8xl lg:text-[120px] font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.85] mb-6 sm:mb-8"
               >
-                Ethan
+                {/* hover swap: "Ethan" → "Chengze". The relative + inline-block
+                    wrapper preserves the line-box of the h1 so the "Wu"
+                    line below it doesn't move. Aria-label keeps the swap
+                    visible to screen readers. */}
+                <span
+                  className="relative inline-block"
+                  aria-label={showChinese ? "Chengze Wu" : "Ethan Wu"}
+                  onMouseEnter={() => setShowChinese(true)}
+                  onMouseLeave={() => setShowChinese(false)}
+                  onFocus={() => setShowChinese(true)}
+                  onBlur={() => setShowChinese(false)}
+                >
+                  <AnimatePresence mode="wait" initial={false}>
+                    {showChinese ? (
+                      <motion.span
+                        key="chengze"
+                        initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                        className="inline-block cursor-default"
+                      >
+                        Chengze
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="ethan"
+                        initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                        className="inline-block cursor-default"
+                      >
+                        Ethan
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </span>
                 <br />
                 <span className="text-zinc-200 dark:text-zinc-800">Wu</span>
               </motion.h1>
