@@ -64,9 +64,16 @@ export default function PdfSection({
       <iframe
         src={src}
         title="Ethan Wu — Resume"
-        className="w-full bg-white dark:bg-zinc-950 block mx-auto"
+        className="block mx-auto bg-white dark:bg-zinc-950"
         style={{
-          height: '1120px',
+          // The PDF is a single US-Letter page (612 x 792 pt). At the
+          // standard 96 DPI CSS scale that becomes 816 x 1056 px. The
+          // iframe used to be hard-coded at 1120 px tall which left a
+          // black strip of empty space below the rendered page on view-
+          // ports wider than the maxWidth. Setting height to a fixed
+          // aspect ratio of the actual width pins the iframe to the
+          // PDF's exact dimensions, so the wrapper has no wasted space.
+          aspectRatio: '8.5 / 11',
           width: '100%',
           maxWidth: '816px',
           border: 0,
