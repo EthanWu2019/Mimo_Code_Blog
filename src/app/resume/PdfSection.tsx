@@ -62,7 +62,7 @@ export default function PdfSection({
   return (
     <div ref={wrapRef} data-cursor-suppress="5" className="relative bg-zinc-100 dark:bg-zinc-950">
       <iframe
-        src={src}
+        src={`${src}#navpanes=0&toolbar=1&view=FitH&zoom=80`}
         title="Ethan Wu — Resume"
         className="block mx-auto bg-white dark:bg-zinc-950"
         style={{
