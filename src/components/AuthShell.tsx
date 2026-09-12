@@ -234,30 +234,92 @@ export function AuthShell(props: AuthShellProps) {
   } = props;
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-6 py-6 sm:py-8">
+    // Magazine two-column layout. The full viewport below the navbar
+    // is a single horizontal track: a thin left rail with brand
+    // chrome + giant editorial title, and a wider right column with
+    // the form. Both align to the same left-edge baseline; nothing
+    // is center-justified, so the eye reads left-to-right.
+    <div className="min-h-[calc(100vh-80px)] grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-x-8 md:gap-x-16 lg:gap-x-24 px-6 sm:px-10 md:px-14 lg:px-20 py-8 md:py-10">
+      {/* LEFT RAIL — brand identity + giant editorial title. On wide
+          screens sits left, anchored to the column's left edge with
+          the form starting at the right column's left edge. On narrow
+          screens this entire block is hidden; the mobile-only header
+          inside the right column carries the same identity. */}
+      <motion.aside
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="hidden md:flex md:flex-col md:justify-between min-h-[calc(100vh-160px)]"
+      >
+        {/* Top: monogram + kicker, left-aligned. */}
+        <div>
+          <div className="flex items-baseline gap-3">
+            <span className="text-zinc-900 dark:text-white font-serif italic text-2xl leading-none">E/W</span>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 font-medium">
+              {kicker}
+            </span>
+          </div>
+
+          {/* Vertical rule + small page-number-style label. Reads as
+              the colophon of a magazine spread. */}
+          <div className="mt-10 flex items-center gap-3">
+            <span className="w-8 h-px bg-zinc-300 dark:bg-zinc-700" />
+            <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500">
+              No. 01 — Sign in
+            </span>
+          </div>
+
+          {/* Big italic editorial title in the left rail. The form
+              on the right has its own compact title; this one is the
+              decorative anchor. */}
+          <h1 className="mt-10 font-serif text-[64px] xl:text-[88px] leading-[0.9] tracking-[-0.03em] text-zinc-900 dark:text-white">
+            {title}
+            <br />
+            <span className="italic font-serif text-zinc-400 dark:text-zinc-600">
+              {titleItalic}
+            </span>
+          </h1>
+
+          <p className="mt-8 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-[28ch]">
+            {subtitle}
+          </p>
+        </div>
+
+        {/* Bottom: the signature / 'smile' detail. Anchored to the
+            bottom of the left column on tall viewports. */}
+        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-serif italic max-w-[28ch]">
+          {signature}
+        </p>
+      </motion.aside>
+
+      {/* RIGHT COLUMN — the form. Left-aligned inside. The mobile
+          version stacks below the same content but without the left
+          rail; a mobile-only header block at the top of this column
+          carries the brand identity on narrow screens. */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[420px]"
       >
-        {/* Monogram + kicker. The monogram is rendered as display
-            serif type (system fallback to Times New Roman) so it has
-            weight without needing a custom font. */}
-        <div className="flex items-baseline gap-3 mb-2">
-          <span className="text-zinc-900 dark:text-white font-serif italic text-2xl leading-none">E/W</span>
-          <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 font-medium">
-            {kicker}
-          </span>
+        {/* Mobile-only header: compact monogram + kicker. On md+
+            the left rail carries these. */}
+        <div className="md:hidden mb-8">
+          <div className="flex items-baseline gap-3">
+            <span className="text-zinc-900 dark:text-white font-serif italic text-2xl leading-none">E/W</span>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 font-medium">
+              {kicker}
+            </span>
+          </div>
         </div>
 
-        {/* Big editorial headline. Split into spans so we can
-            italicize one word \u2014 a small smile, but reads as confident. */}
-        <h1 className="font-serif text-[34px] sm:text-[38px] leading-[1.05] tracking-[-0.02em] text-zinc-900 dark:text-white">
+        {/* Mobile-only compact title. On md+ the giant title lives
+            in the left rail. */}
+        <h1 className="md:hidden font-serif text-[34px] leading-[1.05] tracking-[-0.02em] text-zinc-900 dark:text-white mb-2">
           {title}{' '}
           <span className="italic font-serif">{titleItalic}</span>
         </h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        <p className="md:hidden mt-2 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-6">
           {subtitle}
         </p>
 
@@ -292,7 +354,7 @@ export function AuthShell(props: AuthShellProps) {
             required
             minLength={6}
             autoComplete={name !== undefined ? 'new-password' : 'current-password'}
-            placeholder={'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
+            placeholder={'••••••••'}
           />
 
           {/* Error appears in-place below the password field, with a
@@ -351,8 +413,9 @@ export function AuthShell(props: AuthShellProps) {
           />
         </div>
 
-        {/* Alt link + signature */}
-        <div className="mt-6 text-center space-y-1.5">
+        {/* Alt link. Left-aligned so it matches the rest of the column.
+            The signature line lives in the left rail on desktop. */}
+        <div className="mt-6 text-left space-y-1.5">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {altPrompt}{' '}
             <a
@@ -362,12 +425,14 @@ export function AuthShell(props: AuthShellProps) {
               {altLinkLabel}
             </a>
           </p>
-          {/* The "smile" detail \u2014 a tiny italic line that hints at the
-              site's tone without trying too hard. */}
-          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-serif italic">
-            {signature}
-          </p>
         </div>
+
+        {/* Mobile-only signature: on desktop the signature lives in
+            the left rail. On narrow viewports the rail collapses, so
+            we mirror the line here so it's not lost. */}
+        <p className="md:hidden mt-10 text-[11px] text-zinc-400 dark:text-zinc-500 font-serif italic text-left">
+          {signature}
+        </p>
       </motion.div>
     </div>
   );
