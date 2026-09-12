@@ -239,7 +239,7 @@ export function AuthShell(props: AuthShellProps) {
     // chrome + giant editorial title, and a wider right column with
     // the form. Both align to the same left-edge baseline; nothing
     // is center-justified, so the eye reads left-to-right.
-    <div className="min-h-[calc(100vh-80px)] grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-x-8 md:gap-x-16 lg:gap-x-24 max-w-[1100px] mx-auto px-6 sm:px-10 md:px-14 py-8 md:py-10">
+    <div className="min-h-[calc(100vh-80px)] grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-x-8 md:gap-x-12 lg:gap-x-20 max-w-[1100px] mx-auto px-6 sm:px-10 md:px-14 pt-20 md:pt-28 pb-10 md:pb-14 items-center">
       {/* LEFT RAIL — brand identity + giant editorial title. On wide
           screens sits left, anchored to the column's left edge with
           the form starting at the right column's left edge. On narrow
