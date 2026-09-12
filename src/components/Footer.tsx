@@ -116,7 +116,7 @@ function MailGlyph() {
 export default function SiteFooter() {
   return (
     <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60 mt-12 sm:mt-20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/*
           Two blocks only: About (now containing name, bio, phone, email,
           and the social icons) and Navigate. The About block reads as
@@ -125,16 +125,16 @@ export default function SiteFooter() {
         */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
           {/* Block 1 — About (name + bio + phone + email + social icons) */}
-          <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6 sm:col-span-2">
+          <section className="rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-4 sm:p-5 sm:col-span-2">
             <BlockLabel>About</BlockLabel>
-            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
               <span className="text-zinc-900 dark:text-white">Chengze Wu</span>
               {" "}— also goes by Ethan. CS undergrad + grad student at WashU.
             </p>
 
             {/* Phone + email — two contact lines, each with a small
                 leading glyph so they read as a pair, not a paragraph. */}
-            <ul className="mt-4 space-y-1.5 text-sm">
+            <ul className="mt-3 space-y-1 text-sm">
               <li>
                 <a
                   href="tel:+18623600912"
@@ -158,7 +158,7 @@ export default function SiteFooter() {
             {/* Social icons — same chip styling as before, kept inside
                 the About block since they are how the owner surfaces
                 his external presence. */}
-            <ul className="mt-5 flex flex-wrap items-center gap-3 text-zinc-500 dark:text-zinc-400">
+            <ul className="mt-3 flex flex-wrap items-center gap-2 text-zinc-500 dark:text-zinc-400">
               {SOCIAL.map((s) => (
                 <li key={s.href}>
                   <a
@@ -166,7 +166,7 @@ export default function SiteFooter() {
                     aria-label={s.label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-200/70 dark:border-zinc-800/70 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-zinc-200/70 dark:border-zinc-800/70 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
                   >
                     <span className="w-5 h-5 block">{s.svg}</span>
                   </a>
@@ -176,9 +176,9 @@ export default function SiteFooter() {
           </section>
 
           {/* Block 2 — Navigate (in-site links only) */}
-          <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6">
+          <section className="rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-4 sm:p-5">
             <BlockLabel>Navigate</BlockLabel>
-            <ul className="mt-3 grid grid-cols-2 gap-y-2 gap-x-4 text-sm text-zinc-600 dark:text-zinc-300">
+            <ul className="mt-2 grid grid-cols-1 gap-y-1 text-sm text-zinc-600 dark:text-zinc-300">
               {NAV_LINKS.map((l) => (
                 <li key={l.href}>
                   <a
@@ -193,13 +193,6 @@ export default function SiteFooter() {
           </section>
         </div>
 
-        {/* Bottom strip — same as before. Single thin row, clearly
-            separated from the two blocks above by a hairline + extra
-            top padding. */}
-        <div className="mt-10 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
-          <span>&copy; 2026 Chengze Wu</span>
-          <span>ethanwu.work — full-stack work &amp; selected writing</span>
-        </div>
       </div>
     </footer>
   );
