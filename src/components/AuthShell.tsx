@@ -327,7 +327,7 @@ export function AuthShell(props: AuthShellProps) {
             onClick={onGoogle}
             label="Continue with Google"
             icon={
-              <svg className="w-3.5 h-3.5" viewBox="0 0 48 48" aria-hidden>
+              <svg className="w-4 h-4" viewBox="0 0 48 48" aria-hidden>
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.9-6.9C35.9 2.4 30.3 0 24 0 14.6 0 6.4 5.4 2.5 13.3l8 6.2C12.3 13.3 17.7 9.5 24 9.5z" />
                 <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4 6.9-9.9 6.9-17.6z" />
                 <path fill="#FBBC05" d="M10.5 28.5c-.6-1.8-1-3.7-1-5.7s.4-3.9 1-5.7l-8-6.2C.9 14.4 0 18.1 0 22c0 3.9.9 7.6 2.5 10.9l8-6.4z" />
