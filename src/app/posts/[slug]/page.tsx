@@ -231,7 +231,7 @@ export default function PostPage() {
                 {related.map(r => (
                   <Link key={r.id} href={`/posts/${r.slug}`} className="block group">
                     <p className="text-[13px] font-medium text-zinc-600 dark:text-white/50 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-snug mb-1.5">{r.title}</p>
-                    {r.excerpt && <p className="text-[11px] text-zinc-400 dark:text-white/20 line-clamp-2 leading-relaxed">{r.excerpt}</p>}
+                    {r.excerpt && <p className="pl-3 text-[11px] text-zinc-400 dark:text-white/20 line-clamp-2 leading-relaxed">{r.excerpt}</p>}
                   </Link>
                 ))}
               </div>
