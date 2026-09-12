@@ -7,6 +7,7 @@ import GlobalBackground from "@/components/GlobalBackground";
 import SiteFooter from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CursorGlow from "@/components/CursorGlow";
+import CookieConsent from "@/components/CookieConsent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -102,6 +103,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </Providers>
         <BackToTop />
         <CursorGlow />
+        <CookieConsent />
       </body>
     </html>
   );
