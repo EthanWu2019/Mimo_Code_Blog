@@ -239,7 +239,7 @@ export function AuthShell(props: AuthShellProps) {
     // chrome + giant editorial title, and a wider right column with
     // the form. Both align to the same left-edge baseline; nothing
     // is center-justified, so the eye reads left-to-right.
-    <div className="min-h-[calc(100vh-80px)] grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-x-8 md:gap-x-16 lg:gap-x-24 px-6 sm:px-10 md:px-14 lg:px-20 py-8 md:py-10">
+    <div className="min-h-[calc(100vh-80px)] grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-x-8 md:gap-x-16 lg:gap-x-24 max-w-[1100px] mx-auto px-6 sm:px-10 md:px-14 py-8 md:py-10">
       {/* LEFT RAIL — brand identity + giant editorial title. On wide
           screens sits left, anchored to the column's left edge with
           the form starting at the right column's left edge. On narrow
@@ -272,7 +272,7 @@ export function AuthShell(props: AuthShellProps) {
           {/* Big italic editorial title in the left rail. The form
               on the right has its own compact title; this one is the
               decorative anchor. */}
-          <h1 className="mt-10 font-serif text-[64px] xl:text-[88px] leading-[0.9] tracking-[-0.03em] text-zinc-900 dark:text-white">
+          <h1 className="mt-10 font-serif text-[56px] xl:text-[72px] leading-[0.9] tracking-[-0.03em] text-zinc-900 dark:text-white">
             {title}
             <br />
             <span className="italic font-serif text-zinc-400 dark:text-zinc-600">
@@ -280,14 +280,17 @@ export function AuthShell(props: AuthShellProps) {
             </span>
           </h1>
 
-          <p className="mt-8 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-[28ch]">
+          {/* Subtitle indented from the title's left edge so it
+              reads as a continuation, not a parallel block. */}
+          <p className="mt-8 pl-6 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-[30ch]">
             {subtitle}
           </p>
         </div>
 
         {/* Bottom: the signature / 'smile' detail. Anchored to the
-            bottom of the left column on tall viewports. */}
-        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-serif italic max-w-[28ch]">
+            bottom of the left column on tall viewports. Also slightly
+            indented to mirror the subtitle above. */}
+        <p className="pl-6 text-[11px] text-zinc-400 dark:text-zinc-500 font-serif italic max-w-[30ch]">
           {signature}
         </p>
       </motion.aside>
