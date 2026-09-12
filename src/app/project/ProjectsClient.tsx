@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   CATEGORY_LABEL,
   STATUS_LABEL,
@@ -173,15 +174,15 @@ function MajorCard({ p }: { p: ProjectItem }) {
     <article className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 overflow-hidden hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 flex flex-col">
       <div className="relative aspect-[16/9] overflow-hidden bg-zinc-100 dark:bg-zinc-900">
         {p.coverImage ? (
-          // Using <img> instead of next/image: the cover URLs come from
-          // arbitrary external sources (owner may add URLs to whatever
-          // image hosting they like), and we don't want a build-time
-          // config dance for each new project.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          // next/image with fill inside the aspect-[16/9] frame. The
+          // remotePatterns `**` wildcard in next.config.ts allows any
+          // https cover URL, so owners can paste new hosts without
+          // touching config.
+          <Image
             src={p.coverImage}
             alt={p.title}
-            loading="lazy"
+            fill
+            sizes="(min-width: 1024px) 50vw, 100vw"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
         ) : (
@@ -270,14 +271,14 @@ function VibeRow({ p }: { p: ProjectItem }) {
         <Link
           href={`/project/${p.slug}`}
           aria-label={`Open ${p.title} case study`}
-          className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900 group/cover"
+          className="relative flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900 group/cover"
         >
           {p.coverImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={p.coverImage}
               alt={p.title}
-              loading="lazy"
+              fill
+              sizes="112px"
               className="w-full h-full object-cover transition-transform duration-300 group-hover/cover:scale-105"
             />
           ) : (

@@ -183,6 +183,31 @@ export default function HomeClient() {
                   Resume · PDF
                 </Link>
               </motion.div>
+
+              {/* Hiring line — one quiet sentence under the CTA row,
+                  pointing recruiters straight at the resume without
+                  competing with the primary button. */}
+              <motion.p
+                initial={reduce ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="mt-4 text-[13px] text-zinc-500 dark:text-zinc-400"
+              >
+                Hiring?{' '}
+                <Link
+                  href="/resume"
+                  className="text-zinc-700 dark:text-zinc-300 font-medium underline underline-offset-4 decoration-zinc-300 dark:decoration-zinc-700 hover:decoration-zinc-900 dark:hover:decoration-white transition-colors"
+                >
+                  Download my resume
+                </Link>{' '}
+                — or reach me at{' '}
+                <a
+                  href="mailto:ethanwucz2019@gmail.com"
+                  className="text-zinc-700 dark:text-zinc-300 font-medium underline underline-offset-4 decoration-zinc-300 dark:decoration-zinc-700 hover:decoration-zinc-900 dark:hover:decoration-white transition-colors"
+                >
+                  ethanwucz2019@gmail.com
+                </a>
+              </motion.p>
             </div>
 
             {/* Right decorative element */}

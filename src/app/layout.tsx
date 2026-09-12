@@ -34,16 +34,26 @@ export const metadata: Metadata = {
     title: "Ethan Wu",
     description:
       "Software engineer based in St. Louis. Full-stack product engineering, ML systems, and selected writing on the craft of building software.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Ethan Wu — full-stack software engineer",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Ethan Wu",
     description:
       "Software engineer based in St. Louis. Full-stack product engineering, ML systems, and selected writing on the craft of building software.",
+    images: ["/og.png"],
   },
   alternates: {
     canonical: "https://ethanwu.work",
   },
+  manifest: "/manifest.json",
   icons: {
     // Default favicon (browsers fall back through these sizes in order).
     icon: [
@@ -80,6 +90,27 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // paint, instead of flashing a loading skeleton until the
   // client-side useSession() resolves.
   const session = await auth();
+
+  // JSON-LD Person schema — helps Google render a knowledge card for
+  // name searches (recruiter searches "Chengze Wu" / "Ethan Wu").
+  const personJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Chengze Wu',
+    alternateName: 'Ethan Wu',
+    jobTitle: 'Software Engineer',
+    url: 'https://ethanwu.work',
+    alumniOf: {
+      '@type': 'CollegeOrUniversity',
+      name: 'Washington University in St. Louis',
+    },
+    sameAs: [
+      'https://github.com/EthanWu2019',
+      'https://www.linkedin.com/in/chengze-wu-3398a0224/',
+      'https://ethanwu.cafe/',
+    ],
+  };
+
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
       <head>
@@ -96,6 +127,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t)document.documentElement.classList.add(t);else document.documentElement.classList.add('dark');}catch(e){document.documentElement.classList.add('dark');}})();` }} />
       </head>
       <body style={{ background: 'var(--background)', margin: 0 }}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
         <script dangerouslySetInnerHTML={{ __html: cookieCleanerScript }} />
         <GlobalBackground />
         <Providers initialSession={session}>

@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL || "https://ethanwu.work",
   },
+  // Optimize any https-hosted remote image (project covers point at
+  // whatever image host the owner pastes in — unsplash, personal CDN,
+  // etc.). The `**` hostname wildcard means no config change is needed
+  // every time a new project adds a cover from a new domain, while
+  // next/image still resizes/compresses/loads-lazily for free.
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
+  },
   // Preserve capital letters in URLs; do not auto-lowercase the path.
   // Without this, /Blog -> /blog and /Join-community -> /join-community, which
   // breaks case-sensitive canonical links and any external links that use the
