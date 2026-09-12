@@ -94,7 +94,7 @@ export default function PdfSection({
             // Equal top + right inset (4 = 16 px) so the button sits
             // visually flush into the iframe's top-right corner, not
             // hugging whichever edge happens to be tighter.
-            className="absolute top-4 right-4 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-zinc-900/85 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur hover:bg-zinc-900 dark:hover:bg-white transition-colors shadow-lg ring-1 ring-white/10"
+            className="absolute top-4 right-12 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-zinc-900/85 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur hover:bg-zinc-900 dark:hover:bg-white transition-colors shadow-lg ring-1 ring-white/10"
           >
             {isFs ? (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
