@@ -303,7 +303,12 @@ export function AuthShell(props: AuthShellProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-[420px]"
+        // Negative top margin pulls the form up against the navbar; the
+        // md:ml-X left margin pushes it right within its grid cell so
+        // the form's visual centre drifts toward the viewport centre.
+        // On mobile (grid stack) neither margin applies — the form
+        // sits naturally below the mobile header.
+        className="w-full max-w-[420px] -mt-12 md:-mt-20 md:ml-12 lg:ml-24"
       >
         {/* Mobile-only header: compact monogram + kicker. On md+
             the left rail carries these. */}
