@@ -1,11 +1,5 @@
 'use client';
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Not Found',
-};
-
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -265,13 +259,17 @@ export default function NotFoundPage() {
     if (typeof window !== 'undefined') window.location.assign('/');
   }, []);
 
-  // Theme-aware echo — read once on mount; the 404 layer reads whatever
-  // class <html> was hydrated with (the FOUC-safe inline script sets 'dark'
-  // by default per globals.css :root vs .dark block — hush).
-  const isDark =
-    typeof document !== 'undefined'
-      ? document.documentElement.classList.contains('dark')
-      : true;
+  // Theme-aware echo. Read via mounted state so SSR and the first
+  // client render agree (both false until mount), avoiding a
+  // hydration mismatch when the user's saved theme differs from the
+  // default dark.
+  const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+    setMounted(true);
+  }, []);
 
   return (
     <div
