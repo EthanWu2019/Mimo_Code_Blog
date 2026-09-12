@@ -96,8 +96,11 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
 
   return (
     <>
-      <div className="h-[72px]" />
-      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3">
+      {/* Spacer matches navbar height (h-14 = 56px) + pt-6 (24px) top
+          inset + 8px breathing room, so content never sits flush against
+          the bottom edge of the floating pill. */}
+      <div className="h-[88px]" />
+      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6">
         <div
           className="glass-nav-acrylic rounded-full px-6 h-14 flex items-center justify-between w-full"
           style={{
@@ -218,7 +221,7 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
 
           {/* Mobile menu panel — full-width dropdown under the navbar. */}
           {isMobileMenuOpen && (
-            <div className="sm:hidden fixed left-4 right-4 top-[68px] z-40 rounded-2xl border border-zinc-200/60 dark:border-white/[0.08] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl shadow-zinc-900/10 dark:shadow-black/40 px-3 py-2">
+            <div className="sm:hidden fixed left-4 right-4 top-[80px] z-40 rounded-2xl border border-zinc-200/60 dark:border-white/[0.08] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl shadow-zinc-900/10 dark:shadow-black/40 px-3 py-2">
               <nav className="flex flex-col gap-0.5">
                 <Link href="/project" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg">Project</Link>
                 <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg">Blog</Link>

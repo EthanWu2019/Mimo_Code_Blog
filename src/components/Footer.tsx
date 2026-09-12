@@ -3,22 +3,23 @@
  *
  * Global footer that appears on every public page except the 404
  * experience (which renders outside this layout subtree — see
- * app/not-found.tsx). The editorial voice is the same as the rest of
- * the site: a hairline divider on top, three compact columns of
- * content, then a status line at the very bottom.
+ * app/not-found.tsx).
+ *
+ * Layout: three labelled blocks (About / Navigate / Connect) rendered
+ * as distinct, separated groups rather than a single 3-column grid.
+ * Each block sits in its own rounded bordered card with consistent
+ * padding, so the eye reads them as "three things in a row" rather
+ * than "three things crammed into the same grid row".
+ *
+ * The mobile layout stacks the three blocks vertically with explicit
+ * gaps between them; on sm+ they sit on one row.
  *
  * Personal info the owner wanted surfaced here:
  *   GitHub:    https://github.com/EthanWu2019
  *   LinkedIn:  https://www.linkedin.com/in/chengze-wu-3398a0224/
+ *   Cafe:      https://ethanwu.cafe/  (life-side blog)
  *   Email:     ethanwucz2019@gmail.com  (mailto)
  *   Phone:     intentionally omitted (owner decision)
- *
- * Implementation notes
- *  - Server component. No client JS, no framer-motion. The status dot
- *    uses Tailwind's `animate-pulse` utility.
- *  - All four icons are inline SVG with a 20x20 viewBox.
- *  - The bottom line uses `tabular-nums` so the year column never
- *    reflows in a different width.
  */
 
 const NAV_LINKS: { href: string; label: string }[] = [
@@ -67,28 +68,49 @@ const SOCIAL: { href: string; label: string; svg: React.ReactNode }[] = [
   },
 ];
 
+// Small helper used in every block to keep the heading style consistent.
+// Each block has its own label; the block content sits below it with a
+// consistent mt-3 gap, so the labels visually align across columns.
+function BlockLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500 font-medium">
+      {children}
+    </p>
+  );
+}
+
 export default function SiteFooter() {
   return (
     <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60 mt-12 sm:mt-20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10">
-          {/* Column 1 — About */}
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500 font-medium">
-              About
-            </p>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        {/*
+          Three blocks rendered as a flex column on mobile, a 3-column
+          grid on sm+. Each block is its own bordered rounded card so
+          they read as distinct groups. We use a top hairline inside
+          each card (border-t on the content area) so when multiple
+          blocks stack, the eye gets a subtle horizontal break before
+          each label.
+        */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+          {/* Block 1 — About */}
+          <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6">
+            <BlockLabel>About</BlockLabel>
             <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
               <span className="text-zinc-900 dark:text-white">Chengze Wu</span>
               {" "}— also goes by Ethan. CS undergrad + grad student at WashU.
             </p>
-          </div>
+            <a
+              href="mailto:ethanwucz2019@gmail.com"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline underline-offset-4 decoration-zinc-300 dark:decoration-zinc-700 hover:decoration-zinc-500 transition-colors"
+            >
+              ethanwucz2019@gmail.com
+            </a>
+          </section>
 
-          {/* Column 2 — Navigate */}
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500 font-medium">
-              Navigate
-            </p>
-            <ul className="mt-3 grid grid-cols-2 gap-y-1.5 gap-x-4 text-sm text-zinc-600 dark:text-zinc-300">
+          {/* Block 2 — Navigate */}
+          <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6">
+            <BlockLabel>Navigate</BlockLabel>
+            <ul className="mt-3 grid grid-cols-2 gap-y-2 gap-x-4 text-sm text-zinc-600 dark:text-zinc-300">
               {NAV_LINKS.map((l) => (
                 <li key={l.href}>
                   <a
@@ -100,13 +122,11 @@ export default function SiteFooter() {
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
 
-          {/* Column 3 — Connect */}
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500 font-medium">
-              Connect
-            </p>
+          {/* Block 3 — Connect */}
+          <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6">
+            <BlockLabel>Connect</BlockLabel>
             <ul className="mt-3 flex flex-wrap items-center gap-3 text-zinc-500 dark:text-zinc-400">
               {SOCIAL.map((s) => (
                 <li key={s.href}>
@@ -122,16 +142,19 @@ export default function SiteFooter() {
                 </li>
               ))}
             </ul>
-            <a
-              href="mailto:ethanwucz2019@gmail.com"
-              className="mt-3 inline-block text-sm text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline underline-offset-4 decoration-zinc-300 dark:decoration-zinc-700 hover:decoration-zinc-500 transition-colors"
-            >
-              ethanwucz2019@gmail.com
-            </a>
-
-          </div>
+            <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              The fastest way to reach me is email. The icons above open in a new tab.
+            </p>
+          </section>
         </div>
 
+        {/* Bottom strip — single thin row, deliberately separated from
+            the three blocks above by a hairline + extra top padding so it
+            reads as a footer-of-the-footer, not part of the third block. */}
+        <div className="mt-10 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+          <span>&copy; 2026 Chengze Wu</span>
+          <span>ethanwu.work — full-stack work &amp; selected writing</span>
+        </div>
       </div>
     </footer>
   );
