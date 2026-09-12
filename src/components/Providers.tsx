@@ -23,6 +23,7 @@ function pageNameFor(path: string): string {
   if (path === '/profile' || path.startsWith('/profile/')) return 'Profile';
   if (path === '/login') return 'Login';
   if (path === '/register') return 'Register';
+  if (path === '/messages' || path.startsWith('/messages/')) return 'Message';
   if (path === '/admin' || path.startsWith('/admin/')) return 'Admin';
   if (path === '/restricted') return 'Restricted';
   if (path === '/four-oh-four') return '404';
