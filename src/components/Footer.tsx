@@ -112,6 +112,42 @@ export default function SiteFooter() {
             >
               ethanwucz2019@gmail.com
             </a>
+            {/* Owner also writes a slower, life-side blog at ethanwu.cafe.
+                Surfaced as a labelled external link rather than mixed in with
+                the in-site NAV_LINKS column so the user can tell at a glance
+                that this leaves ethanwu.work. */}
+            <a
+              href="https://ethanwu.cafe/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline underline-offset-4 decoration-zinc-300 dark:decoration-zinc-700 hover:decoration-zinc-500 transition-colors"
+            >
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                aria-hidden
+              >
+                {/* coffee cup */}
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11h2a2 2 0 0 1 0 4h-2" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 5c-.5 1 .5 1.5 0 2.5M11 5c-.5 1 .5 1.5 0 2.5" />
+              </svg>
+              <span>我的咖啡厅</span>
+              <svg
+                className="w-3 h-3 text-zinc-400 dark:text-zinc-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden
+              >
+                {/* arrow up-right — indicates off-site link */}
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 17 17 7M9 7h8v8" />
+              </svg>
+            </a>
           </div>
         </div>
 
