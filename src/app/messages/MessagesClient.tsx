@@ -237,14 +237,14 @@ export default function MessagesBoard() {
           >
             {messages.map((m, i) => {
               const canDelete = !!myId && (m.authorId === myId || isAdmin);
-              // Subtle per-card tilt so the board feels hand-arranged,
-              // not algorithmically aligned. Alternates +1.5° / -1.5°
-              // so neighbouring cards don't all lean the same way.
-              const tilt = i % 2 === 0 ? 'rotate-[0.6deg]' : 'rotate-[-0.6deg]';
+              // No tilt — cards sit flat. The masonry column flow + the
+              // variable card heights already give the board a hand-arranged
+              // feel; tilt added transform without giving much extra.
+              const tilt = '';
               return (
                 <li
                   key={m.id}
-                  className={`group mb-4 break-inside-avoid inline-block w-full rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-white/60 dark:bg-white/[0.025] p-4 sm:p-5 transition-all duration-300 hover:rotate-0 hover:scale-[1.015] hover:shadow-lg hover:shadow-zinc-900/[0.06] dark:hover:shadow-black/30 hover:border-zinc-300 dark:hover:border-zinc-700 ${tilt}`}
+                  className={`group mb-4 break-inside-avoid block w-full rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-white/60 dark:bg-white/[0.025] p-4 sm:p-5 transition-all duration-300 hover:scale-[1.015] hover:shadow-lg hover:shadow-zinc-900/[0.06] dark:hover:shadow-black/30 hover:border-zinc-300 dark:hover:border-zinc-700 ${tilt}`}
                 >
                   <div className="flex items-start gap-3">
                     {/* Avatar */}
