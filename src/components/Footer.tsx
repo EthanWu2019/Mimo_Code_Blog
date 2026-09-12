@@ -126,8 +126,8 @@ export default function SiteFooter() {
         */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
           {/* Block 1 — About (avatar + name + bio + phone + email + social icons) */}
-          <section className="rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-4 sm:p-5 sm:col-span-2">
-            <div className="flex items-start gap-4 sm:gap-5">
+          <section className="rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6 sm:col-span-2">
+            <div className="flex items-start gap-5 sm:gap-6">
               {/* Avatar — circular masked photo. The srcset serves
                   the 2x retina version on hi-DPI displays; the small
                   one is the default for 1x. */}
@@ -138,7 +138,7 @@ export default function SiteFooter() {
                 height={64}
                 alt="Chengze Wu"
                 loading="lazy"
-                className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-1 ring-zinc-200/70 dark:ring-zinc-800/70"
+                className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover ring-1 ring-zinc-200/70 dark:ring-zinc-800/70"
               />
               <div className="min-w-0 flex-1">
                 <BlockLabel>About</BlockLabel>

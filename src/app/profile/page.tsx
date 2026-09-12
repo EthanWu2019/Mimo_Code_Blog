@@ -415,7 +415,7 @@ export default function ProfilePage() {
                     disabled={deletingMessageId === m.id}
                     className="text-[11px] text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                   >
-                    {deletingMessageId === m.id ? 'Deleting\u2026' : 'Delete'}
+                    {deletingMessageId === m.id ? 'Deleting…' : 'Delete'}
                   </button>
                 </div>
               </div>
@@ -450,7 +450,7 @@ export default function ProfilePage() {
                   disabled={deletingCommentId === c.id}
                   className="shrink-0 text-[11px] text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                 >
-                  {deletingCommentId === c.id ? 'Deleting\u2026' : 'Delete'}
+                  {deletingCommentId === c.id ? 'Deleting…' : 'Delete'}
                 </button>
               </div>
             ))

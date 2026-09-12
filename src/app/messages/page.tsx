@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import gsap from 'gsap';
 
 type Author = { id: string; name: string | null; image: string | null };
 type Message = {
@@ -41,6 +42,7 @@ export default function MessagesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const isAdmin =
     !!session?.user?.email && ADMIN_EMAILS.has(String(session.user.email).toLowerCase());
@@ -71,6 +73,19 @@ export default function MessagesPage() {
       cancelled = true;
     };
   }, [fetchPage]);
+
+  // Entrance animation — fade up the container on mount, matching the
+  // /profile page's gsap.fromTo so the page feels like the rest of
+  // the site. Runs on first mount only.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    gsap.fromTo(
+      el,
+      { y: 14, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+    );
+  }, []);
 
   // Infinite scroll: load next page when sentinel enters viewport
   useEffect(() => {
@@ -146,7 +161,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] px-4 sm:px-6 py-10 sm:py-14">
+    <div ref={containerRef} className="min-h-[calc(100vh-80px)] px-4 sm:px-6 py-10 sm:py-14">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-10">
@@ -158,14 +173,14 @@ export default function MessagesPage() {
           </h1>
           <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-prose">
             Anyone signed in can leave a short note. Newest first. You can delete your own messages
-            \u2014 you can\u2019t edit them after posting. <span className="text-zinc-400 dark:text-zinc-500">No replies, no threads.</span>
+            — you can’t edit them after posting. <span className="text-zinc-400 dark:text-zinc-500">No replies, no threads.</span>
           </p>
         </div>
 
         {/* Composer */}
         <div className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-4 sm:p-5 mb-8">
           {status === 'loading' ? (
-            <p className="text-sm text-zinc-400 dark:text-zinc-500">Loading\u2026</p>
+            <p className="text-sm text-zinc-400 dark:text-zinc-500">Loading…</p>
           ) : session?.user ? (
             <form onSubmit={handlePost}>
               <textarea
@@ -173,7 +188,7 @@ export default function MessagesPage() {
                 onChange={(e) => setDraft(e.target.value)}
                 rows={3}
                 maxLength={1000}
-                placeholder="Leave a message\u2026"
+                placeholder="Leave a message…"
                 className="w-full resize-none bg-transparent border-0 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-0"
               />
               <div className="mt-3 flex items-center justify-between">
@@ -185,7 +200,7 @@ export default function MessagesPage() {
                   disabled={posting || draft.trim().length === 0}
                   className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 disabled:opacity-40 transition-colors"
                 >
-                  {posting ? 'Posting\u2026' : 'Post'}
+                  {posting ? 'Posting…' : 'Post'}
                 </button>
               </div>
             </form>
@@ -204,7 +219,10 @@ export default function MessagesPage() {
 
         {/* List */}
         {loading ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 text-center py-12">Loading\u2026</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="w-6 h-6 border-2 border-zinc-300 dark:border-white/20 border-t-zinc-600 dark:border-t-white rounded-full animate-spin" />
+            <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">Loading…</p>
+          </div>
         ) : messages.length === 0 ? (
           <p className="text-sm text-zinc-400 dark:text-zinc-500 text-center py-12">
             No messages yet. Be the first.
@@ -248,7 +266,7 @@ export default function MessagesPage() {
                             disabled={deletingId === m.id}
                             className="text-[11px] text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                           >
-                            {deletingId === m.id ? 'Deleting\u2026' : 'Delete'}
+                            {deletingId === m.id ? 'Deleting…' : 'Delete'}
                           </button>
                         )}
                       </div>
@@ -266,11 +284,11 @@ export default function MessagesPage() {
         {/* Sentinel + load-more spinner */}
         <div ref={sentinelRef} className="h-12" />
         {loadingMore && (
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 text-center py-2">Loading more\u2026</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 text-center py-2">Loading more…</p>
         )}
         {!loading && !nextCursor && messages.length > 0 && (
           <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-300 dark:text-zinc-700 text-center py-6">
-            \u2014 end of board \u2014
+            — end of board —
           </p>
         )}
       </div>
