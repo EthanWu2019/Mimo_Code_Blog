@@ -129,20 +129,47 @@ export default function Home() {
                    Solid black (light) / white (dark) pill, generous
                    size, arrow icon, persistent gentle pulse to draw
                    the eye without being annoying. */}
+                <motion.div
+                  initial={reduce ? false : { opacity: 0, y: 10 }}
+                  animate={
+                    reduce
+                      ? { opacity: 1, y: 0 }
+                      : { opacity: 1, y: 0, scale: [1, 1.015, 1] }
+                  }
+                  transition={
+                    reduce
+                      ? { duration: 0.3, delay: 0.3, ease: 'easeOut' }
+                      : {
+                          opacity: { duration: 0.3, delay: 0.3, ease: 'easeOut' },
+                          y:       { duration: 0.3, delay: 0.3, ease: 'easeOut' },
+                          scale:   { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.6 },
+                        }
+                  }
+                  className="inline-block"
+                >
                 <Link
                   href="/project"
                   aria-label="View my projects"
-                  className="group relative inline-flex items-center gap-3 h-12 px-6 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm sm:text-base font-semibold tracking-tight shadow-[0_8px_24px_-8px_rgba(24,24,27,0.45)] dark:shadow-[0_8px_24px_-8px_rgba(255,255,255,0.35)] hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200"
+                  className="group relative inline-flex items-center gap-3 h-14 px-7 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[15px] sm:text-base font-semibold tracking-tight shadow-[0_10px_28px_-10px_rgba(24,24,27,0.55)] dark:shadow-[0_10px_28px_-10px_rgba(255,255,255,0.4)] hover:scale-[1.04] active:scale-[0.98] transition-[transform,box-shadow] duration-200"
                 >
-                  {/* subtle attention pulse */}
-                  <span className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-zinc-900/0 dark:ring-white/0 group-hover:ring-zinc-900/5 dark:group-hover:ring-white/10 transition-[box-shadow] duration-500 group-hover:shadow-[0_0_0_8px_rgba(24,24,27,0.06)] dark:group-hover:shadow-[0_0_0_8px_rgba(255,255,255,0.06)]" />
-                  View Projects
-                  <span className="inline-flex w-7 h-7 rounded-full bg-white/15 dark:bg-zinc-900/15 items-center justify-center group-hover:translate-x-0.5 transition-transform duration-200">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  {/* ambient halo that intensifies on hover. Pointer-events:
+                      none so it never blocks clicks. */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute -inset-1 rounded-full bg-zinc-900/10 dark:bg-white/15 blur-md opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+                  />
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-zinc-900/0 dark:ring-white/0 group-hover:ring-zinc-900/10 dark:group-hover:ring-white/20 transition-[box-shadow,ring] duration-500 group-hover:shadow-[0_0_0_8px_rgba(24,24,27,0.06)] dark:group-hover:shadow-[0_0_0_8px_rgba(255,255,255,0.06)]"
+                  />
+                  <span className="relative">View Projects</span>
+                  <span className="relative inline-flex w-8 h-8 rounded-full bg-white/15 dark:bg-zinc-900/15 items-center justify-center group-hover:translate-x-1 transition-transform duration-200">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </span>
                 </Link>
+                </motion.div>
 
                 {/* Secondary: Resume · PDF — kept as a quiet text link so
                    the primary button stays unambiguously the main CTA. */}
