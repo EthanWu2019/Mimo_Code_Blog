@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default: "Ethan Wu",
-    template: "%s · Ethan Wu",
+    template: "Ethan Wu | %s",
   },
   description:
     "Ethan Wu — software engineer based in St. Louis. Full-stack product engineering, ML systems, and selected writing on the craft of building software.",

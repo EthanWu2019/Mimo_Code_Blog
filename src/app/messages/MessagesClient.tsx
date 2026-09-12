@@ -261,13 +261,13 @@ export default function MessagesBoard() {
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-3">
-                        <div className="min-w-0">
-                          <span className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-zinc-900 dark:text-white truncate">
                             {m.author.name || 'Anonymous'}
-                          </span>
-                          <span className="ml-2 text-[10px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
+                          </div>
+                          <div className="mt-0.5 text-[10px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
                             {timeAgo(m.createdAt)}
-                          </span>
+                          </div>
                         </div>
                         {canDelete && (
                           <button
@@ -280,7 +280,7 @@ export default function MessagesBoard() {
                           </button>
                         )}
                       </div>
-                      <p className="mt-1.5 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap break-words">
+                      <p className="mt-1.5 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                         {m.content}
                       </p>
                     </div>

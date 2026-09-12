@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import MessagesBoard from './MessagesClient';
 
 export const metadata: Metadata = {
-  title: 'Messages',
+  title: 'Message',
   description:
     'A small guestbook on ethanwu.work — sign in to leave a short note. Newest first.',
 };
