@@ -189,12 +189,19 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
                 )}
               </Link>
             ) : (
-              <div className="hidden sm:flex items-center gap-1.5 ml-1">
-                <Link href="/login" className="px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
+              <div className="hidden sm:flex items-center ml-1">
+                {/* Single CTA in the navbar. Register is reachable from
+                    inside the login page via the 'New here? Make an
+                    account' link, so we don't surface a separate
+                    Register button here. */}
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-medium rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
+                >
                   Login
-                </Link>
-                <Link href="/register" className="px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-black text-xs font-medium rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all">
-                  Register
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
                 </Link>
               </div>
             )}
@@ -239,8 +246,13 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
                 {!session?.user && (
                   <>
                     <div className="my-1 h-px bg-zinc-200/60 dark:bg-white/[0.08]" />
-                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg">Login</Link>
-                    <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2.5 text-sm font-medium text-zinc-900 dark:text-white bg-zinc-900 dark:bg-white text-white dark:text-black rounded-lg text-center">Register</Link>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="px-3 py-2.5 text-sm font-medium text-center text-white dark:text-zinc-900 bg-zinc-900 dark:bg-white rounded-lg"
+                    >
+                      Login
+                    </Link>
                   </>
                 )}
                 {session?.user && (
