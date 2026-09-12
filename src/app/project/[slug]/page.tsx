@@ -35,7 +35,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const p = await findProject(slug);
-  if (!p) return { title: 'Not Found' };
+  // Throw during the metadata phase: once the page has started
+  // streaming, a notFound() call can only fall back to the built-in
+  // NEXT_HTTP_ERROR_FALLBACK;404 page. Throwing here keeps the 404
+  // inside the metadata/head phase, so the custom not-found.tsx
+  // renders instead of the default white error shell.
+  if (!p) notFound();
   return {
     title: p.title,
     description: p.tagline,
