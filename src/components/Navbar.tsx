@@ -37,7 +37,6 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
   const [isCompact, setIsCompact] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isBlog = pathname === '/blog';
   const isPost = pathname.startsWith('/posts/');
   const isGallery = pathname === '/gallery';
   const isPhotography = pathname === '/photography';
@@ -61,12 +60,12 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
     const onScroll = () => {
       const y = window.scrollY;
       if (isPost) setIsCompact(y > 30);
-      else if (isBlog || isGallery || isPhotography) setIsCompact(y > window.innerHeight * 0.8);
+      else if (isGallery || isPhotography) setIsCompact(y > window.innerHeight * 0.8);
       else setIsCompact(false);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [isPost, isBlog, isGallery, isPhotography]);
+  }, [isPost, isGallery, isPhotography]);
 
   // close mobile menu when window grows past sm breakpoint
   useEffect(() => {
@@ -90,7 +89,6 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
 
   const getMaxWidth = () => {
     if (isPost) return isCompact ? '64rem' : '80rem';
-    if (isBlog) return isCompact ? '52rem' : '80rem';
     return '80rem';
   };
 
@@ -115,9 +113,6 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
             <nav className="hidden sm:flex items-center gap-1">
               <Link href="/project" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
                 Project
-              </Link>
-              <Link href="/blog" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
-                Blog
               </Link>
               <Link href="/photography" className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors">
                 Photography
@@ -231,7 +226,6 @@ export default function Navbar({ initialSession }: { initialSession: Session | n
             <div className="sm:hidden fixed left-4 right-4 top-[80px] z-40 rounded-2xl border border-zinc-200/60 dark:border-white/[0.08] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl shadow-zinc-900/10 dark:shadow-black/40 px-3 py-2">
               <nav className="flex flex-col gap-0.5">
                 <Link href="/project" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg">Project</Link>
-                <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg">Blog</Link>
                 <Link href="/photography" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg">Photography</Link>
                 <Link href="/gallery" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] rounded-lg">AI Gallery</Link>
                 <div className="my-1 h-px bg-zinc-200/60 dark:bg-white/[0.08]" />

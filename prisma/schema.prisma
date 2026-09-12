@@ -19,6 +19,7 @@ model User {
   posts          Post[]
   comments       Comment[]
   commentLikes   CommentLike[]
+  messages       Message[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -204,6 +205,25 @@ model Project {
   @@index([tier])
   @@index([featured])
   @@index([sortOrder])
+}
+
+// =========================================================
+// Message — the public message board on /messages
+// =========================================================
+// Anyone signed in can post a message. Messages can only be deleted
+// (not edited) by their own author; admins (per the ADMIN_EMAILS
+// list in src/lib/auth.ts) can also delete any message. There are no
+// replies, threads, or likes on purpose — it’s a single linear
+// board, like the early-2000s guestbook.
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([authorId])
 }
 
 // =========================================================

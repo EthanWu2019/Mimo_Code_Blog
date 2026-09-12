@@ -13,6 +13,7 @@ import prisma from "@/lib/prisma";
 const ADMIN_EMAILS = new Set<string>([
   "ethanwucz2019@gmail.com",
   "3401895383@qq.com",
+  "ethanwucz2026@gmail.com",
 ]);
 
 async function promoteToAdminIfEligible(userId: string, email: string | null | undefined) {

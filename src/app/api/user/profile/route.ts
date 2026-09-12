@@ -42,6 +42,14 @@ export async function GET() {
           },
           orderBy: { createdAt: "desc" },
         },
+        messages: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 
@@ -49,7 +57,20 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    // isAdmin is computed server-side so the profile UI can hide
+    // the "New Post" CTA for non-owners. Owner = email in ADMIN_EMAILS
+    // (kept in sync with src/lib/auth.ts).
+    const ADMIN_EMAILS = new Set<string>([
+      "ethanwucz2019@gmail.com",
+      "3401895383@qq.com",
+      "ethanwucz2026@gmail.com",
+    ]);
+    const isAdminUser = ADMIN_EMAILS.has(user.email.toLowerCase());
+
+    return NextResponse.json({
+      ...user,
+      isAdmin: isAdminUser,
+    });
   } catch (error) {
     console.error("Error fetching profile:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });

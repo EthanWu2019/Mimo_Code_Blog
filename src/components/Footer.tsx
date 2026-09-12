@@ -27,10 +27,11 @@
 
 const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/", label: "Home" },
-  { href: "/blog", label: "Writing" },
   { href: "/project", label: "Projects" },
+  { href: "/blog", label: "Blog" },
   { href: "/resume", label: "Resume" },
-  { href: "/gallery", label: "Gallery" },
+  { href: "/gallery", label: "Ai Gallery" },
+  { href: "/messages", label: "Messages" },
   { href: "/photography", label: "Photography" },
 ];
 
