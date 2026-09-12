@@ -2,43 +2,43 @@
 // /api/resume/source
 //
 // GET: any visitor can read the current .tex source.
+//   - Priority: LatexSource DB row > /tmp source.tex >
+//     data/resume/source.tex > data/resume/seed.tex.
 //   - Returns text/plain so it can be loaded into the editor textarea.
 //
-// PUT: admin only — replace source. Triggers a background re-compile.
+// PUT: admin only — replace source. Persists to LatexSource (Postgres).
 //   - Body: { tex: string }
 //
-// Storage strategy for now: single .tex file in data/resume/source.tex.
-// This is fine for a personal site where there is exactly one resume
-// per owner. When we want versioning, we can move to Postgres without
-// changing the API shape.
+// Why DB storage: Vercel Hobby tier has read-only filesystem except
+// /tmp. /tmp is wiped on cold start, so filesystem-backed persistence
+// loses every edit on the next deploy / Lambda cold start. The
+// LatexSource row in Postgres is durable.
 //
-// IMPORTANT: file path lives in the project's persistent filesystem.
-// On Vercel this is fine because:
-//   - The /api/resume/source route runs in the same Lambda as /api/resume/pdf
-//   - Vercel nodejs runtime mounts the project's `data/` directory as part
-//     of the build output, but FILE WRITES TO NON-`public/` PATHS DO NOT
-//     PERSIST on Vercel serverless deployments (the FS is read-only).
-//
-// We accept this constraint for the initial cutover; on Vercel, edits
-// will be ephemeral. Vercel KV or a Postgres-backed store would fix it
-// at later cost. For now the admin can use the editor flow on local
-// dev (`npm run dev`) and the seed.tex pre-compiles at boot time on
-// Vercel as the published version.
+// The legacy /tmp and data/resume/source.tex writes remain as a
+// fallback for local dev so the editor still works without a DB.
 // =============================================================
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 const SOURCE_PATH = path.join(process.cwd(), "data", "resume", "source.tex");
 const SEED_PATH = path.join(process.cwd(), "data", "resume", "seed.tex");
 
-async function ensureSourceFile(): Promise<string> {
-  // Same Vercel-fallback strategy as /api/resume/pdf:
+async function readFromDb(): Promise<string | null> {
+  try {
+    const row = await prisma.latexSource.findUnique({ where: { id: "resume" } });
+    return row?.tex ?? null;
+  } catch (e) {
+    console.warn("[/api/resume/source] LatexSource read failed", e);
+    return null;
+  }
+}
+
+async function readFromDisk(): Promise<string> {
+  // Same Vercel-fallback strategy as before:
   //   /tmp/source.tex  >  data/resume/source.tex  >  data/resume/seed.tex
-  // The `source.tex` write is intentionally a "try" — Vercel's serverless
-  // runtime fs is read-only except /tmp on Hobby tier, so we degrade
-  // gracefully when the persisted copy cannot be created.
   try {
     return await fs.readFile("/tmp/source.tex", "utf8");
   } catch (e: any) {
@@ -50,8 +50,6 @@ async function ensureSourceFile(): Promise<string> {
     return await fs.readFile(SOURCE_PATH, "utf8");
   } catch (e: any) {
     if (e.code === "ENOENT") {
-      // Fall back to seed verbatim — don't try to write source.tex, since
-      // that fails on Vercel Hobby tier and just produces noise in logs.
       try {
         return await fs.readFile(SEED_PATH, "utf8");
       } catch {
@@ -60,6 +58,14 @@ async function ensureSourceFile(): Promise<string> {
     }
     throw e;
   }
+}
+
+async function ensureSourceFile(): Promise<string> {
+  // 1) DB (authoritative on Vercel production)
+  const fromDb = await readFromDb();
+  if (fromDb && fromDb.trim().length > 0) return fromDb;
+  // 2) Disk (authoritative on local dev, or first-boot before any save)
+  return readFromDisk();
 }
 
 export async function GET() {
@@ -93,13 +99,27 @@ export async function PUT(req: Request) {
       { status: 400 }
     );
   }
+
+  // 1) Durable: write to Postgres LatexSource.
+  const userId = (session.user as any).id as string | undefined;
+  try {
+    await prisma.latexSource.upsert({
+      where: { id: "resume" },
+      create: { id: "resume", tex, updatedBy: userId ?? null },
+      update: { tex, updatedBy: userId ?? null },
+    });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: "Failed to persist source to database", detail: e?.message ?? String(e) },
+      { status: 500 }
+    );
+  }
+
+  // 2) Disk fallback for local dev (no DB). Best-effort on Vercel.
   await fs.mkdir("/tmp", { recursive: true }).catch(() => {});
-  await fs.writeFile("/tmp/source.tex", tex);
-  // Also attempt the persistent copy as a no-op-friendly step —
-  // it will throw EROFS on Vercel Hobby but succeed on local dev.
+  await fs.writeFile("/tmp/source.tex", tex).catch(() => {});
   await fs.mkdir(path.dirname(SOURCE_PATH), { recursive: true }).catch(() => {});
-  await fs.writeFile(SOURCE_PATH, tex).catch(() => {
-    // Vercel Hobby /tmp-only — silent fallback
-  });
+  await fs.writeFile(SOURCE_PATH, tex).catch(() => {});
+
   return NextResponse.json({ ok: true, bytes: tex.length });
 }

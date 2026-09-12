@@ -23,6 +23,7 @@ import path from "node:path";
 // pdf-lib is published as ESM with named exports only (no default).
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import { PDFDocument } from "pdf-lib";
+import prisma from "@/lib/prisma";
 
 const SOURCE_PATH = path.join(process.cwd(), "data", "resume", "source.tex");
 const SEED_PATH = path.join(process.cwd(), "data", "resume", "seed.tex");
@@ -35,23 +36,21 @@ type Cache = { pdf: Buffer; builtAt: number; sourceHash: string };
 let cache: Cache | null = null;
 
 async function readSource(): Promise<string> {
-  // Vercel Hobby tier runs each route in a serverless function whose
-  // filesystem is **read-only at runtime** — we can read files we shipped
-  // (seed.tex is committed to the repo), but we cannot reliably `writeFile`
-  // to anything outside `/tmp`. The admin edit flow therefore *cannot*
-  // persist source.tex on production Vercel with this strategy.
-  //
-  // Mitigation layers (each tried in order):
-  //   1. If /tmp/source.tex exists (some Vercel versions allow /tmp writes),
-  //      prefer it — admin edits survive across warm invocations.
-  //   2. Else fall back to data/resume/source.tex — committed; zero-edits state.
-  //   3. Else fall back to data/resume/seed.tex — the original seed; this
-  //      is what unconfigured deployments render.
+  // Priority order:
+  //   1. LatexSource DB row (authoritative on Vercel production)
+  //   2. /tmp/source.tex           (warm-only; wiped on cold start)
+  //   3. data/resume/source.tex    (committed; pre-DB writes)
+  //   4. data/resume/seed.tex      (the original committed seed)
+  try {
+    const row = await prisma.latexSource.findUnique({ where: { id: "resume" } });
+    if (row?.tex && row.tex.trim().length > 0) return row.tex;
+  } catch (e) {
+    console.warn("[/api/resume/pdf] LatexSource read failed", e);
+  }
   try {
     return await fs.readFile("/tmp/source.tex", "utf8");
   } catch (e: any) {
     if (e.code !== "ENOENT") {
-      // EROFS / EACCES — log and keep falling back.
       console.warn("[/tmp/source.tex read failed]", e.code, e.message);
     }
   }

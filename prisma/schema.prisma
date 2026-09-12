@@ -205,3 +205,23 @@ model Project {
   @@index([featured])
   @@index([sortOrder])
 }
+
+// =========================================================
+// LatexSource — durable storage for the resume .tex
+// =========================================================
+// We persist the .tex source here because the Vercel serverless
+// filesystem is read-only at runtime — only /tmp survives, and
+// /tmp is wiped on cold start. Without this row, every edit is
+// lost on the next deploy / cold start. The PDF itself does NOT
+// need to be persisted (LaTeXOnline compiles it from this source
+// on demand and we cache the result for 60s).
+//
+// Single-row table: id is fixed to "resume" so the upsert is
+// deterministic. updatedAt gives the admin UI a "last saved" hint.
+model LatexSource {
+  id        String   @id @default("resume")
+  tex       String   @db.Text
+  updatedAt DateTime @updatedAt
+  updatedBy String?  // user id (admin) who last saved
+}
+
