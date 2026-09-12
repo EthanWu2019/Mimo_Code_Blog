@@ -153,22 +153,26 @@ function OAuthButton({
     <button
       type="button"
       onClick={onClick}
-      className="group relative w-full h-12 rounded-full bg-transparent border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm font-medium tracking-tight overflow-hidden hover:border-zinc-900 dark:hover:border-white transition-colors duration-300 flex items-center justify-center"
+      className="group relative w-full h-12 rounded-full bg-transparent border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm font-medium tracking-tight overflow-hidden hover:border-zinc-900 dark:hover:border-white hover:bg-zinc-50/40 dark:hover:bg-white/[0.04] transition-all duration-300 flex items-center justify-center"
     >
-      {/* The icon container \u2014 a small chip that fills with the brand
-          color on hover, behind the icon. Positioned absolutely so the
-          icon stays centered regardless of chip size. */}
+      {/* Icon container. We do NOT flip the icon's fill on hover —
+          the icon keeps its brand color (GitHub black on light, white
+          on dark; Google's 4-color rainbow unchanged). The hover
+          affordance comes from the surrounding chrome: a soft ring
+          expanding outward from the chip, a faint chip-bg lift, and
+          a small scale-up. The chip itself stays a neutral zinc-100
+          / zinc-800 in both themes so the icon always reads against
+          it — this is what fixes the "black blob / white blob" bug
+          the owner flagged on the previous design. */}
       <span
         aria-hidden
-        className={`absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 ${
-          provider === 'google'
-            ? 'group-hover:bg-white group-hover:shadow-[0_0_0_4px_rgba(255,255,255,0.4)]'
-            : 'group-hover:bg-zinc-900 group-hover:shadow-[0_0_0_4px_rgba(0,0,0,0.4)] dark:group-hover:bg-white dark:group-hover:shadow-[0_0_0_4px_rgba(255,255,255,0.4)]'
-        }`}
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center bg-zinc-100 dark:bg-zinc-800/80 group-hover:bg-zinc-200/80 dark:group-hover:bg-zinc-700/80 group-hover:scale-110 group-hover:ring-4 ring-zinc-200/0 dark:ring-zinc-700/0 group-hover:ring-zinc-200/60 dark:group-hover:ring-zinc-700/60 transition-all duration-300"
       >
         {icon}
       </span>
-      <span className="ml-6">{label}</span>
+      <span className="ml-7 transition-transform duration-300 group-hover:translate-x-0.5">
+        {label}
+      </span>
     </button>
   );
 }
@@ -340,7 +344,7 @@ export function AuthShell(props: AuthShellProps) {
             onClick={onGitHub}
             label="Continue with GitHub"
             icon={
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <svg className="w-4 h-4 fill-[#181717] dark:fill-white" viewBox="0 0 24 24" aria-hidden>
                 <path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2.9-.3 1.9-.4 2.9-.4s2 .1 2.9.4C16.4 4.7 17.4 5 17.4 5c.6 1.6.2 2.8.1 3.1.7.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9 0-6.3-5.2-11.5-11.5-11.5z" />
               </svg>
             }
