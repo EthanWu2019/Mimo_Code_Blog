@@ -124,17 +124,30 @@ export default function SiteFooter() {
           the email / phone lines, not as a separate column.
         */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-          {/* Block 1 — About (name + bio + phone + email + social icons) */}
+          {/* Block 1 — About (avatar + name + bio + phone + email + social icons) */}
           <section className="rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-4 sm:p-5 sm:col-span-2">
-            <BlockLabel>About</BlockLabel>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-              <span className="text-zinc-900 dark:text-white">Chengze Wu</span>
-              {" "}— also goes by Ethan. CS undergrad + grad student at WashU.
-            </p>
-
-            {/* Phone + email — two contact lines, each with a small
-                leading glyph so they read as a pair, not a paragraph. */}
-            <ul className="mt-3 space-y-1 text-sm">
+            <div className="flex items-start gap-4 sm:gap-5">
+              {/* Avatar — circular masked photo. The srcset serves
+                  the 2x retina version on hi-DPI displays; the small
+                  one is the default for 1x. */}
+              <img
+                src="/avatar-96.png"
+                srcSet="/avatar-96.png 1x, /avatar-192.png 2x"
+                width={64}
+                height={64}
+                alt="Chengze Wu"
+                loading="lazy"
+                className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-1 ring-zinc-200/70 dark:ring-zinc-800/70"
+              />
+              <div className="min-w-0 flex-1">
+                <BlockLabel>About</BlockLabel>
+                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                  <span className="text-zinc-900 dark:text-white">Chengze Wu</span>
+                  {" "}— also goes by Ethan. CS undergrad + grad student at WashU.
+                </p>
+                {/* Phone + email — two contact lines, each with a small
+                    leading glyph so they read as a pair, not a paragraph. */}
+                <ul className="mt-3 space-y-1 text-sm">
               <li>
                 <a
                   href="tel:+18623600912"
@@ -173,6 +186,8 @@ export default function SiteFooter() {
                 </li>
               ))}
             </ul>
+              </div>{/* end right column */}
+            </div>{/* end avatar + content flex */}
           </section>
 
           {/* Block 2 — Navigate (in-site links only) */}
