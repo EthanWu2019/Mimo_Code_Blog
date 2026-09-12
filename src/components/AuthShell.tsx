@@ -230,7 +230,7 @@ export function AuthShell(props: AuthShellProps) {
   } = props;
 
   return (
-    <div className="min-h-[88vh] flex items-center justify-center px-6 py-12">
+    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-6 py-6 sm:py-8">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -240,7 +240,7 @@ export function AuthShell(props: AuthShellProps) {
         {/* Monogram + kicker. The monogram is rendered as display
             serif type (system fallback to Times New Roman) so it has
             weight without needing a custom font. */}
-        <div className="flex items-baseline gap-3 mb-3">
+        <div className="flex items-baseline gap-3 mb-2">
           <span className="text-zinc-900 dark:text-white font-serif italic text-2xl leading-none">E/W</span>
           <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 font-medium">
             {kicker}
@@ -249,16 +249,16 @@ export function AuthShell(props: AuthShellProps) {
 
         {/* Big editorial headline. Split into spans so we can
             italicize one word \u2014 a small smile, but reads as confident. */}
-        <h1 className="font-serif text-[44px] leading-[1.05] tracking-[-0.02em] text-zinc-900 dark:text-white">
+        <h1 className="font-serif text-[34px] sm:text-[38px] leading-[1.05] tracking-[-0.02em] text-zinc-900 dark:text-white">
           {title}{' '}
           <span className="italic font-serif">{titleItalic}</span>
         </h1>
-        <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
           {subtitle}
         </p>
 
         {/* Form */}
-        <form onSubmit={onSubmit} className="mt-10 space-y-7">
+        <form onSubmit={onSubmit} className="mt-6 space-y-5">
           {onNameChange && (
             <FloatingInput
               id="name"
@@ -308,20 +308,20 @@ export function AuthShell(props: AuthShellProps) {
             )}
           </AnimatePresence>
 
-          <div className="pt-4">
+          <div className="pt-2">
             <SubmitButton loading={loading}>{submitLabel}</SubmitButton>
           </div>
         </form>
 
         {/* Or-with-line divider */}
-        <div className="mt-10 flex items-center gap-4 text-[10px] uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500">
+        <div className="mt-6 flex items-center gap-4 text-[10px] uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500">
           <span className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
           <span>or</span>
           <span className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
         </div>
 
         {/* OAuth */}
-        <div className="mt-6 space-y-3">
+        <div className="mt-4 space-y-2.5">
           <OAuthButton
             provider="google"
             onClick={onGoogle}
@@ -348,7 +348,7 @@ export function AuthShell(props: AuthShellProps) {
         </div>
 
         {/* Alt link + signature */}
-        <div className="mt-12 text-center space-y-3">
+        <div className="mt-6 text-center space-y-1.5">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {altPrompt}{' '}
             <a
