@@ -1,25 +1,28 @@
 /**
  * SiteFooter
  *
- * Global footer that appears on every public page except the 404
- * experience (which renders outside this layout subtree — see
- * app/not-found.tsx).
+ * Global footer rendered once on every public page (rendered by the
+ * (site) route group layout). Two grouped blocks:
  *
- * Layout: three labelled blocks (About / Navigate / Connect) rendered
- * as distinct, separated groups rather than a single 3-column grid.
- * Each block sits in its own rounded bordered card with consistent
- * padding, so the eye reads them as "three things in a row" rather
- * than "three things crammed into the same grid row".
+ *   [ About                ] [ Navigate              ]
+ *   [ name / bio / phone   ] [ Home / Writing / etc  ]
+ *   [ email                ]
+ *   [ github linkedin cafe ]
  *
- * The mobile layout stacks the three blocks vertically with explicit
- * gaps between them; on sm+ they sit on one row.
+ *   ─────────────────────────────────────────────────
+ *   (c) 2026 Chengze Wu        ethanwu.work — tagline
+ *
+ * The previous footer had three separate blocks (About / Navigate /
+ * Connect) which read as three smallish columns crammed onto one
+ * row. The owner asked to merge Connect into About (phone, email,
+ * and social icons all live there now) and to drop the third card.
  *
  * Personal info the owner wanted surfaced here:
  *   GitHub:    https://github.com/EthanWu2019
  *   LinkedIn:  https://www.linkedin.com/in/chengze-wu-3398a0224/
  *   Cafe:      https://ethanwu.cafe/  (life-side blog)
- *   Email:     ethanwucz2019@gmail.com  (mailto)
- *   Phone:     intentionally omitted (owner decision)
+ *   Email:     ethanwucz2019@gmail.com
+ *   Phone:     8623600912   (added per owner request)
  */
 
 const NAV_LINKS: { href: string; label: string }[] = [
@@ -51,9 +54,6 @@ const SOCIAL: { href: string; label: string; svg: React.ReactNode }[] = [
     ),
   },
   {
-    // ethanwu.cafe — the owner's slower, life-side blog. Same icon-chip
-    // treatment as GitHub/LinkedIn above; opens in a new tab via the
-    // target=_blank on the SOCIAL anchor in the render block.
     href: "https://ethanwu.cafe/",
     label: "我的咖啡厅 — Ethan Wu's life blog",
     svg: (
@@ -68,9 +68,6 @@ const SOCIAL: { href: string; label: string; svg: React.ReactNode }[] = [
   },
 ];
 
-// Small helper used in every block to keep the heading style consistent.
-// Each block has its own label; the block content sits below it with a
-// consistent mt-3 gap, so the labels visually align across columns.
 function BlockLabel({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500 font-medium">
@@ -79,35 +76,106 @@ function BlockLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Small icon for the contact lines (phone + email). Inlined here so the
+// footer has zero client JS and no icon library dependency.
+function PhoneGlyph() {
+  return (
+    <svg
+      className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+}
+
+function MailGlyph() {
+  return (
+    <svg
+      className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </svg>
+  );
+}
+
 export default function SiteFooter() {
   return (
     <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60 mt-12 sm:mt-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         {/*
-          Three blocks rendered as a flex column on mobile, a 3-column
-          grid on sm+. Each block is its own bordered rounded card so
-          they read as distinct groups. We use a top hairline inside
-          each card (border-t on the content area) so when multiple
-          blocks stack, the eye gets a subtle horizontal break before
-          each label.
+          Two blocks only: About (now containing name, bio, phone, email,
+          and the social icons) and Navigate. The About block reads as
+          one cohesive "contact" surface; the icons inside it sit alongside
+          the email / phone lines, not as a separate column.
         */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-          {/* Block 1 — About */}
-          <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6">
+          {/* Block 1 — About (name + bio + phone + email + social icons) */}
+          <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6 sm:col-span-2">
             <BlockLabel>About</BlockLabel>
             <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
               <span className="text-zinc-900 dark:text-white">Chengze Wu</span>
               {" "}— also goes by Ethan. CS undergrad + grad student at WashU.
             </p>
-            <a
-              href="mailto:ethanwucz2019@gmail.com"
-              className="mt-4 inline-flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline underline-offset-4 decoration-zinc-300 dark:decoration-zinc-700 hover:decoration-zinc-500 transition-colors"
-            >
-              ethanwucz2019@gmail.com
-            </a>
+
+            {/* Phone + email — two contact lines, each with a small
+                leading glyph so they read as a pair, not a paragraph. */}
+            <ul className="mt-4 space-y-1.5 text-sm">
+              <li>
+                <a
+                  href="tel:+18623600912"
+                  className="inline-flex items-center gap-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                >
+                  <PhoneGlyph />
+                  <span>862-360-0912</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:ethanwucz2019@gmail.com"
+                  className="inline-flex items-center gap-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                >
+                  <MailGlyph />
+                  <span>ethanwucz2019@gmail.com</span>
+                </a>
+              </li>
+            </ul>
+
+            {/* Social icons — same chip styling as before, kept inside
+                the About block since they are how the owner surfaces
+                his external presence. */}
+            <ul className="mt-5 flex flex-wrap items-center gap-3 text-zinc-500 dark:text-zinc-400">
+              {SOCIAL.map((s) => (
+                <li key={s.href}>
+                  <a
+                    href={s.href}
+                    aria-label={s.label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-200/70 dark:border-zinc-800/70 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+                  >
+                    <span className="w-5 h-5 block">{s.svg}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </section>
 
-          {/* Block 2 — Navigate */}
+          {/* Block 2 — Navigate (in-site links only) */}
           <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6">
             <BlockLabel>Navigate</BlockLabel>
             <ul className="mt-3 grid grid-cols-2 gap-y-2 gap-x-4 text-sm text-zinc-600 dark:text-zinc-300">
@@ -123,34 +191,11 @@ export default function SiteFooter() {
               ))}
             </ul>
           </section>
-
-          {/* Block 3 — Connect */}
-          <section className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-50/40 dark:bg-white/[0.02] p-5 sm:p-6">
-            <BlockLabel>Connect</BlockLabel>
-            <ul className="mt-3 flex flex-wrap items-center gap-3 text-zinc-500 dark:text-zinc-400">
-              {SOCIAL.map((s) => (
-                <li key={s.href}>
-                  <a
-                    href={s.href}
-                    aria-label={s.label}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-200/70 dark:border-zinc-800/70 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
-                  >
-                    <span className="w-5 h-5 block">{s.svg}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              The fastest way to reach me is email. The icons above open in a new tab.
-            </p>
-          </section>
         </div>
 
-        {/* Bottom strip — single thin row, deliberately separated from
-            the three blocks above by a hairline + extra top padding so it
-            reads as a footer-of-the-footer, not part of the third block. */}
+        {/* Bottom strip — same as before. Single thin row, clearly
+            separated from the two blocks above by a hairline + extra
+            top padding. */}
         <div className="mt-10 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
           <span>&copy; 2026 Chengze Wu</span>
           <span>ethanwu.work — full-stack work &amp; selected writing</span>
