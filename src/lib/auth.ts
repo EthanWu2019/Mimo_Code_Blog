@@ -50,11 +50,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
+      // Force the Google account picker every time. Without this,
+      // Google auto-selects the most recently used account and
+      // silently signs the user in. `prompt=select_account` keeps
+      // them logged in (no re-auth) but always shows the picker.
+      authorization: {
+        params: {
+          prompt: "select_account",
+        },
+      },
     }),
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
+      // GitHub's OAuth `prompt=select_account` shows the account
+      // chooser every time, instead of auto-selecting the most
+      // recently used account. Without this, GitHub silently signs
+      // the user in with their default account.
+      authorization: {
+        params: {
+          prompt: "select_account",
+        },
+      },
     }),
     Credentials({
       name: "credentials",
