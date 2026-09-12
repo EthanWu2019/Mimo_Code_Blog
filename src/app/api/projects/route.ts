@@ -32,7 +32,14 @@ export async function GET(req: Request) {
       where: tier ? { tier } : undefined,
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     });
-    return NextResponse.json({ projects, source: 'db' satisfies 'db', tier: tier ?? 'all' });
+    // If the DB is reachable but the Project table is empty (no rows
+    // created yet), fall back to the static dataset too. The /project
+    // page is the recruiting surface — it must never render an empty
+    // "No major projects yet" state when curated content exists in
+    // lib/projects-fallback.ts.
+    const data = projects.length > 0 ? projects : getFallbackProjects(tier);
+    const source = projects.length > 0 ? ('db' as const) : ('fallback' as const);
+    return NextResponse.json({ projects: data, source, tier: tier ?? 'all' });
   } catch (err) {
     // DB unavailable — fall back to the static seed. The page still works.
     const projects = getFallbackProjects(tier);
