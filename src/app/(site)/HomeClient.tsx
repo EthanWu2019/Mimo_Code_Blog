@@ -218,11 +218,12 @@ export default function HomeClient() {
                 transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
                 className="relative w-full max-w-sm"
               >
-                {/* Personal name card on hover. The "01" baseline lives
-                    inside HeroNameCard as its hidden layer, so removing
-                    the old decorative circles / "01" span doesn't lose
-                    anything — the hover-state card replaces them. */}
-                <HeroNameCard />
+                {/* Personal name card. Appears when the visitor hovers the
+                    h1 name (Ethan -> Chengze swap) OR hovers the card
+                    area itself. The '01' baseline is the card's hidden
+                    state, so removing the old decorative circles / '01'
+                    span doesn't lose anything. */}
+                <HeroNameCard active={showChinese} />
               </motion.div>
             </div>
           </div>

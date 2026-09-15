@@ -24,6 +24,7 @@
  * intent (a numbered hero) and the small "hover" hint.
  */
 
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const HOVER_DELAY = 0.18;
@@ -43,15 +44,47 @@ const SOCIAL_ROWS = [
   },
 ];
 
-export default function HeroNameCard() {
+export default function HeroNameCard({ active = false }: { active?: boolean }) {
+  // Two trigger sources, OR'd:
+  //   - `active` is lifted from the hero h1 (hovering "Ethan" flips it
+  //     to true and shows "Chengze"); the owner wants the card to
+  //     appear at that same moment.
+  //   - local hover on the card's own area, so recruiters who poke at
+  //     the right side of the hero also get it.
+  const [localHover, setLocalHover] = useState(false);
+  const wantVisible = active || localHover;
+
+  // Grace period: when the mouse leaves the h1 and travels toward the
+  // card, `active` drops to false for a few frames. Without a delay the
+  // card would vanish mid-flight and the mailto / social links inside
+  // would be impossible to click. 450ms is enough to cross the gap.
+  const [visible, setVisible] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (wantVisible) {
+      if (hideTimer.current) {
+        clearTimeout(hideTimer.current);
+        hideTimer.current = null;
+      }
+      setVisible(true);
+    } else {
+      hideTimer.current = setTimeout(() => setVisible(false), 450);
+    }
+    return () => {
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+    };
+  }, [wantVisible]);
+
   return (
     <motion.div
-      // The whole right-rail block is the hover target, not just a
-      // button. This means recruiters don't need to know where to
-      // click \u2014 anywhere on the decorative 01 area shows the card.
-      whileHover="visible"
+      // React event handlers + animate prop instead of framer-motion's
+      // whileHover. whileHover with initial/animate/variants did not
+      // propagate the hover state to child variants in this build, so
+      // the card stayed hidden — plain React state is deterministic.
+      onMouseEnter={() => setLocalHover(true)}
+      onMouseLeave={() => setLocalHover(false)}
+      animate={visible ? 'visible' : 'hidden'}
       initial="hidden"
-      animate="hidden"
       variants={{
         hidden:  { opacity: 1 },
         visible: { opacity: 1 },
