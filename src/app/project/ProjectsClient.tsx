@@ -29,10 +29,12 @@ function SectionHeader({
   eyebrow,
   title,
   blurb,
+  tight = false,
 }: {
   eyebrow: string;
   title: string;
   blurb: string;
+  tight?: boolean;
 }) {
   return (
     <header className="mb-8">
@@ -45,9 +47,11 @@ function SectionHeader({
       <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[1.0] mb-3">
         {title}
       </h2>
-      <p className="text-zinc-600 dark:text-zinc-400 text-base max-w-2xl leading-relaxed">
-        {blurb}
-      </p>
+      {!tight && (
+        <p className="text-zinc-600 dark:text-zinc-400 text-base max-w-2xl leading-relaxed">
+          {blurb}
+        </p>
+      )}
     </header>
   );
 }
@@ -116,8 +120,6 @@ function ExternalIcon({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-/* Minimal icon-link: just icon + label, single zinc tone. No variants,
-   no shadow, no rounded-md chrome — these are buttons, not pills. */
 function IconLink({
   href,
   icon,
@@ -140,26 +142,23 @@ function IconLink({
   );
 }
 
-/* Project cards expose at most two links: the deployed site (Open)
-   and the source repo (GitHub). If neither is present we render
-   nothing — no fake "Read more" link. */
 function ProjectActions({ p }: { p: ProjectItem }) {
   const hasRepo = !!p.repo;
   const hasLive = !!p.link;
   if (!hasRepo && !hasLive) return null;
   return (
-    <div className="mt-4 flex items-center gap-5">
+    <div className="mt-3 flex items-center gap-4">
       {hasLive && (
         <IconLink
           href={p.link as string}
-          icon={<ExternalIcon className="w-4 h-4" />}
+          icon={<ExternalIcon className="w-3.5 h-3.5" />}
           label="Open"
         />
       )}
       {hasRepo && (
         <IconLink
           href={p.repo as string}
-          icon={<GithubIcon className="w-4 h-4" />}
+          icon={<GithubIcon className="w-3.5 h-3.5" />}
           label="GitHub"
         />
       )}
@@ -167,22 +166,18 @@ function ProjectActions({ p }: { p: ProjectItem }) {
   );
 }
 
-/* ───────────────────────────── MAJOR card ───────────────────────────── */
+/* ───────────────────────────── MAJOR card — 3-up grid ───────────────────────────── */
 
 function MajorCard({ p }: { p: ProjectItem }) {
   return (
     <article className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 overflow-hidden hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 flex flex-col">
       <div className="relative aspect-[16/9] overflow-hidden bg-zinc-100 dark:bg-zinc-900">
         {p.coverImage ? (
-          // next/image with fill inside the aspect-[16/9] frame. The
-          // remotePatterns `**` wildcard in next.config.ts allows any
-          // https cover URL, so owners can paste new hosts without
-          // touching config.
           <Image
             src={p.coverImage}
             alt={p.title}
             fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
         ) : (
@@ -190,48 +185,49 @@ function MajorCard({ p }: { p: ProjectItem }) {
             No cover yet
           </div>
         )}
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+        <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1">
           <span
-            className={`inline-flex items-center px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-full border backdrop-blur-sm bg-white/80 dark:bg-black/50 ${STATUS_STYLE[p.status]}`}
+            className={`inline-flex items-center px-1.5 py-0.5 text-[9px] uppercase tracking-wider rounded-full border backdrop-blur-sm bg-white/80 dark:bg-black/50 ${STATUS_STYLE[p.status]}`}
           >
             {STATUS_LABEL[p.status]}
           </span>
-          <span className="inline-flex items-center px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-full border backdrop-blur-sm bg-white/80 dark:bg-black/50 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200">
+          <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] uppercase tracking-wider rounded-full border backdrop-blur-sm bg-white/80 dark:bg-black/50 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200">
             {CATEGORY_LABEL[p.category]}
           </span>
         </div>
-        <div className="absolute bottom-3 right-3 text-[10px] tabular-nums text-white/90 dark:text-white/70 font-medium bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded">
+        <div className="absolute bottom-2.5 right-2.5 text-[9px] tabular-nums text-white/90 dark:text-white/70 font-medium bg-black/40 backdrop-blur-sm px-1.5 py-0.5 rounded">
           {p.year}
         </div>
       </div>
 
-      <div className="p-6 flex flex-col flex-1">
+      <div className="p-4 flex flex-col flex-1">
         <Link href={`/project/${p.slug}`} className="block group/title">
           <h3
-            className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white leading-tight mb-2 group-hover/title:text-zinc-600 dark:group-hover/title:text-zinc-300 transition-colors"
+            className="text-[15px] font-semibold tracking-tight text-zinc-900 dark:text-white leading-tight mb-1.5 group-hover/title:text-zinc-600 dark:group-hover/title:text-zinc-300 transition-colors line-clamp-2"
             dangerouslySetInnerHTML={{ __html: p.title }}
           />
         </Link>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
+        <p className="text-[12px] text-zinc-600 dark:text-zinc-400 leading-snug mb-3 line-clamp-2">
           {p.tagline}
         </p>
 
-        <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-5 line-clamp-3">
-          {p.description}
-        </p>
-
-        <div className="flex flex-wrap gap-1.5 mb-5">
-          {p.tech.map((t) => (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {p.tech.slice(0, 3).map((t) => (
             <span
               key={t}
-              className="px-2 py-0.5 text-[11px] text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 rounded-md"
+              className="px-1.5 py-0.5 text-[10px] text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 rounded-md"
             >
               {t}
             </span>
           ))}
+          {p.tech.length > 3 && (
+            <span className="px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-500 rounded-md">
+              +{p.tech.length - 3}
+            </span>
+          )}
         </div>
 
-        <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="mt-auto pt-3 border-t border-zinc-200 dark:border-zinc-800">
           <ProjectActions p={p} />
         </div>
       </div>
@@ -241,18 +237,17 @@ function MajorCard({ p }: { p: ProjectItem }) {
 
 function MajorSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {[0, 1].map((i) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {[0, 1, 2].map((i) => (
         <div
           key={i}
           className="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-pulse"
         >
           <div className="aspect-[16/9] bg-zinc-200 dark:bg-zinc-900" />
-          <div className="p-6 space-y-3">
-            <div className="h-6 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
-            <div className="h-4 w-full bg-zinc-200 dark:bg-zinc-800 rounded" />
-            <div className="h-4 w-5/6 bg-zinc-200 dark:bg-zinc-800 rounded" />
-            <div className="h-4 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
+          <div className="p-4 space-y-2.5">
+            <div className="h-4 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
+            <div className="h-3 w-full bg-zinc-200 dark:bg-zinc-800 rounded" />
+            <div className="h-3 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded" />
           </div>
         </div>
       ))}
@@ -260,67 +255,63 @@ function MajorSkeleton() {
   );
 }
 
-/* ───────────────────────────── VIBE row ───────────────────────────── */
+/* ───────────────────────────── VIBE row (compact list) ───────────────────────────── */
 
 function VibeRow({ p }: { p: ProjectItem }) {
   return (
     <article className="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 flex flex-col p-3">
-      {/* Top row: cover + meta. Not a full-row <Link> so the action
-          buttons below can each have their own <a> with target=_blank. */}
-      <div className="flex gap-4">
+      <div className="flex gap-3">
         <Link
           href={`/project/${p.slug}`}
           aria-label={`Open ${p.title} case study`}
-          className="relative flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900 group/cover"
+          className="relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900 group/cover"
         >
           {p.coverImage ? (
             <Image
               src={p.coverImage}
               alt={p.title}
               fill
-              sizes="112px"
+              sizes="80px"
               className="w-full h-full object-cover transition-transform duration-300 group-hover/cover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-[10px] uppercase tracking-wider">
+            <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-[9px] uppercase tracking-wider">
               No cover
             </div>
           )}
         </Link>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center justify-between gap-2 mb-0.5">
             <Link href={`/project/${p.slug}`} className="block min-w-0">
               <h4
-                className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors"
+                className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors"
                 dangerouslySetInnerHTML={{ __html: p.title }}
               />
             </Link>
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0">
+            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0">
               {p.year}
             </span>
           </div>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 mb-3">
+          <p className="text-[11px] text-zinc-600 dark:text-zinc-400 line-clamp-2 mb-2 leading-snug">
             {p.tagline}
           </p>
           <div className="flex flex-wrap gap-1">
-            {p.tech.slice(0, 3).map((t) => (
+            {p.tech.slice(0, 2).map((t) => (
               <span
                 key={t}
-                className="px-1.5 py-0.5 text-[10px] text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 rounded-md"
+                className="px-1.5 py-0.5 text-[9px] text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 rounded-md"
               >
                 {t}
               </span>
             ))}
-            {p.tech.length > 3 && (
-              <span className="px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-500 rounded-md">
-                +{p.tech.length - 3}
+            {p.tech.length > 2 && (
+              <span className="px-1.5 py-0.5 text-[9px] text-zinc-500 dark:text-zinc-500 rounded-md">
+                +{p.tech.length - 2}
               </span>
             )}
           </div>
         </div>
       </div>
-      {/* Bottom action bar: same component as MajorCard — Read / Open
-          / GitHub on a hairline separator. */}
       <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/70">
         <ProjectActions p={p} />
       </div>
@@ -330,17 +321,17 @@ function VibeRow({ p }: { p: ProjectItem }) {
 
 function VibeSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {[0, 1, 2, 3].map((i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
         <div
           key={i}
-          className="flex gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 animate-pulse"
+          className="flex gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 animate-pulse"
         >
-          <div className="w-28 h-28 rounded-lg bg-zinc-200 dark:bg-zinc-900" />
+          <div className="w-20 h-20 rounded-lg bg-zinc-200 dark:bg-zinc-900 shrink-0" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
-            <div className="h-3 w-full bg-zinc-200 dark:bg-zinc-800 rounded" />
-            <div className="h-3 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded" />
+            <div className="h-3 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
+            <div className="h-2.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded" />
+            <div className="h-2.5 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded" />
           </div>
         </div>
       ))}
@@ -392,33 +383,35 @@ export default function ProjectsClient() {
   );
 
   return (
-    <div className="min-h-[100dvh] pt-24 pb-32 px-6">
+    <div className="min-h-[100dvh] pt-24 pb-24 px-6">
       <div className="max-w-6xl mx-auto">
-        {/* Hero — unchanged across versions, brief context for visitors */}
-        <section className="mb-20">
-          <div className="flex items-center gap-3 mb-6">
+        {/* Hero — kept terse per owner. Page name + one-line subtitle;
+            the section headers carry the longer copy. */}
+        <section className="mb-16">
+          <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-[1px] bg-zinc-300 dark:bg-zinc-700" />
             <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
               Selected Work · For Hiring Managers
             </span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.95] mb-6">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.95] mb-5">
             Projects
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 text-lg max-w-2xl leading-relaxed">
-            A curated index of the systems and prototypes I&apos;ve built — full-stack product
-            engineering, machine-learning experiments, and tools I built so I could build
-            other things faster. Major work lives below; smaller vibe-coded experiments
-            are in the next section.
+          <p className="text-zinc-600 dark:text-zinc-400 text-base max-w-2xl leading-relaxed">
+            <span className="text-zinc-900 dark:text-white">Major work</span> is what
+            I want recruiters to read first.
+            <span className="text-zinc-900 dark:text-white"> Side projects</span>{' '}
+            below are the things I build for myself, for fun — they&apos;re how I keep
+            learning.
           </p>
         </section>
 
         {/* ───────────── MAJOR section ───────────── */}
-        <section className="mb-24">
+        <section className="mb-20">
           <SectionHeader
             eyebrow="Section 01 · Major work"
             title="Major Projects"
-            blurb="Ships I want recruiters to read first — full-stack product engineering, ML systems, and anything built to live in production."
+            blurb="Full-stack product engineering, ML systems, and anything built to live in production."
           />
 
           <div className="mb-6">
@@ -454,7 +447,11 @@ export default function ProjectsClient() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            /* 1-line 3-up grid per owner. Each card is the more compact
+               MajorCard — shorter text, smaller image, 3 tech chips
+               max. Cards stay readable at sm/md widths because content
+               is constrained. */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredMajor.map((p) => (
                 <MajorCard key={p.id} p={p} />
               ))}
@@ -462,19 +459,38 @@ export default function ProjectsClient() {
           )}
         </section>
 
-        {/* ───────────── VIBE section ───────────── */}
-        <section className="mb-16">
+        {/* ───────────── VIBE section ─────────────
+            Intentionally given heavier visual treatment than the Major
+            section above: a saturated left border, a hand-written
+            intro line, and the same 3-up grid but with compact
+            VibeRow tiles. The owner flagged that side projects are
+            the "personal soul" and were being visually buried; the
+            treatment below keeps Major primary, but vibe cards are
+            clearly present, every section feature is right above. */}
+        <section className="mb-12 relative pl-5 sm:pl-7 border-l-2 border-zinc-900 dark:border-zinc-100">
           <SectionHeader
-            eyebrow="Section 02 · Small experiments"
+            eyebrow="Section 02 · Side projects"
             title="Vibe Coding"
             blurb="Quick experiments, weekend projects, and tools I built to scratch an itch. Each one is short, fun, and a real thing."
           />
+
+          {/* Owner-flagged annotation: keep this section loud.
+              Vibe coding = the owner's personal soul, and these
+              cards must not get buried under Major on a screen
+              where a recruiter only scrolls to the second section
+              if the first made them curious. We give this section
+              a heavy left bar + eyebrow prefix so it survives a
+              recruiter's mid-scroll glance. */}
+          <p className="mb-6 text-[12px] text-zinc-500 dark:text-zinc-500 italic">
+            热爱 cs, 做东西, 自动化一切事物, developing 内容 — these
+            are the things I build for myself when nobody's asking.
+          </p>
 
           <div className="mb-6">
             <SearchInput
               value={vibeQuery}
               onChange={setVibeQuery}
-              placeholder="Search vibe projects by name, tech, or description…"
+              placeholder="Search side projects by name, tech, or description…"
             />
           </div>
 
@@ -490,8 +506,8 @@ export default function ProjectsClient() {
             <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-12 text-center">
               <p className="text-zinc-500 dark:text-zinc-400 text-sm">
                 {vibe.length === 0
-                  ? 'No vibe projects yet.'
-                  : `No vibe projects match “${vibeQuery}”.`}
+                  ? 'No side projects yet.'
+                  : `No side projects match “${vibeQuery}”.`}
               </p>
               {vibeQuery && vibe.length > 0 && (
                 <button
@@ -503,7 +519,7 @@ export default function ProjectsClient() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredVibe.map((p) => (
                 <VibeRow key={p.id} p={p} />
               ))}
@@ -512,7 +528,7 @@ export default function ProjectsClient() {
         </section>
 
         {/* Footer */}
-        <section className="pt-12 border-t border-zinc-200 dark:border-zinc-800">
+        <section className="pt-10 border-t border-zinc-200 dark:border-zinc-800">
           <div className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
             <p className="mb-3">
               <span className="text-zinc-900 dark:text-white font-medium">

@@ -156,6 +156,12 @@ export default function SiteFooter() {
                   <span className="text-zinc-900 dark:text-white">Chengze Wu</span>
                   {" "}— also goes by Ethan. CS undergrad + grad student at WashU.
                 </p>
+                <p className="mt-2 text-[12.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                  热爱 cs, 做东西, 自动化一切事物, developing 内容。
+                </p>
+                <p className="text-[11.5px] text-zinc-500 dark:text-zinc-500 italic leading-relaxed">
+                  I love CS, building things, automating everything, and developing content about it.
+                </p>
                 {/* Phone + email — two contact lines, each with a small
                     leading glyph so they read as a pair, not a paragraph. */}
                 <ul className="mt-3 space-y-1 text-sm">

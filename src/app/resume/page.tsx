@@ -22,7 +22,7 @@ export default async function ResumePage() {
             Left column: eyebrow + h1 "Resume" on top, then description /
               meta / actions below. Right column: PDF preview, its top
               edge aligned with the h1 on the left on lg+ viewports. */}
-        <div className="grid grid-cols-1 md:resume-grid-ipad lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-8">
+        <div className="grid grid-cols-1 md:resume-grid-ipad lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-4 lg:gap-6">
           {/* LEFT — intentionally narrow: the resume PDF on the right
               IS the content. Left column is just identity + a single
               download CTA so the page reads as "view the résumé", not
