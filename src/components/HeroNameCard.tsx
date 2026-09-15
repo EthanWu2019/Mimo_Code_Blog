@@ -1,32 +1,31 @@
 'use client';
 
 /**
- * HeroNameCard — the personal business card revealed on hover in the
- * right side of the home hero.
+ * HeroNameCard v4 — frosted-acrylic personal card, per Gemini's
+ * design direction and the owner's constraints.
  *
- * Owner requirements (v3):
- *   - English only (drop the Chinese statement line)
- *   - NO links, no mailto, no social buttons inside the card — it is
- *     a pure display card. The owner explicitly does not want users
- *     to have to dart the mouse into a hover-revealed popup to reach
- *     a link. All actual links live in the footer.
- *   - An arrow + caption BELOW the card pointing down: "your links are
- *     in the footer".
- *   - More refined, less generic design than v2.
+ * Design language (from the reference):
+ *   - real acrylic: backdrop-blur, translucent fill, 1px gradient
+ *     highlight edge (glass refraction line at the top)
+ *   - radius hierarchy: outer rounded-3xl(28px), inner panels
+ *     rounded-2xl(16px), tags/buttons rounded-lg/xl
+ *   - ambient glow blobs behind the card (cyan + indigo, very faint)
+ *   - breathing gradient ring around the avatar, status dot
+ *   - left-aligned header (avatar left, name + role + tags right)
+ *   - recessed quote panel for the personal statement
+ *   - bottom status bar (mono) — NO links inside the card
  *
- * Design language: centered business-card front. Small uppercase
- * eyebrow, a soft-glowing circular avatar, the name set in the site's
- * serif display voice with a quiet sans sub-line, a hairline rule,
- * the personal statement, and a bottom meta line. Large type, roomy
- * padding, minimal chrome.
- *
- * Reveal logic: React state (NOT framer-motion whileHover). Two
- * triggers OR'd: `active` from the hero h1 hover, or local hover on
- * the card area. 450ms hide grace period.
+ * Owner constraints kept:
+ *   - English only
+ *   - zero links inside the card (pure display; the arrow below
+ *     points to the footer where the real links live)
+ *   - reveal: React state, h1-hover OR local hover, 450ms grace
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+
+const TAGS = ['Full-Stack', 'AI Agent', 'Automation', 'Photography'];
 
 export default function HeroNameCard({ active = false }: { active?: boolean }) {
   const [localHover, setLocalHover] = useState(false);
@@ -51,9 +50,6 @@ export default function HeroNameCard({ active = false }: { active?: boolean }) {
 
   return (
     <div className="relative w-full">
-      {/* Card area. No fixed aspect ratio; height follows content with
-          a min-height so the hidden '01' layer and the visible card
-          occupy the same footprint (no layout jump on swap). */}
       <motion.div
         onMouseEnter={() => setLocalHover(true)}
         onMouseLeave={() => setLocalHover(false)}
@@ -61,10 +57,10 @@ export default function HeroNameCard({ active = false }: { active?: boolean }) {
         initial="hidden"
         variants={{ hidden: { opacity: 1 }, visible: { opacity: 1 } }}
         transition={{ duration: 0.3 }}
-        className="relative w-full cursor-default"
+        className="relative w-full"
         style={{ minHeight: '400px' }}
       >
-        {/* Hidden layer: the big '01' + hover hint. */}
+        {/* ── Hidden layer: the big '01' + hint ─────────────────── */}
         <motion.div
           variants={{ hidden: { opacity: 1 }, visible: { opacity: 0 } }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -80,74 +76,118 @@ export default function HeroNameCard({ active = false }: { active?: boolean }) {
           </span>
         </motion.div>
 
-        {/* Visible layer: centered business-card front. */}
+        {/* ── Ambient glow blobs behind the card ─────────────────── */}
+        <motion.div
+          variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          aria-hidden="true"
+          className="absolute -top-10 -left-10 w-44 h-44 bg-cyan-500/15 dark:bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"
+        />
+        <motion.div
+          variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          aria-hidden="true"
+          className="absolute -bottom-10 -right-10 w-44 h-44 bg-indigo-500/15 dark:bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"
+        />
+
+        {/* ── Acrylic card ───────────────────────────────────────── */}
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 10, scale: 0.985 },
             visible: { opacity: 1, y: 0, scale: 1 },
           }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0 flex flex-col items-center justify-center rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-[0_24px_60px_-24px_rgba(0,0,0,0.3)] dark:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.7)] px-8 py-8 text-center"
+          className="absolute inset-0 overflow-hidden rounded-[28px] border border-zinc-200/60 dark:border-white/10 bg-white/70 dark:bg-slate-900/40 p-7 backdrop-blur-2xl shadow-2xl shadow-zinc-900/10 dark:shadow-black/40"
         >
-          {/* Soft top light so the card doesn't read flat. */}
+          {/* 1px top highlight — glass refraction line */}
           <div
             aria-hidden
-            className="absolute inset-0 rounded-3xl bg-gradient-to-b from-zinc-50/70 via-transparent to-transparent dark:from-white/[0.04] pointer-events-none"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 dark:via-white/30 to-transparent"
           />
 
-          <div className="relative flex flex-col items-center">
-            {/* Eyebrow */}
-            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500 font-medium">
-              Profile
-            </p>
-
-            {/* Avatar with a soft double ring */}
-            <div className="mt-6 relative">
+          {/* Header: avatar + name + role + tags */}
+          <div className="flex items-start gap-5">
+            {/* Avatar with breathing gradient ring + status dot */}
+            <div className="relative shrink-0">
               <div
                 aria-hidden
-                className="absolute -inset-2 rounded-full bg-zinc-900/[0.05] dark:bg-white/[0.05] blur-md"
+                className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-cyan-500/70 to-indigo-500/70 opacity-60 blur-sm transition duration-300"
               />
-              <div className="relative w-20 h-20 rounded-full overflow-hidden ring-1 ring-zinc-200/80 dark:ring-zinc-700/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.25)]">
-                <img
-                  src="/avatar-96.png"
-                  srcSet="/avatar-96.png 1x, /avatar-192.png 2x"
-                  alt="Chengze Wu"
-                  loading="lazy"
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <img
+                src="/avatar-96.png"
+                srcSet="/avatar-96.png 1x, /avatar-192.png 2x"
+                alt="Chengze Wu"
+                loading="lazy"
+                width={72}
+                height={72}
+                className="relative w-[72px] h-[72px] rounded-full object-cover ring-2 ring-white/40 dark:ring-white/20"
+              />
+              <span className="absolute bottom-0 right-0 flex h-4 w-4">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
+                <span className="relative inline-flex h-4 w-4 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-500" />
+              </span>
             </div>
 
-            {/* Name in the site's serif display voice */}
-            <h3 className="mt-6 font-serif text-[38px] leading-none tracking-tight text-zinc-900 dark:text-white">
-              Chengze Wu
-            </h3>
-            <p className="mt-2 text-[13px] text-zinc-500 dark:text-zinc-400">
-              Also goes by <span className="text-zinc-800 dark:text-zinc-200 font-medium">Ethan</span>
-            </p>
+            {/* Name + role + tags */}
+            <div className="flex-1 min-w-0 pt-0.5">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white/90 truncate">
+                  Chengze Wu
+                </h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 dark:bg-white/5 border border-cyan-500/30 dark:border-white/10 text-cyan-600 dark:text-cyan-300 font-medium shrink-0">
+                  Ethan
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 dark:text-slate-400 mt-1 font-mono tracking-wide">
+                CS Graduate Student @ WashU
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {TAGS.map((t) => (
+                  <span
+                    key={t}
+                    className="px-2 py-0.5 text-[11px] rounded-lg bg-zinc-100/70 dark:bg-white/[0.04] border border-zinc-200/70 dark:border-white/5 text-zinc-600 dark:text-slate-300"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
 
-            {/* Hairline */}
-            <div className="mt-6 w-12 h-px bg-zinc-300 dark:bg-zinc-700" />
+          {/* Recessed quote panel — the personal statement */}
+          <div className="relative mt-6 rounded-2xl border border-zinc-200/70 dark:border-white/5 bg-zinc-50/70 dark:bg-white/[0.02] p-4 backdrop-blur-md">
+            <div className="flex items-start gap-2.5">
+              <svg
+                className="h-4 w-4 text-cyan-500 dark:text-cyan-400 shrink-0 mt-0.5 opacity-80"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+              </svg>
+              <p className="text-[13px] italic text-zinc-600 dark:text-slate-300/90 leading-relaxed">
+                I love CS, building things, automating everything, and
+                developing content about it.
+              </p>
+            </div>
+          </div>
 
-            {/* Statement — the whole point of the card */}
-            <p className="mt-6 max-w-[26ch] text-[14.5px] leading-relaxed text-zinc-600 dark:text-zinc-400">
-              I love CS, building things, automating everything, and
-              developing content about it.
-            </p>
-
-            {/* Bottom meta */}
-            <p className="mt-7 text-[10px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-              Software Engineer · WashU CS · St. Louis
-            </p>
+          {/* Bottom status bar — no links, pure status */}
+          <div className="mt-6 pt-4 border-t border-zinc-200/70 dark:border-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse motion-safe:animate-pulse" />
+              <span className="text-[11px] font-mono text-zinc-500 dark:text-slate-400">
+                Open to new roles
+              </span>
+            </div>
+            <span className="text-[11px] font-mono text-zinc-400 dark:text-slate-500">
+              ethanwu.work
+            </span>
           </div>
         </motion.div>
       </motion.div>
 
-      {/* Arrow + caption below the card. Not a link — a pointer toward
-          the footer where the real links live. Fades in with the card
-          so the whole reveal reads as one gesture. */}
+      {/* ── Arrow + caption below the card (points to the footer) ── */}
       <motion.div
         initial={false}
         animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 4 }}
