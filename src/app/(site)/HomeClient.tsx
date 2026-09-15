@@ -49,8 +49,7 @@ export default function HomeClient() {
                         Chinese/English switcher panel on a real
                         language-learning site would do.
                     Aria-label keeps the swap visible to screen readers. */}
-                <span
-                  className="relative inline-block"
+                <span className="relative inline-block"
                   aria-label={showChinese ? "Chengze Wu" : "Ethan Wu"}
                   onMouseEnter={() => setShowChinese(true)}
                   onMouseLeave={() => setShowChinese(false)}
@@ -105,6 +104,23 @@ export default function HomeClient() {
                 </span>
                 <br />
                 <span className="text-zinc-200 dark:text-zinc-800">Wu</span>
+                {/* Subtle hover annotation — only appears when the
+                    visitor has actually engaged with the name swap
+                    (mouseEnter / focus). English name + small note
+                    clarifying both names belong to the same person,
+                    so a recruiter who never sees the swap never
+                    wonders. Tooltip-style opacity + tiny right-shift
+                    transition; never a permanent label, so the
+                    primary CTA stays the visual hero. */}
+                <motion.span
+                  initial={false}
+                  animate={{ opacity: showChinese ? 1 : 0, x: showChinese ? 0 : -6 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="ml-3 sm:ml-5 align-baseline text-[11px] sm:text-xs font-normal tracking-[0.05em] text-zinc-400 dark:text-zinc-500 whitespace-nowrap pointer-events-none"
+                  aria-hidden="true"
+                >
+                  English given name · Chinese original
+                </motion.span>
               </motion.h1>
 
               <motion.p
