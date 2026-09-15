@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import HeroNameCard from '@/components/HeroNameCard';
 
 export default function HomeClient() {
   const reduce = useReducedMotion();
@@ -232,28 +233,13 @@ export default function HomeClient() {
                 initial={reduce ? false : { opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
-                className="relative"
+                className="relative w-full max-w-sm"
               >
-                {/* Decorative circles */}
-                <div className="absolute -top-20 -right-10 w-40 h-40 rounded-full border border-zinc-100 dark:border-zinc-800/30" />
-                <div className="absolute -bottom-10 -left-10 w-24 h-24 rounded-full border border-zinc-100 dark:border-zinc-800/30" />
-                
-                {/* Main number */}
-                <span className="text-[140px] font-bold leading-none text-zinc-100 dark:text-zinc-800/40 select-none">
-                  01
-                </span>
-                
-                {/* Floating label */}
-                <motion.div
-                  initial={reduce ? false : { opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.5, ease: 'easeOut' }}
-                  className="absolute bottom-4 right-4"
-                >
-                  <span className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm px-2 py-1 rounded">
-                    Portfolio
-                  </span>
-                </motion.div>
+                {/* Personal name card on hover. The "01" baseline lives
+                    inside HeroNameCard as its hidden layer, so removing
+                    the old decorative circles / "01" span doesn't lose
+                    anything — the hover-state card replaces them. */}
+                <HeroNameCard />
               </motion.div>
             </div>
           </div>

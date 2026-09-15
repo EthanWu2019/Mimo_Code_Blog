@@ -130,16 +130,26 @@ export default function SiteFooter() {
             <div className="flex items-start gap-5 sm:gap-6">
               {/* Avatar — circular masked photo. The srcset serves
                   the 2x retina version on hi-DPI displays; the small
-                  one is the default for 1x. */}
-              <img
-                src="/avatar-96.png"
-                srcSet="/avatar-96.png 1x, /avatar-192.png 2x"
-                width={64}
-                height={64}
-                alt="Chengze Wu"
-                loading="lazy"
-                className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover ring-1 ring-zinc-200/70 dark:ring-zinc-800/70"
-              />
+                  one is the default for 1x. The pulse ring on the
+                  bottom-right is a tiny affordance: it tells the
+                  recruiter that the avatar is interactive (a hover
+                  name card on the home page mirrors the same face).
+                  Disabled for prefers-reduced-motion users. */}
+              <div className="relative shrink-0 w-20 h-20 sm:w-24 sm:h-24">
+                <img
+                  src="/avatar-96.png"
+                  srcSet="/avatar-96.png 1x, /avatar-192.png 2x"
+                  width={64}
+                  height={64}
+                  alt="Chengze Wu"
+                  loading="lazy"
+                  className="w-full h-full rounded-full object-cover ring-1 ring-zinc-200/70 dark:ring-zinc-800/70"
+                />
+                <span
+                  aria-hidden
+                  className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-zinc-900 dark:bg-white ring-2 ring-zinc-50 dark:ring-zinc-900 motion-safe:animate-pulse"
+                />
+              </div>
               <div className="min-w-0 flex-1">
                 <BlockLabel>About</BlockLabel>
                 <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">

@@ -23,54 +23,42 @@ export default async function ResumePage() {
               meta / actions below. Right column: PDF preview, its top
               edge aligned with the h1 on the left on lg+ viewports. */}
         <div className="grid grid-cols-1 md:resume-grid-ipad lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-8">
-          {/* LEFT */}
-          <div className="space-y-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          {/* LEFT — intentionally narrow: the resume PDF on the right
+              IS the content. Left column is just identity + a single
+              download CTA so the page reads as "view the résumé", not
+              "read a writeup about the résumé". */}
+          <div className="space-y-6 text-zinc-600 dark:text-zinc-400">
             <header>
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-[1px] bg-zinc-300 dark:bg-zinc-700" />
                 <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
-                  Resume · Compiled live from LaTeX
+                  Résumé
                 </span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.95]">
-                Resume
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[0.95]">
+                Chengze Wu
               </h1>
             </header>
 
-            <p className="text-base">
-              Single-page LaTeX résumé. Compiled on every request via{" "}
-              <span className="text-zinc-900 dark:text-white font-medium">LaTeXOnline</span>{" "}
-              (the open-source HTTP wrapper around pdflatex) so the version
-              you download is always the latest edit — no stale PDFs lying
-              around.
-            </p>
+            {/* Meta as a tight one-line grid. No body copy: the PDF
+                already says everything; duplicating it on this page is
+                exactly the "left side too long" the owner flagged. */}
+            <dl className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+              <div className="flex items-baseline gap-2">
+                <dt className="text-[10px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">Name</dt>
+                <dd className="text-zinc-900 dark:text-white">Ethan</dd>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <dt className="text-[10px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">Based in</dt>
+                <dd className="text-zinc-900 dark:text-white">St. Louis, MO · WashU CS</dd>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <dt className="text-[10px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">Format</dt>
+                <dd className="text-zinc-900 dark:text-zinc-300">Single page · LaTeX → PDF</dd>
+              </div>
+            </dl>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-1">
-                  Name
-                </div>
-                <div className="text-zinc-900 dark:text-white">Ethan Wu</div>
-              </div>
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-1">
-                  Based in
-                </div>
-                <div className="text-zinc-900 dark:text-white">
-                  St. Louis, MO · WashU CS
-                </div>
-              </div>
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-1">
-                  Format
-                </div>
-                <div className="text-zinc-900 dark:text-white">
-                  Single-page A4 · LaTeX → PDF
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               {isAdmin && (
                 <Link
                   href="/resume/edit"
@@ -92,11 +80,6 @@ export default async function ResumePage() {
                 Download PDF
               </a>
             </div>
-
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">
-              If the preview doesn&apos;t reflect a recent edit, hit Reload
-              — the cache TTL is 60 seconds.
-            </p>
           </div>
 
           {/* RIGHT — PDF. The wrapper card starts at the same grid row as
