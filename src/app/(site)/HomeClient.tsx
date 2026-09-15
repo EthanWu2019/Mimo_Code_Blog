@@ -216,7 +216,7 @@ export default function HomeClient() {
                 initial={reduce ? false : { opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
-                className="relative w-full max-w-sm"
+                className="relative w-full max-w-md"
               >
                 {/* Personal name card. Appears when the visitor hovers the
                     h1 name (Ethan -> Chengze swap) OR hovers the card
