@@ -68,20 +68,24 @@ export default function PdfSection({
     // wrapper capped at the iframe's max-width (816 px), so the button
     // always sits flush into the iframe's actual top-right corner.
     <div ref={wrapRef} data-cursor-suppress="5" className="relative bg-zinc-100 dark:bg-zinc-950">
+      {/* Mobile-only hint: on a phone the PDF renders inside Chrome's
+          viewer, which owns pinch-zoom and pan gestures. Desktop keeps
+          the exact-page aspect ratio. */}
+      <p className="lg:hidden mb-2 text-center text-[11px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
+        Pinch to zoom · drag to move
+      </p>
       <div className="relative mx-auto" style={{ width: '100%', maxWidth: '816px' }}>
         <iframe
           src={`${src}#navpanes=0&toolbar=${isFs ? 1 : 0}&view=FitH&zoom=80`}
           title="Ethan Wu — Resume"
-          className="block w-full bg-white dark:bg-zinc-950"
+          className="block w-full h-[80dvh] lg:h-auto lg:aspect-[8.5/11] bg-white dark:bg-zinc-950"
           style={{
-            // The PDF is a single US-Letter page (612 x 792 pt). At the
-            // standard 96 DPI CSS scale that becomes 816 x 1056 px. The
-            // iframe used to be hard-coded at 1120 px tall which left a
-            // black strip of empty space below the rendered page on view-
-            // ports wider than the maxWidth. Setting height to a fixed
-            // aspect ratio of the actual width pins the iframe to the
-            // PDF's exact dimensions, so the wrapper has no wasted space.
-            aspectRatio: '8.5 / 11',
+            // Mobile: the iframe fills 80dvh so Chrome's PDF viewer has
+            // a full viewport to work in — the user pinch-zooms and
+            // pans inside the viewer, which is far better than a
+            // letter-aspect iframe shrunk to a 390px phone. Desktop
+            // (lg+): aspect-ratio 8.5/11 pins the frame to the exact
+            // US-Letter page (816 x 1056 px at 96 DPI), same as before.
             border: 0,
           }}
         />
@@ -91,10 +95,10 @@ export default function PdfSection({
             onClick={toggleFullscreen}
             aria-label={isFs ? 'Exit fullscreen' : 'View fullscreen'}
             title={isFs ? 'Exit fullscreen' : 'View fullscreen'}
-            // Equal top + right inset (4 = 16 px) so the button sits
-            // visually flush into the iframe's top-right corner, not
-            // hugging whichever edge happens to be tighter.
-            className="absolute top-4 right-12 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-zinc-900/85 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur hover:bg-zinc-900 dark:hover:bg-white transition-colors shadow-lg ring-1 ring-white/10"
+            // Mobile hides the fullscreen button: the PDF viewer's own
+            // pinch/zoom gestures are the mobile interaction; the
+            // floating button would only cover the page.
+            className="hidden lg:inline-flex absolute top-4 right-12 z-10 items-center justify-center w-9 h-9 rounded-full bg-zinc-900/85 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur hover:bg-zinc-900 dark:hover:bg-white transition-colors shadow-lg ring-1 ring-white/10"
           >
             {isFs ? (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

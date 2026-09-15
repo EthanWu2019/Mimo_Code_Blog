@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import gsap from 'gsap';
 
 let _colorCanvas: CanvasRenderingContext2D | null = null;
@@ -136,6 +136,26 @@ export default function CursorGlow() {
   const posRef = useRef({ x: -100, y: -100 });
   const rafRef = useRef<number>(0);
   const isDownRef = useRef(false);
+  // Touch devices: the custom cursor dot is meaningless — a finger
+  // has no hover position and the dot would just chase every tap.
+  // Detect coarse pointers / no-hover primary input and render
+  // nothing. Desktop (fine pointer + hover) is unaffected.
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    const mqCoarse = window.matchMedia('(pointer: coarse)');
+    const mqNoHover = window.matchMedia('(hover: none)');
+    const evaluate = () =>
+      setIsTouch(mqCoarse.matches || mqNoHover.matches);
+    evaluate();
+    // Re-evaluate if the media query flips (e.g. a tablet docked to
+    // a keyboard/mouse mid-session).
+    mqCoarse.addEventListener('change', evaluate);
+    mqNoHover.addEventListener('change', evaluate);
+    return () => {
+      mqCoarse.removeEventListener('change', evaluate);
+      mqNoHover.removeEventListener('change', evaluate);
+    };
+  }, []);
   const colorRef = useRef<'dark' | 'light'>('dark');
   const debounceRef = useRef<number>(0);
   const isTextRef = useRef(false);
@@ -166,6 +186,10 @@ export default function CursorGlow() {
   }, []);
 
   useEffect(() => {
+    // Touch devices never mount the cursor pipeline: no listeners,
+    // no dot, no glow. `isTouch` flips the effect back on if the
+    // device gains a fine pointer mid-session.
+    if (isTouch) return;
     const applyColor = () => {
       if (!dotRef.current) return;
       const light = colorRef.current === 'light';
@@ -336,7 +360,9 @@ export default function CursorGlow() {
       observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [renderCursor]);
+  }, [renderCursor, isTouch]);
+
+  if (isTouch) return null;
 
   return (
     <>
