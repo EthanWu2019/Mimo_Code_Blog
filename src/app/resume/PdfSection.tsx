@@ -5,36 +5,50 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * PDF preview block.
  *
- * Why this is wrapped in a transparent always-on top layer:
- *   - The PDF is served inside an iframe. mousedown on the iframe
- *     starts a text-selection there and the event does NOT bubble
- *     past the iframe's edge — so we can't catch it on a parent
- *     div. The classic fix is a transparent absolutely-positioned
- *     <div> stacked on top of the iframe that absorbs pointer
- *     events; pointer events on that layer are then driven by
- *     our React state.
- *   - The owner wants to drag the PDF around (not select text) and
- *     zoom with Ctrl + wheel. With the overlay capturing pointer
- *     events, we control the entire interaction and the iframe's
- *     own event handlers never run.
- *   - The overlay is invisible (background: transparent) and
- *     pointer-events: auto. The iframe stays as a visual layer
- *     underneath; we never disable its visibility, just intercept
- *     the events.
+ * Design intent: the user must be able to read the PDF, select
+ * text (the resume contains the visitor's name and the work history
+ * — copy/paste is a real use case), zoom in fine detail, and pan
+ * across a zoomed-in page. None of those interactions should
+ * interfere with the others:
  *
- * Cursor dot suppression: data-cursor-suppress on the outer
- * wrapper hides the global CursorGlow when the user hovers the
- * PDF, and the overlay itself uses cursor: grab / grabbing.
+ *  - Wheel:     Ctrl+wheel scales the PDF (~0.5% per tick). Plain
+ *               wheel (no Ctrl) scrolls the page normally. The
+ *               browser's native PDF-viewer pinch zoom is left alone.
+ *  - Drag:      Pointerdown on the PDF starts an in-place scroll.
+ *               The PDF is rendered into an `overflow: auto` frame
+ *               so dragging moves the *scroll position*, not the
+ *               document itself — like Chrome's own PDF viewer.
+ *               Text selection is preserved (mousedown on the iframe
+ *               is delivered to the iframe first; we only start our
+ *               own drag if the user actually moves the pointer).
+ *  - Cursor:    cursor: grab on hover, cursor: grabbing while
+ *               dragging. The global CursorGlow dot is suppressed
+ *               ONLY inside the PDF area, not the entire wrapper.
+ *
+ * Implementation note: an invisible overlay element is NOT used
+ * here. The previous attempt installed one (z-10) to catch wheel +
+ * pointerdown before the iframe grabbed them, but it had two bad
+ * consequences:
+ *  1. the overlay sat on top of the iframe and intercepted all
+ *     pointer events, so text selection stopped working.
+ *  2. the overlay was inset-0 of the inner wrapper, so it also
+ *     stole wheel events — we couldn't reuse Chrome's native
+ *     PDF-viewer pinch zoom either.
+ * The right way: bind wheel + pointer handlers to the OUTER wrapper
+ * div. They run when the event is dispatched to the wrapper. The
+ * iframe's own handlers also run (events bubble up the DOM tree
+ * too), and we call `stopPropagation` on wheel-with-ctrl and on
+ * drag-pan so the iframe never zooms with its own viewer. Plain
+ * wheel scrolls the page as expected.
  */
 
-const MIN_SCALE = 0.4;
+const MIN_SCALE = 0.5;
 const MAX_SCALE = 3.0;
-// ~0.5% per wheel tick. The owner found 1.5% per tick (the prior
-// version) still jumped. 0.5% is the smallest unit that still
-// gives a perceptible change with each notch.
-const WHEEL_STEP = 0.0004;
-// 10% per click on the + / − toolbar buttons.
+const WHEEL_STEP = 0.0006; // ~0.5% per tick on average browsers
 const BUTTON_STEP = 0.1;
+const DRAG_THRESHOLD_PX = 4; // start drag only after the cursor
+                              // moves at least this far; smaller
+                              // movements stay a text-selection click
 
 export default function PdfSection({
   isAdmin,
@@ -44,16 +58,18 @@ export default function PdfSection({
   src: string;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
 
   const [isFs, setIsFs] = useState(false);
   const [canFullscreen, setCanFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [grabbing, setGrabbing] = useState(false);
-  // Show the floating zoom toolbar briefly after a zoom event or
-  // pan so the new scale / position is legible. Pin when scale != 1.
-  const [showUi, setShowUi] = useState(false);
+  // Pan is implemented as a scrollLeft / scrollTop offset on the
+  // inner frame div. We never translate the frame itself; translation
+  // would pull the PDF text along with the cursor (which is what made
+  // the previous version feel wrong to the owner).
+  const [dragging, setDragging] = useState(false);
+
+  const [uiVisible, setUiVisible] = useState(false);
   const uiTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -69,91 +85,116 @@ export default function PdfSection({
 
   useEffect(() => {
     if (uiTimer.current) clearTimeout(uiTimer.current);
-    if (scale !== 1 || pan.x !== 0 || pan.y !== 0) {
-      setShowUi(true);
+    if (scale !== 1) {
+      setUiVisible(true);
     } else {
-      uiTimer.current = setTimeout(() => setShowUi(false), 900);
+      uiTimer.current = setTimeout(() => setUiVisible(false), 900);
     }
     return () => {
       if (uiTimer.current) clearTimeout(uiTimer.current);
     };
-  }, [scale, pan.x, pan.y]);
+  }, [scale]);
 
-  // All interaction handlers are bound to overlayRef (the
-  // transparent top layer), not the iframe. This is the difference
-  // that makes the controls actually work: the iframe swallows its
-  // own events, so listeners on the iframe's parents never see
-  // them. By sitting ON TOP of the iframe (z-10 vs the iframe's
-  // implicit z-0), this overlay is the first to receive every
-  // pointer event.
-  const onWheel = useCallback((e: WheelEvent) => {
-    if (!e.ctrlKey && !e.metaKey) return; // let normal scroll through
+  // --- Wheel zoom: bind to wrapper, not to the iframe. Browsers
+  // bubble wheel events up the DOM, so our handler on the outer
+  // wrapper fires for wheel-over-iframe AND wheel-over-frame. We
+  // only intervene on Ctrl+wheel; plain wheel keeps scrolling the
+  // page (and the iframe's native pinch zoom on a Mac trackpad).
+  const onWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    if (!e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
+    e.stopPropagation();
     setScale((prev) => {
       const next = prev * (1 - e.deltaY * WHEEL_STEP);
       return Math.max(MIN_SCALE, Math.min(MAX_SCALE, next));
     });
   }, []);
 
-  useEffect(() => {
-    const el = overlayRef.current;
-    if (!el) return;
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, [onWheel]);
-
-  // Drag-to-pan. Tracks the cursor from mousedown onward, applies
-  // the delta as a translate on the inner element via state. We use
-  // PointerCapture so the drag continues even if the cursor leaves
-  // the wrapper area.
-  const panRef = useRef({
+  // --- Drag-to-pan (a scroll on the inner frame). We use a click-vs-
+  // drag threshold so a single click without movement still leaves
+  // the iframe's text-selection alone. We also call preventDefault on
+  // the pointerdown ONLY when we're committing to a drag (i.e. once
+  // the cursor moves past the threshold) so a simple click does
+  // nothing. We never use stopPropagation on pointerdown: that would
+  // block the iframe's own text-selection handlers.
+  const dragState = useRef({
     active: false,
+    pending: false, // mousedown received but not yet past threshold
     startX: 0,
     startY: 0,
+    startScrollLeft: 0,
+    startScrollTop: 0,
     pointerId: -1,
   });
 
-  const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const tryStartDrag = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 && e.button !== 1) return;
     if (e.ctrlKey || e.metaKey) return;
-    e.preventDefault();
-    panRef.current = {
-      active: true,
+    // We mark the gesture as pending. The first pointermove that
+    // exceeds DRAG_THRESHOLD_PX will commit it and stop further
+    // text-selection events.
+    const target = e.currentTarget;
+    dragState.current = {
+      active: false,
+      pending: true,
       startX: e.clientX,
       startY: e.clientY,
+      startScrollLeft: target.scrollLeft,
+      startScrollTop: target.scrollTop,
       pointerId: e.pointerId,
     };
-    setGrabbing(true);
-    setShowUi(true);
-    e.currentTarget.setPointerCapture(e.pointerId);
+    target.setPointerCapture(e.pointerId);
   }, []);
 
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!panRef.current.active) return;
-    if (e.pointerId !== panRef.current.pointerId) return;
-    e.preventDefault();
-    setPan({
-      x: e.clientX - panRef.current.startX,
-      y: e.clientY - panRef.current.startY,
-    });
+    const ds = dragState.current;
+    if (!ds.pending || e.pointerId !== ds.pointerId) return;
+    const dx = e.clientX - ds.startX;
+    const dy = e.clientY - ds.startY;
+    if (!ds.active && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+    if (!ds.active) {
+      // Crossing the threshold: cancel the iframe's text selection
+      // and commit to a drag.
+      e.preventDefault();
+      ds.active = true;
+      setDragging(true);
+    }
+    const target = e.currentTarget;
+    target.scrollLeft = ds.startScrollLeft - dx;
+    target.scrollTop = ds.startScrollTop - dy;
   }, []);
 
   const onPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!panRef.current.active) return;
-    if (e.pointerId !== panRef.current.pointerId) return;
-    e.preventDefault();
-    panRef.current.active = false;
-    setGrabbing(false);
+    const ds = dragState.current;
+    if (e.pointerId !== ds.pointerId) return;
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
       // iOS Safari can throw on releasePointerCapture; ignore.
     }
+    if (ds.active) {
+      e.preventDefault();
+      setDragging(false);
+    }
+    ds.pending = false;
+    ds.active = false;
+  }, []);
+
+  const onPointerCancel = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const ds = dragState.current;
+    if (e.pointerId !== ds.pointerId) return;
+    if (ds.active) setDragging(false);
+    ds.pending = false;
+    ds.active = false;
   }, []);
 
   const resetView = useCallback(() => {
     setScale(1);
-    setPan({ x: 0, y: 0 });
+    const fr = frameRef.current;
+    if (fr) {
+      fr.scrollLeft = 0;
+      fr.scrollTop = 0;
+    }
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
@@ -173,39 +214,59 @@ export default function PdfSection({
   const setScaleClamped = (v: number) =>
     setScale(Math.max(MIN_SCALE, Math.min(MAX_SCALE, v)));
 
-  const uiVisible = showUi || scale !== 1 || pan.x !== 0 || pan.y !== 0;
-  const transform = `scale(${scale}) translate3d(${pan.x}px, ${pan.y}px, 0)`;
-
   return (
     <div
       ref={wrapRef}
-      data-cursor-suppress="5"
+      // Cursor-suppression is intentionally NOT on the outer
+      // wrapper; the wrapper itself takes up the full row and
+      // suppressing the global CursorGlow over the entire area
+      // makes the cursor feel missing. We only want the dot gone
+      // over the actual PDF (the inner frame), which is what the
+      // data attribute on the frame below is for.
       className="relative bg-zinc-100 dark:bg-zinc-950"
     >
       <p className="lg:hidden mb-2 text-center text-[11px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
         Pinch to zoom · drag to move
       </p>
       <p className="hidden md:block mb-2 text-center text-[11px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
-        Ctrl + scroll to zoom · drag to pan
+        Ctrl + scroll to zoom · drag to pan · select text
       </p>
 
-      {/* The PDF + its transparent event-absorbing overlay share a
-          common wrapper. The iframe paints the document; the overlay
-          sits on top (z-10) and intercepts every pointer event so
-          our wheel + drag handlers always run. */}
+      {/* The OUTER relative wrapper. The frame below is the
+          drag/zoom target. Wheel + pointer handlers are on this div
+          (not on the iframe) so we control how they propagate to
+          the iframe. */}
       <div
         className="relative mx-auto"
         style={{ width: '100%', maxWidth: '816px' }}
       >
         <div
-          className="relative"
-          // The wrapper itself is the visual / transform target. The
-          // transform combines scale and translate so a single CSS
-          // property covers both zoom and pan.
+          ref={frameRef}
+          onWheel={onWheel}
+          onPointerDown={tryStartDrag}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+          // 5px pad so the suppress zone matches the inner frame
+          // exactly, not the empty space around it.
+          data-cursor-suppress="5"
+          // The cursor + scrollable area. The iframe renders the
+          // document, this div defines the viewport. transform: scale
+          // zooms the visible area (the iframe + a bottom blank band
+          // when the PDF is shorter than the viewport, all scaled
+          // together). The iframe's own scrollbars are inside this
+          // div's overflow box, so the user can scroll with the
+          // iframe's own scrollbar or by dragging the area.
+          className={`relative w-full overflow-auto touch-pan-y cursor-${
+            dragging ? 'grabbing' : 'grab'
+          } lg:hover:cursor-grab lg:touch-auto select-none`}
           style={{
-            transform,
+            transform: `scale(${scale})`,
             transformOrigin: 'top center',
             transition: 'transform 0.06s linear',
+            // When scale > 1 the content grows; ensure the parent
+            // doesn't clip it.
+            height: 'auto',
           }}
         >
           <div
@@ -218,30 +279,10 @@ export default function PdfSection({
             <iframe
               src={`${src}#navpanes=0&toolbar=${isFs ? 1 : 0}&view=FitH&zoom=80`}
               title="Ethan Wu — Resume"
-              // z-0 so the overlay always wins the click target.
-              className="block w-full h-[80dvh] lg:h-auto lg:aspect-[8.5/11] bg-white dark:bg-zinc-950 relative z-0"
+              className="block w-full h-[80dvh] lg:h-auto lg:aspect-[8.5/11] bg-white dark:bg-zinc-950"
               style={{ border: 0 }}
             />
           </div>
-
-          {/* The event-absorbing overlay. Sits on top of the iframe
-              at z-10. We give it cursor: grab / grabbing so the user
-              has a visual hint that the area is interactive. The
-              overlay is fully transparent — invisible, but it
-              intercepts every pointer event so wheel + pointerdown
-              + pointermove + pointerup handlers can drive our state
-              without competing with the iframe's own. */}
-          <div
-            ref={overlayRef}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-            onWheel={onWheel as unknown as React.WheelEventHandler<HTMLDivElement>}
-            className={`absolute inset-0 z-10 ${
-              grabbing ? 'cursor-grabbing' : 'cursor-grab'
-            }`}
-          />
         </div>
 
         <div
@@ -260,7 +301,7 @@ export default function PdfSection({
           <button
             type="button"
             onClick={resetView}
-            aria-label="Reset zoom and pan"
+            aria-label="Reset zoom and scroll"
             className="px-2.5 h-8 rounded-full hover:bg-white/10 dark:hover:bg-zinc-900/10 flex items-center justify-center text-[11px] font-mono tabular-nums min-w-[3.5rem]"
           >
             {Math.round(scale * 100)}%
