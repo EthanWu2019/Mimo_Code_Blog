@@ -5,45 +5,33 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * PDF preview block.
  *
- * Desktop interaction model:
- *   - Ctrl + mouse-wheel over the PDF is intercepted. The default
- *     browser zoom is too coarse (~10% per notch) and stacks with
- *     the Letter aspect ratio of the iframe so a single tick
- *     visibly jumps the resume between two extreme sizes. We
- *     instead apply a smooth CSS transform: scale (1 - deltaY *
- *     STEP) per wheel tick, where STEP is 0.0004 (~0.5% per tick,
- *     four times finer than the previous version). Clamped to
- *     [0.4, 3.0].
- *   - PDF is NOT re-rendered, so the user's scroll position inside
- *     the document is preserved across zoom gestures.
- *   - Drag to pan: mousedown on the PDF switches the wrapper's
- *     transform-origin to the cursor position and starts tracking
- *     pointer movement, applying a translate(offsetX, offsetY)
- *     delta per frame. The cursor is `grab` on hover and
- *     `grabbing` while dragging. While dragging the iframe is
- *     pointer-event-none so its own scrollbar doesn't fight the
- *     pan. Releasing the mouse leaves the pan in place (subsequent
- *     zoom gestures keep the pan offset).
- *   - Floating zoom toolbar (top-right, desktop only, hidden when
- *     scale = 1). Buttons: − (zoom out 10%), percent (reset),
- *     + (zoom in 10%), fullscreen.
- *   - Step 0.1 (≈10%) per click on +/-, with the wheel giving
- *     the finer 0.5% per notch for precision.
+ * Why this is wrapped in a transparent always-on top layer:
+ *   - The PDF is served inside an iframe. mousedown on the iframe
+ *     starts a text-selection there and the event does NOT bubble
+ *     past the iframe's edge — so we can't catch it on a parent
+ *     div. The classic fix is a transparent absolutely-positioned
+ *     <div> stacked on top of the iframe that absorbs pointer
+ *     events; pointer events on that layer are then driven by
+ *     our React state.
+ *   - The owner wants to drag the PDF around (not select text) and
+ *     zoom with Ctrl + wheel. With the overlay capturing pointer
+ *     events, we control the entire interaction and the iframe's
+ *     own event handlers never run.
+ *   - The overlay is invisible (background: transparent) and
+ *     pointer-events: auto. The iframe stays as a visual layer
+ *     underneath; we never disable its visibility, just intercept
+ *     the events.
  *
- * Mobile interaction model (unchanged):
- *   - iframe is h-[80dvh], pinch zoom + drag pan owned by the
- *     browser's built-in PDF viewer.
- *
- * Cursor dot suppression: data-cursor-suppress on the wrapper
- * hides the global CursorGlow when the user hovers the PDF, and
- * the wrapper itself uses cursor: grab/grabbing so the system
- * arrow is replaced with the proper hand cursor on the PDF.
+ * Cursor dot suppression: data-cursor-suppress on the outer
+ * wrapper hides the global CursorGlow when the user hovers the
+ * PDF, and the overlay itself uses cursor: grab / grabbing.
  */
 
 const MIN_SCALE = 0.4;
 const MAX_SCALE = 3.0;
-// ~0.5% per wheel tick — small enough to feel smooth, large
-// enough to make a clear difference with each notch.
+// ~0.5% per wheel tick. The owner found 1.5% per tick (the prior
+// version) still jumped. 0.5% is the smallest unit that still
+// gives a perceptible change with each notch.
 const WHEEL_STEP = 0.0004;
 // 10% per click on the + / − toolbar buttons.
 const BUTTON_STEP = 0.1;
@@ -56,20 +44,18 @@ export default function PdfSection({
   src: string;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const [isFs, setIsFs] = useState(false);
   const [canFullscreen, setCanFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [grabbing, setGrabbing] = useState(false);
-  // Show the floating zoom toolbar briefly after a zoom gesture or
-  // while the user is dragging the PDF around. Hidden when scale=1,
-  // no recent gesture, and not dragging.
+  // Show the floating zoom toolbar briefly after a zoom event or
+  // pan so the new scale / position is legible. Pin when scale != 1.
   const [showUi, setShowUi] = useState(false);
   const uiTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Detect fullscreen support on mount
   useEffect(() => {
     setCanFullscreen(
       typeof document !== 'undefined' && !!document.fullscreenEnabled
@@ -81,8 +67,6 @@ export default function PdfSection({
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
-  // Briefly show the toolbar after a zoom event or pan so the
-  // new scale / position is legible. Pin it when scale != 1.
   useEffect(() => {
     if (uiTimer.current) clearTimeout(uiTimer.current);
     if (scale !== 1 || pan.x !== 0 || pan.y !== 0) {
@@ -95,10 +79,13 @@ export default function PdfSection({
     };
   }, [scale, pan.x, pan.y]);
 
-  // ---- Wheel zoom ----
-  // Bound to the PDF frame wrapper, not the document, so zoom only
-  // fires while the cursor is over the resume. preventDefault() kills
-  // the browser's native Ctrl+wheel page zoom.
+  // All interaction handlers are bound to overlayRef (the
+  // transparent top layer), not the iframe. This is the difference
+  // that makes the controls actually work: the iframe swallows its
+  // own events, so listeners on the iframe's parents never see
+  // them. By sitting ON TOP of the iframe (z-10 vs the iframe's
+  // implicit z-0), this overlay is the first to receive every
+  // pointer event.
   const onWheel = useCallback((e: WheelEvent) => {
     if (!e.ctrlKey && !e.metaKey) return; // let normal scroll through
     e.preventDefault();
@@ -109,41 +96,31 @@ export default function PdfSection({
   }, []);
 
   useEffect(() => {
-    const el = frameRef.current;
+    const el = overlayRef.current;
     if (!el) return;
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
   }, [onWheel]);
 
-  // ---- Drag to pan ----
-  // Track the cursor relative to the wrapper's top-left, so that
-  // transform-origin can be set to the exact click point. While
-  // dragging we apply a translate transform on the inner div in
-  // addition to the scale.
+  // Drag-to-pan. Tracks the cursor from mousedown onward, applies
+  // the delta as a translate on the inner element via state. We use
+  // PointerCapture so the drag continues even if the cursor leaves
+  // the wrapper area.
   const panRef = useRef({
     active: false,
     startX: 0,
     startY: 0,
-    originX: 0,
-    originY: 0,
     pointerId: -1,
   });
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    // Only middle-click or primary click drags. Primary is fine on
-    // touch. Right-click keeps the browser's context menu.
     if (e.button !== 0 && e.button !== 1) return;
-    // Don't initiate a pan if the user is ctrl+wheel-ing; the
-    // wheel handler will fire.
     if (e.ctrlKey || e.metaKey) return;
     e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
     panRef.current = {
       active: true,
       startX: e.clientX,
       startY: e.clientY,
-      originX: e.clientX - rect.left,
-      originY: e.clientY - rect.top,
       pointerId: e.pointerId,
     };
     setGrabbing(true);
@@ -155,18 +132,10 @@ export default function PdfSection({
     if (!panRef.current.active) return;
     if (e.pointerId !== panRef.current.pointerId) return;
     e.preventDefault();
-    const dx = e.clientX - panRef.current.startX;
-    const dy = e.clientY - panRef.current.startY;
     setPan({
-      x: panRef.current.originX - (panRef.current.originX - dx),
-      y: panRef.current.originY - (panRef.current.originY - dy),
+      x: e.clientX - panRef.current.startX,
+      y: e.clientY - panRef.current.startY,
     });
-    // Easier: anchor the origin at the click point by setting
-    // transform-origin dynamically. We compute it on every move.
-    setPan((prev) => ({
-      x: panRef.current.originX - (e.clientX - panRef.current.startX),
-      y: panRef.current.originY - (e.clientY - panRef.current.startY),
-    }));
   }, []);
 
   const onPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -178,11 +147,10 @@ export default function PdfSection({
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
-      // Safari iOS sometimes throws on release; ignore.
+      // iOS Safari can throw on releasePointerCapture; ignore.
     }
   }, []);
 
-  // Reset pan to 0/0 in addition to scale.
   const resetView = useCallback(() => {
     setScale(1);
     setPan({ x: 0, y: 0 });
@@ -206,9 +174,6 @@ export default function PdfSection({
     setScale(Math.max(MIN_SCALE, Math.min(MAX_SCALE, v)));
 
   const uiVisible = showUi || scale !== 1 || pan.x !== 0 || pan.y !== 0;
-
-  // The combined transform is scale + translate. We pre-build it as a
-  // string so React doesn't re-create the style object every render.
   const transform = `scale(${scale}) translate3d(${pan.x}px, ${pan.y}px, 0)`;
 
   return (
@@ -217,63 +182,32 @@ export default function PdfSection({
       data-cursor-suppress="5"
       className="relative bg-zinc-100 dark:bg-zinc-950"
     >
-      {/* Mobile-only hint */}
       <p className="lg:hidden mb-2 text-center text-[11px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
         Pinch to zoom · drag to move
       </p>
-
-      {/* Desktop-only hint when the user hasn't started zooming yet */}
       <p className="hidden md:block mb-2 text-center text-[11px] uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
         Ctrl + scroll to zoom · drag to pan
       </p>
 
-      {/* Outer relative wrapper. transform: scale() does the actual
-          zoom; transform-origin: top center keeps the top of the PDF
-          pinned while the user scales (the bottom grows downward).
-          The translate3d applies the drag-pan offset. We use 3d
-          instead of plain translate because some browsers won't
-          composite a 2d transform alongside the scale transform. */}
+      {/* The PDF + its transparent event-absorbing overlay share a
+          common wrapper. The iframe paints the document; the overlay
+          sits on top (z-10) and intercepts every pointer event so
+          our wheel + drag handlers always run. */}
       <div
         className="relative mx-auto"
         style={{ width: '100%', maxWidth: '816px' }}
       >
         <div
-          ref={frameRef}
-          // The wheel handler is attached to this element (not the
-          // iframe) so the document doesn't get a default browser
-          // zoom. CSS touch-action: none on lg+ so the browser's own
-          // scroll behavior doesn't fight our pointer-drag panning.
-          // cursor: grab / grabbing overrides the system arrow with a
-          // proper hand cursor.
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          className={`relative w-full overflow-auto touch-pan-y ${
-            grabbing
-              ? 'cursor-grabbing'
-              : 'lg:cursor-grab lg:hover:cursor-grab'
-          } lg:touch-auto select-none`}
+          className="relative"
+          // The wrapper itself is the visual / transform target. The
+          // transform combines scale and translate so a single CSS
+          // property covers both zoom and pan.
           style={{
             transform,
             transformOrigin: 'top center',
             transition: 'transform 0.06s linear',
-            // While dragging, stop the iframe from stealing wheel/click
-            // events so the user can pan past its scrollbar.
-            pointerEvents: 'auto',
           }}
         >
-          {/* An invisible overlay above the iframe ONLY while
-              dragging. This is how we keep the iframe from intercepting
-              the rest of the pointer moves once the drag starts. */}
-          {grabbing && (
-            <div
-              aria-hidden
-              className="absolute inset-0 z-10"
-              style={{ pointerEvents: 'auto' }}
-            />
-          )}
-
           <div
             className="relative mx-auto"
             style={{
@@ -284,25 +218,34 @@ export default function PdfSection({
             <iframe
               src={`${src}#navpanes=0&toolbar=${isFs ? 1 : 0}&view=FitH&zoom=80`}
               title="Ethan Wu — Resume"
-              className="block w-full h-[80dvh] lg:h-auto lg:aspect-[8.5/11] bg-white dark:bg-zinc-950"
-              // Disable iframe pointer events while the user is
-              // panning the wrapper. Without this the iframe's own
-              // scroll handlers can fight ours.
-              style={{
-                border: 0,
-                pointerEvents: grabbing ? 'none' : 'auto',
-              }}
+              // z-0 so the overlay always wins the click target.
+              className="block w-full h-[80dvh] lg:h-auto lg:aspect-[8.5/11] bg-white dark:bg-zinc-950 relative z-0"
+              style={{ border: 0 }}
             />
           </div>
+
+          {/* The event-absorbing overlay. Sits on top of the iframe
+              at z-10. We give it cursor: grab / grabbing so the user
+              has a visual hint that the area is interactive. The
+              overlay is fully transparent — invisible, but it
+              intercepts every pointer event so wheel + pointerdown
+              + pointermove + pointerup handlers can drive our state
+              without competing with the iframe's own. */}
+          <div
+            ref={overlayRef}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onWheel={onWheel as unknown as React.WheelEventHandler<HTMLDivElement>}
+            className={`absolute inset-0 z-10 ${
+              grabbing ? 'cursor-grabbing' : 'cursor-grab'
+            }`}
+          />
         </div>
 
-        {/* Floating zoom toolbar. Hidden on the narrowest screens
-            (we show it on md+ — 768px and up — so the fullscreen
-            button is back on iPad and not just desktop). Visible
-            briefly after a zoom / pan gesture, persistent when
-            scale != 1. */}
         <div
-          className={`hidden md:flex absolute top-3 right-3 z-10 items-center gap-1.5 rounded-full bg-zinc-900/85 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur shadow-lg ring-1 ring-white/10 transition-opacity duration-200 px-1.5 py-1 ${
+          className={`hidden md:flex absolute top-3 right-3 z-20 items-center gap-1.5 rounded-full bg-zinc-900/85 dark:bg-white/90 text-white dark:text-zinc-900 backdrop-blur shadow-lg ring-1 ring-white/10 transition-opacity duration-200 px-1.5 py-1 ${
             uiVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
