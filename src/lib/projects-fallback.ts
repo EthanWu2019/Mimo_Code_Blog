@@ -43,7 +43,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&q=80&auto=format&fit=crop',
     featured: true,
-    sortOrder: 0,
+    sortOrder: 5,
     year: 2026,
   },
   {
@@ -67,7 +67,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1600&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 1,
+    sortOrder: 6,
     year: 2026,
   },
   {
@@ -91,7 +91,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1600&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 2,
+    sortOrder: 7,
     year: 2025,
   },
 
@@ -137,18 +137,108 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1457364887197-9150188c107b?w=1600&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 4,
+    sortOrder: 9,
     year: 2024,
   },
 
   // ──── MAJOR (newer) ────
+  // ──── MAJOR 01 (owner priority) ────
   {
-    // Personal / portfolio piece — a Next.js 16 + v0 app that
-    // simulates the dynamic of a hostile social-media feed and lets
-    // players experience an "echo chamber" first-hand. Initial v0
-    // commit 2026-04-13; DeepSeek integration landed on day two with
-    // a deterministic mock fallback so the app stays playable even
-    // when the upstream model is rate-limited.
+    // Owner's most important project: a local TRSS-Yunzai QQ bot
+    // stack he deployed, customised, and wrote a small landing site
+    // for. Description here is the v1 draft — the owner plans to
+    // polish the project page later with screenshots, so we leave
+    // room for him to swap this prose out.
+    id: 'fallback-major-yunzai-local',
+    slug: 'yunzai-local-deployment',
+    title: 'YunZai QQ Bot — Local Deployment',
+    tagline:
+      'A self-hosted TRSS-Yunzai stack with a NapCat-tuned QQ client adapter and a small landing site',
+    description:
+      'The flagship personal project. The full TRSS-Yunzai (originally by TimeRainStarSky) stack, self-hosted on a Mac mini. The owner did NOT write YunZai itself and is NOT a contributor upstream — what he contributed is the QQ client adapter integration with NapCat that makes the bot feel like a real chat client: avatars, file transfer, group message routing, login lifecycle. On top of that he built a small landing site (https://海绵酱.love) to introduce the bot to friends; the domain currently renders as the xn-- punycode form. v1 draft prose — the owner will polish the project page with real screenshots, configuration walkthroughs, and a proper changelog when this card is ready for prime time.',
+    category: 'tooling',
+    tier: 'major',
+    status: 'shipped',
+    tech: [
+      'Node.js',
+      'TRSS-Yunzai',
+      'NapCat',
+      'QQ client protocol',
+      'WebSocket',
+      'Linux / macOS daemon',
+    ],
+    highlights: [
+      'Custom NapCat <-> YunZai adapter: avatars, file transfer, group message routing',
+      'Single-binary deploy: build, install, start with one command on a Mac mini',
+      'Landing site (https://海绵酱.love) to introduce the bot to friends',
+    ],
+    link: 'https://海绵酱.love',
+    repo: 'https://github.com/TimeRainStarSky/Yunzai',
+    coverImage:
+      'https://images.unsplash.com/photo-1614680376573-df3480f0f9ba?w=1600&q=80&auto=format&fit=crop',
+    featured: true,
+    sortOrder: 0,
+    year: 2026,
+  },
+  {
+    // Owner-built single-file YunZai plugins that live in the bot's
+    // plugin/example directory. The owner asked this to live as its
+    // own project entry so the plugin work is visible alongside the
+    // bot itself.
+    id: 'fallback-major-yunzai-plugin',
+    slug: 'yunzai-plugin',
+    title: 'YunZai Plugin Examples',
+    tagline:
+      'Single-JS YunZai plugins written for the local bot — plugin/example/ dir',
+    description:
+      'A handful of single-JS plugins the owner wrote against the local YunZai install, all kept in the plugin/example directory in the bot repo. Lightweight: each plugin is a single .js file that hooks into the bot\'s event bus. v1 draft prose; the project page will get per-plugin screenshots, sample message transcripts, and a usage walkthrough when the owner is ready to publish them in detail.',
+    category: 'tooling',
+    tier: 'major',
+    status: 'shipped',
+    tech: ['JavaScript', 'Node.js', 'YunZai plugin API', 'Event bus'],
+    highlights: [
+      'Each plugin is one .js file — easy to copy, drop into plugin/example, restart',
+      'Event-bus hooks so plugins compose without stepping on each other',
+    ],
+    link: null,
+    repo: 'https://github.com/TimeRainStarSky/Yunzai',
+    coverImage:
+      'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&q=80&auto=format&fit=crop',
+    featured: true,
+    sortOrder: 1,
+    year: 2026,
+  },
+  {
+    // Course project: full semester agile build, real engineering
+    // process (PRs / code review / issues / tests / AB). Team of
+    // several CSE 4504 students; owner was frontend lead.
+    id: 'fallback-major-athlete',
+    slug: 'athlete-tracker-team-project',
+    title: 'Athlete Tracker',
+    tagline:
+      'CSE 4504 software-engineering semester project — full-stack athlete training tracker',
+    description:
+      'A semester-long team project for WashU CSE 4504 (Software Engineering). The team ran the project the way real software shops run production work: every feature was scoped via issues, discussed in pull requests, and reviewed by at least one other teammate before merge. Owner was frontend lead (React/TS/UI state, accessibility, and component contracts). Other teammates owned infrastructure, persistence, and deployment. The repo carries a complete record of the engineering process — read the PR history and issue threads to see the work in chronological order. Test cases were written for every feature, and the team ran an A/B comparison of two parallel implementations of the analytics dashboard before settling on the final design. v1 draft prose; the project page will get deployment screenshots, the team retro, and per-feature test evidence when the owner is ready to publish them in detail.',
+    category: 'web',
+    tier: 'major',
+    status: 'shipped',
+    tech: ['TypeScript', 'React', 'Node.js', 'PostgreSQL', 'Jest', 'Cypress'],
+    highlights: [
+      'Full semester of real engineering practice: PRs, code review, issues, tests',
+      'Owner owned frontend: React + TS, accessibility, component contracts',
+      'A/B testing on the analytics dashboard before settling on the final design',
+      'Function-by-function decoupling and per-feature test coverage',
+    ],
+    link: null,
+    repo: 'https://github.com/cse4504-sp26-wustl/team-project-team1-obpc',
+    coverImage:
+      'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80&auto=format&fit=crop',
+    featured: true,
+    sortOrder: 2,
+    year: 2026,
+  },
+  {
+    // EchoChamber kept its full description; bumped to sortOrder 3.
     id: 'fallback-mono-echo-chamber',
     slug: 'echo-chamber-cyberbullying-simulator',
     title: 'EchoChamber — Cyber-bullying Simulator',
@@ -276,12 +366,14 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=800&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 4,
+    sortOrder: 14,
     year: 2026,
   },
 
   // ────────────────────── MAJOR (batch added from GitHub inventory) ──────────────────────
   {
+    // Tauri 2 desktop app that orchestrates a full QQ bot stack with
+    // one click. Lower priority than the local-deploy flagship.
     id: 'fallback-major-yunzai',
     slug: 'yunzai-tauri-launcher',
     title: 'YunZai Console',
@@ -302,7 +394,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1600&q=80&auto=format&fit=crop',
     featured: true,
-    sortOrder: 5,
+    sortOrder: 4,
     year: 2026,
   },
   {
@@ -325,30 +417,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1600&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 6,
-    year: 2026,
-  },
-  {
-    id: 'fallback-major-athlete',
-    slug: 'athlete-tracker-team-project',
-    title: 'Athlete Tracker',
-    tagline: 'CSE 4504 software-engineering team project — full-stack athlete tracking',
-    description:
-      'Full-stack team project for WashU CSE 4504 (Software Engineering): athlete management, training logs, and team dashboards built with an agile group workflow.',
-    category: 'web',
-    tier: 'major',
-    status: 'shipped',
-    tech: ['TypeScript', 'React', 'Node.js', 'PostgreSQL'],
-    highlights: [
-      'Team-built over a semester with agile ceremonies',
-      'Full-stack CRUD with auth and role separation',
-    ],
-    link: null,
-    repo: 'https://github.com/cse4504-sp26-wustl/team-project-team1-obpc',
-    coverImage:
-      'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80&auto=format&fit=crop',
-    featured: false,
-    sortOrder: 7,
+    sortOrder: 11,
     year: 2026,
   },
   {
@@ -368,7 +437,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=1600&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 8,
+    sortOrder: 12,
     year: 2026,
   },
 
@@ -570,7 +639,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     coverImage:
       'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&q=80&auto=format&fit=crop',
     featured: false,
-    sortOrder: 14,
+    sortOrder: 2,
     year: 2024,
   },
   {
