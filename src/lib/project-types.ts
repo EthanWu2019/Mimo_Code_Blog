@@ -21,6 +21,22 @@ export interface ProjectDetailSection {
   body: string;
 }
 
+export interface ProjectChapterLink {
+  label: string;
+  href: string;
+}
+
+export interface ProjectChapter {
+  /** Timeline label, e.g. '2020', 'Contribution 01', 'Live'. */
+  era: string;
+  heading: string;
+  body: string;
+  /** True = this chapter is the owner's own contribution. Renders a
+   *  "MY CONTRIBUTION" badge. */
+  contribution: boolean;
+  links?: ProjectChapterLink[];
+}
+
 export interface ProjectItem {
   id: string;
   slug: string;
@@ -45,6 +61,11 @@ export interface ProjectItem {
   detailSections?: ProjectDetailSection[];
   /** Personal narrative, rendered as a timeline. */
   story?: string[];
+  /** Linear narrative chapters — the preferred detail-page layout.
+   *  One timeline: story and technical contributions in the same
+   *  flow, each chapter optionally flagged as a contribution and
+   *  carrying highlighted links. */
+  chapters?: ProjectChapter[];
 }
 
 export const CATEGORY_LABEL: Record<ProjectCategory, string> = {

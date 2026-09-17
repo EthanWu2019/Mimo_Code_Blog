@@ -181,37 +181,71 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     featured: true,
     sortOrder: 0,
     year: 2026,
-    detailSections: [
+    chapters: [
       {
-        heading: 'The original platform',
-        body: 'YunZai is an open-source QQ bot platform, originally created by TimeRainStarSky. The source lives at https://github.com/TimeRainStarSky/Yunzai. I am a downstream user and plugin author — not a core contributor. Everything below is my own layer on top of that upstream project.',
+        era: '2020',
+        heading: 'The spark — Genshin, QQ, and a bot in a thousand-person group',
+        body:
+          "Genshin Impact launches globally as a phenomenon, and QQ is the biggest social platform for Chinese game communities — bar none. In group chats with thousands of members, I watched people talk to a bot through #-commands: pulling in-game account data, character build help, material and farming info, even auto check-ins on Hoyolab. That moment I understood — this is a genuinely fun community bot. It planted the seed for everything after.",
+        contribution: false,
       },
       {
-        heading: 'My plugins · plugin/example/',
-        body: 'A stack of single-JS plugins that hook into the bot’s event bus, each one file you can drop into plugin/example/ and restart. Game ID — a social-card registry where friends store their game IDs and print a card-style list for adding each other. Weather — city-level forecasts anywhere in the world via a free weather API. Stock & gold — live quotes from free market APIs. 豆浆 — an in-group virtual-currency game: earn coins by chatting with the bot, redeem virtual prizes, keep the group alive. Plus several one-shot utilities. (Placeholder list — per-plugin screenshots and usage walkthroughs are coming.)',
+        era: 'The platform',
+        heading: 'YunZai — the open-source engine underneath',
+        body:
+          "That bot was running on YunZai, an open-source QQ bot platform. The original project is TimeRainStarSky's — I am a downstream user and plugin author, not a core contributor. Everything after this point is my own layer on top of that upstream engine.",
+        contribution: false,
+        links: [
+          {
+            label: 'TimeRainStarSky/Yunzai · source',
+            href: 'https://github.com/TimeRainStarSky/Yunzai',
+          },
+        ],
       },
       {
-        heading: 'NapCat QQ adapter',
-        body: 'After Tencent tightened control over third-party bots, YunZai’s original QQ login path became increasingly unstable. I adapted the deployment to log in through NapCat instead: NapCat loads the real QQ client and exposes a OneBot11 endpoint, then connects back to YunZai as a WebSocket client at ws://localhost:2536/OneBotv11 (connection name “trss”, 30s heartbeat, 30s reconnect). Three QQ accounts run side by side, each with its own config pair. This covers avatars, file transfer, group-message routing and the whole login lifecycle. Startup order: Redis → YunZai → NapCat. The full wiring is live on my game laptop and can be inspected there.',
+        era: 'Contribution 01',
+        heading: 'Game ID — my first plugin',
+        body:
+          "Because YunZai got famous, plugins beyond Genshin kept appearing in the open-source ecosystem: tarot-card draws to tell your fortune, AI summarizers of group chat, multi-game account binding with live community info, even a Discord deployment bridge. I wanted to join that movement. My first plugin was Game ID: friends store their game IDs in the bot's local database and print a card-style list of everything they play — a social business card for gamers.",
+        contribution: true,
       },
       {
-        heading: 'YunZai Console · in progress',
-        body: 'I am currently working on packaging the whole project: YunZai Console, a Tauri 2 desktop app that bundles Redis + TRSS-YunZai + NapCat into a single-binary installer — setup wizard, QR-code web login (localhost web UI), one-click start/stop, MSI/NSIS packaging for Windows.',
+        era: 'Contribution 02',
+        heading: 'Weather, stock & gold, and 豆浆',
+        body:
+          "As the first, tenth, hundredth user adopted Game ID, I was genuinely happy — so I kept going. A weather plugin for city-level forecasts anywhere in the world via a free weather API. A stock + gold-price plugin on free market APIs. And 豆浆, an in-group virtual-currency game: earn coins by chatting with the bot, redeem virtual prizes, keep the group chat alive.",
+        contribution: true,
       },
       {
-        heading: 'Live deployment · 海绵酱',
-        body: 'The bot runs 24/7. This is the official intro site for 海绵酱, my always-on YunZai-based bot: https://www.xn--90w268avpn.love/',
+        era: 'Contribution 03',
+        heading: 'The crackdown — and the NapCat adapter',
+        body:
+          "Then Tencent began cracking down on third-party bots — they can be abused for grey-market content, explicit material, even political propaganda — and YunZai's original QQ login path became less and less stable. I adapted the deployment to log in through NapCat instead: NapCat loads the real QQ client and exposes a OneBot11 endpoint, then connects back to YunZai as a WebSocket client at ws://localhost:2536/OneBotv11 (connection \"trss\", 30s heartbeat, 30s reconnect). Three QQ accounts run side by side, each with its own config pair — covering avatars, file transfer, group-message routing and the whole login lifecycle. Startup order: Redis → YunZai → NapCat. The full wiring is live on my game laptop.",
+        contribution: true,
+      },
+      {
+        era: 'Contribution 04 · in progress',
+        heading: 'YunZai Console — packaging the whole stack',
+        body:
+          "Right now I'm working on turning this whole deployment into a product: YunZai Console, a Tauri 2 desktop app that bundles Redis + TRSS-YunZai + NapCat into a single-binary installer — setup wizard, QR-code web login (localhost web UI), one-click start/stop, MSI/NSIS packaging for Windows.",
+        contribution: true,
+      },
+      {
+        era: 'Live',
+        heading: '海绵酱 — running 24/7',
+        body:
+          "The bot has been running around the clock ever since. This is the official intro site for 海绵酱, my always-on YunZai-based bot.",
+        contribution: false,
+        links: [
+          {
+            label: '海绵酱.love · live site',
+            href: 'https://www.xn--90w268avpn.love/',
+          },
+        ],
       },
     ],
-    story: [
-      '2020 — Genshin Impact launches globally as a phenomenon, and QQ is the biggest social platform for Chinese game communities, bar none. In group chats with thousands of members I watched people talk to a bot with #-commands: pulling in-game account data, character build help, material and farming info, even auto check-ins on Hoyolab. That moment I understood — this is a genuinely fun community bot. It planted the seed for everything after.',
-      'Because YunZai got famous, plugins beyond Genshin kept appearing in the open-source ecosystem: tarot-card draws to tell your fortune, AI summarizers of group chat, multi-game account binding with live community info, even a Discord deployment bridge. As a developer I wanted to join that movement.',
-      'My first plugin was Game ID: friends store their game IDs in the bot’s local database and print a card-style list of everything they play, so other members can add them — a social business card for gamers.',
-      'As the first, tenth, hundredth user adopted it, I was genuinely happy — so I kept going: a weather plugin (city-level forecasts anywhere via a free weather API), a stock + gold-price plugin (free APIs), the 豆浆 coin game (virtual currency and virtual prizes to keep group chats active), and all kinds of other fun utilities.',
-      'Then Tencent began cracking down on third-party bots — they can be abused for grey-market content, explicit material, even political propaganda — and YunZai’s original QQ login method became less and less stable. That is exactly why I switched to NapCat as the login layer. The whole journey — the bot, the plugins, the adapter — is the soul of this project.',
-    ],
-  },
 
+  },
   {
     // Course project: full semester agile build, real engineering
     // process (PRs / code review / issues / tests / AB). Team of
