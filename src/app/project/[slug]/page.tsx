@@ -7,7 +7,6 @@ import { getFallbackProjects } from '@/lib/projects-fallback';
 import {
   CATEGORY_LABEL,
   STATUS_LABEL,
-  STATUS_STYLE,
   type ProjectItem,
 } from '@/lib/project-types';
 
@@ -16,6 +15,12 @@ import {
  *
  * Data source mirrors /api/projects: DB row first, curated fallback
  * dataset second, 404 when neither has the slug.
+ *
+ * When a project carries `detailSections`, they render as a masonry
+ * card grid (CSS columns) so contributions read as distinct blocks
+ * instead of one wall of text. `story` renders as a numbered
+ * timeline. Projects without those fields fall back to the plain
+ * description paragraph.
  */
 
 async function findProject(slug: string): Promise<ProjectItem | null> {
@@ -56,9 +61,12 @@ export default async function ProjectDetailPage({
   const p = await findProject(slug);
   if (!p) notFound();
 
+  const hasSections = (p.detailSections?.length ?? 0) > 0;
+  const hasStory = (p.story?.length ?? 0) > 0;
+
   return (
     <div className="min-h-[calc(100vh-80px)] px-4 sm:px-6 py-10 sm:py-14">
-      <article className="max-w-4xl mx-auto">
+      <article className="max-w-5xl mx-auto">
         {/* Back link */}
         <Link
           href="/project"
@@ -81,73 +89,27 @@ export default async function ProjectDetailPage({
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-zinc-900 dark:text-white leading-[1.05]">
             {p.title}
           </h1>
-          <p className="mt-3 text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="mt-3 text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
             {p.tagline}
           </p>
         </header>
 
         {/* Cover */}
         {p.coverImage && (
-          <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 mb-10 bg-zinc-100 dark:bg-zinc-900">
+          <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 mb-8 bg-zinc-100 dark:bg-zinc-900">
             <Image
               src={p.coverImage}
               alt={p.title}
               fill
-              sizes="(min-width: 896px) 896px, 100vw"
+              sizes="(min-width: 1024px) 1024px, 100vw"
               className="object-cover"
             />
           </div>
         )}
 
-        {/* Description */}
-        <section className="mb-10">
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-4">
-            About
-          </h2>
-          <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-            {p.description}
-          </p>
-        </section>
-
-        {/* Highlights */}
-        {p.highlights && p.highlights.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-4">
-              Highlights
-            </h2>
-            <ul className="space-y-2.5">
-              {p.highlights.map((h, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                  <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
-                  {h}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Tech */}
-        {p.tech.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-4">
-              Stack
-            </h2>
-            <ul className="flex flex-wrap gap-2">
-              {p.tech.map((t) => (
-                <li
-                  key={t}
-                  className="px-3 py-1 text-xs font-medium rounded-full border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-900/50"
-                >
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Links */}
+        {/* Primary links — surfaced early, hiring managers click here */}
         {(p.link || p.repo) && (
-          <div className="flex flex-wrap items-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center gap-3 mb-12">
             {p.link && (
               <a
                 href={p.link}
@@ -175,6 +137,88 @@ export default async function ProjectDetailPage({
               </a>
             )}
           </div>
+        )}
+
+        {/* Contributions — masonry card grid */}
+        {hasSections ? (
+          <section className="mb-14">
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-sm uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
+                About &amp; my contributions
+              </h2>
+              <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+            </div>
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-4 [column-fill:_balance]">
+              {p.detailSections!.map((s, i) => (
+                <div
+                  key={i}
+                  className="break-inside-avoid mb-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 p-5"
+                >
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-2 leading-snug">
+                    {s.heading}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    {s.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <section className="mb-14">
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-sm uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
+                About
+              </h2>
+              <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+            </div>
+            <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-2xl whitespace-pre-line">
+              {p.description}
+            </p>
+          </section>
+        )}
+
+        {/* Story — numbered timeline */}
+        {hasStory && (
+          <section className="mb-14">
+            <div className="flex items-center gap-3 mb-8">
+              <h2 className="text-sm uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium">
+                The story
+              </h2>
+              <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+            </div>
+            <ol className="relative space-y-8 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-zinc-200 dark:before:bg-zinc-800">
+              {p.story!.map((para, i) => (
+                <li key={i} className="relative pl-12">
+                  <span className="absolute left-0 top-1 flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                    {i + 1}
+                  </span>
+                  <p className="text-sm md:text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+                    {para}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+        {/* Stack */}
+        {p.tech.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-[11px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 font-medium mb-4">
+              Stack
+            </h2>
+            <ul className="flex flex-wrap gap-2">
+              {p.tech.map((t) => (
+                <li
+                  key={t}
+                  className="px-3 py-1 text-xs font-medium rounded-full border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-900/50"
+                >
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </article>
     </div>

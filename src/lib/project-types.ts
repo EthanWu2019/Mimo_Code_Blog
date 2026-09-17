@@ -16,6 +16,11 @@ export type ProjectStatus = 'shipped' | 'in-progress' | 'archived';
 
 export type ProjectTier = 'major' | 'vibe';
 
+export interface ProjectDetailSection {
+  heading: string;
+  body: string;
+}
+
 export interface ProjectItem {
   id: string;
   slug: string;
@@ -35,6 +40,11 @@ export interface ProjectItem {
   year: number;
   createdAt?: string;
   updatedAt?: string;
+  /** Structured case-study sections, rendered as a masonry card grid
+   *  on the detail page. Falls back to plain description when absent. */
+  detailSections?: ProjectDetailSection[];
+  /** Personal narrative, rendered as a timeline. */
+  story?: string[];
 }
 
 export const CATEGORY_LABEL: Record<ProjectCategory, string> = {

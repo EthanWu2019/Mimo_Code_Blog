@@ -142,18 +142,18 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
   },
 
   // ──── MAJOR (newer) ────
-  // ──── MAJOR 01 (owner priority) ────
+    // ──── MAJOR 01 (owner priority) ────
   {
-    // Owner's flagship personal project. Hosts a self-deployed
-    // TRSS-YunZai QQ bot, contributes plugins to the upstream
-    // example directory, and runs a small landing site for it.
+    // Owner's flagship personal project: a self-deployed
+    // TRSS-YunZai QQ bot stack plus the plugins and the NapCat
+    // adapter the owner wrote around it.
     id: 'fallback-major-yunzai-local',
     slug: 'yunzai-local-deployment',
     title: 'YunZai QQ Bot — Local Deployment',
     tagline:
-      'A 24/7 self-hosted TRSS-YunZai stack on a Mac mini, with single-JS plugins, a NapCat QQ client adapter, and the 海绵酱.love landing site',
+      'A 24/7 self-hosted TRSS-YunZai bot on a Mac mini — my plugins, my NapCat QQ adapter, and the 海绵酱 landing site',
     description:
-      'The flagship personal project. The full TRSS-YunZai bot platform (originally by TimeRainStarSky on GitHub — the original repo is https://github.com/TimeRainStarSky/Yunzai — the owner is NOT a contributor upstream and did not write the platform itself) is self-hosted on a Mac mini. What the owner actually built: (1) a stack of single-JS plugins in the bot’s plugin/example directory, single-file modules that hook into the bot’s event bus (Game ID social-card plugin, weather plugin via a free weather API, stock-market + gold-price plugin, 豆浆 in-group virtual-currency + prize-redemption plugin, plus several other one-shot utilities — to be detailed with screenshots later); (2) the NapCat-based QQ client adapter that replaced the unstable official QQ login path after Tencent’s third-party-bot crackdown forced the legacy login flow to keep breaking; (3) the in-progress YunZai Console Tauri 2 desktop app that packages Redis + TRSS-YunZai + NapCat into a single-binary installer. v1 draft prose — the project page will get per-plugin screenshots, sample message transcripts, an actual NapCat adapter walkthrough, and a YunZai Console build log once the owner has time to publish them. The bot also runs 24/7 at https://海绵酱.love (currently served from the xn-- punycode form), which is the public-facing intro site for the same deployment. Note: the inspiration story for the whole effort goes back to 2020 — see the story block at the bottom of this card.',
+      'YunZai is an open-source QQ bot platform. I self-host the full stack 24/7 on a Mac mini and built three layers of my own on top of it: a set of single-JS plugins, the NapCat QQ login adapter, and (in progress) a Tauri 2 desktop packager. See the sections below for my contributions and the full story.',
     category: 'tooling',
     tier: 'major',
     status: 'shipped',
@@ -167,23 +167,51 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Tauri 2 (YunZai Console, in progress)',
     ],
     highlights: [
-      'NapCat <-> YunZai adapter: the alternative QQ login path the original platform lost after Tencent’s third-party-bot crackdown; covers avatars, file transfer, group message routing, login lifecycle',
-      'Single-JS plugins in plugin/example/: Game ID social-card, weather (free weather API), stock + gold-price (free APIs), 豆浆 virtual-currency + prize redemption, and a handful of one-shot utilities',
-      'YunZai Console: Tauri 2 desktop app that bundles Redis + TRSS-YunZai + NapCat into a one-click installer (in progress, build log to be added to the project page later)',
-      '24/7 deployment running on a Mac mini, public-facing intro at 海绵酱.love',
-      'Upstream source: https://github.com/TimeRainStarSky/Yunzai (owner is a downstream user and plugin author, not a YunZai core contributor)',
+      'NapCat adapter — the QQ login path the platform lost after Tencent’s crackdown',
+      'Game ID plugin — a social-card registry of friends’ game IDs',
+      'Weather plugin — city-level forecasts via a free weather API',
+      'Stock + gold-price plugin — live quotes from free APIs',
+      '豆浆 plugin — in-group virtual-currency game to keep chats alive',
+      'YunZai Console — Tauri 2 one-click installer (in progress)',
+      '24/7 deployment — public intro at 海绵酱.love',
     ],
-    link: 'https://海绵酱.love',
+    link: 'https://www.xn--90w268avpn.love/',
     repo: 'https://github.com/TimeRainStarSky/Yunzai',
-    // Inline SVG data URI — no third-party hotlink, can’t 404, and
-    // it visually says what the project is instead of being a
-    // generic stock photo. Stable across the whole project life.
-    coverImage:
-      'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%20800%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230a0a0b%22%2F%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2318181b%22%2F%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221600%22%20height%3D%22800%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Ccircle%20cx%3D%22320%22%20cy%3D%22400%22%20r%3D%22120%22%20fill%3D%22%23fafafa%22%2F%3E%3Ccircle%20cx%3D%22320%22%20cy%3D%22400%22%20r%3D%2280%22%20fill%3D%22%237a4a22%22%2F%3E%3Ccircle%20cx%3D%22302%22%20cy%3D%22392%22%20r%3D%226%22%20fill%3D%22%233b2410%22%2F%3E%3Ccircle%3D%20328%3D%22%20cy%3D%22385%22%20r%3D%225%22%20fill%3D%22%233b2410%22%2F%3E%3Ccircle%20cx%3D%22312%22%20cy%3D%22415%22%20r%3D%224%22%20fill%3D%22%233b2410%22%2F%3E%3Cpath%20d%3D%22M1180%20720%20Q1320%20680%201420%20740%22%20stroke%3D%22%237a4a22%22%20stroke-width%3D%223%22%20fill%3D%22none%22%2F%3E%3Ctext%20x%3D%22800%22%20y%3D%22200%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2290%22%20fill%3D%22%23fafafa%22%3E%E6%B5%B7%E7%BB%B5%E9%85%B1%3C%2Ftext%3E%3Ctext%20x%3D%22800%22%20y%3D%22290%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2228%22%20fill%3D%22%23a1a1aa%22%20font-style%3D%22italic%22%3EQQ%20bot%20%E2%80%A2%20%E2%97%A6%E2%97%A6%2F7%20%E2%80%A2%2024%2F7%3C%2Ftext%3E%3Ctext%20x%3D%22120%22%20y%3D%22440%22%20font-family%3D%22ui-monospace%2C%20monospace%22%20font-size%3D%2222%22%20fill%3D%22%23a1a1aa%22%3E%3C%2Ftext%3E%3C%2Fsvg%3E',
+    coverImage: '/yunzai-cover.png',
     featured: true,
     sortOrder: 0,
     year: 2026,
+    detailSections: [
+      {
+        heading: 'The original platform',
+        body: 'YunZai is an open-source QQ bot platform, originally created by TimeRainStarSky. The source lives at https://github.com/TimeRainStarSky/Yunzai. I am a downstream user and plugin author — not a core contributor. Everything below is my own layer on top of that upstream project.',
+      },
+      {
+        heading: 'My plugins · plugin/example/',
+        body: 'A stack of single-JS plugins that hook into the bot’s event bus, each one file you can drop into plugin/example/ and restart. Game ID — a social-card registry where friends store their game IDs and print a card-style list for adding each other. Weather — city-level forecasts anywhere in the world via a free weather API. Stock & gold — live quotes from free market APIs. 豆浆 — an in-group virtual-currency game: earn coins by chatting with the bot, redeem virtual prizes, keep the group alive. Plus several one-shot utilities. (Placeholder list — per-plugin screenshots and usage walkthroughs are coming.)',
+      },
+      {
+        heading: 'NapCat QQ adapter',
+        body: 'After Tencent tightened control over third-party bots, YunZai’s original QQ login path became increasingly unstable. I adapted the deployment to log in through NapCat instead: NapCat loads the real QQ client and exposes a OneBot11 endpoint, then connects back to YunZai as a WebSocket client at ws://localhost:2536/OneBotv11 (connection name “trss”, 30s heartbeat, 30s reconnect). Three QQ accounts run side by side, each with its own config pair. This covers avatars, file transfer, group-message routing and the whole login lifecycle. Startup order: Redis → YunZai → NapCat. The full wiring is live on my game laptop and can be inspected there.',
+      },
+      {
+        heading: 'YunZai Console · in progress',
+        body: 'I am currently working on packaging the whole project: YunZai Console, a Tauri 2 desktop app that bundles Redis + TRSS-YunZai + NapCat into a single-binary installer — setup wizard, QR-code web login (localhost web UI), one-click start/stop, MSI/NSIS packaging for Windows.',
+      },
+      {
+        heading: 'Live deployment · 海绵酱',
+        body: 'The bot runs 24/7. This is the official intro site for 海绵酱, my always-on YunZai-based bot: https://www.xn--90w268avpn.love/',
+      },
+    ],
+    story: [
+      '2020 — Genshin Impact launches globally as a phenomenon, and QQ is the biggest social platform for Chinese game communities, bar none. In group chats with thousands of members I watched people talk to a bot with #-commands: pulling in-game account data, character build help, material and farming info, even auto check-ins on Hoyolab. That moment I understood — this is a genuinely fun community bot. It planted the seed for everything after.',
+      'Because YunZai got famous, plugins beyond Genshin kept appearing in the open-source ecosystem: tarot-card draws to tell your fortune, AI summarizers of group chat, multi-game account binding with live community info, even a Discord deployment bridge. As a developer I wanted to join that movement.',
+      'My first plugin was Game ID: friends store their game IDs in the bot’s local database and print a card-style list of everything they play, so other members can add them — a social business card for gamers.',
+      'As the first, tenth, hundredth user adopted it, I was genuinely happy — so I kept going: a weather plugin (city-level forecasts anywhere via a free weather API), a stock + gold-price plugin (free APIs), the 豆浆 coin game (virtual currency and virtual prizes to keep group chats active), and all kinds of other fun utilities.',
+      'Then Tencent began cracking down on third-party bots — they can be abused for grey-market content, explicit material, even political propaganda — and YunZai’s original QQ login method became less and less stable. That is exactly why I switched to NapCat as the login layer. The whole journey — the bot, the plugins, the adapter — is the soul of this project.',
+    ],
   },
+
   {
     // Course project: full semester agile build, real engineering
     // process (PRs / code review / issues / tests / AB). Team of
