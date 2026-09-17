@@ -149,7 +149,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     // adapter the owner wrote around it.
     id: 'fallback-major-yunzai-local',
     slug: 'yunzai-local-deployment',
-    title: 'YunZai QQ Bot — Local Deployment',
+    title: 'YunZai QQ Bot',
     tagline:
       'A 24/7 self-hosted TRSS-YunZai bot on a Mac mini — my plugins, my NapCat QQ adapter, and the 海绵酱 landing site',
     description:
@@ -181,6 +181,17 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     featured: true,
     sortOrder: 0,
     year: 2026,
+    contributions: [
+      'Independently shipped a suite of third-party YunZai plugins: weather, 豆浆 in-group virtual-currency game, Game ID social-card, stock + gold/silver price, and several one-shot utilities — all single-JS modules in plugin/example/.',
+      'Built and maintained my own NapCat-based QQ login adapter to replace the unstable official QQ login path after Tencent’s third-party-bot crackdown. Covers avatars, file transfer, group-message routing, and the full login lifecycle.',
+      'Currently packaging the whole deployment as YunZai Console — a Tauri 2 desktop app that bundles Redis + TRSS-YunZai + NapCat into a single-binary installer.',
+    ],
+    contributionStats: [
+      { value: '20k+', label: 'Daily messages' },
+      { value: '10k+', label: 'Active group users' },
+      { value: '24/7', label: 'Uptime on a Mac mini' },
+      { value: '4', label: 'Single-JS plugins shipped' },
+    ],
     chapters: [
       {
         era: '2020',

@@ -37,6 +37,13 @@ export interface ProjectChapter {
   links?: ProjectChapterLink[];
 }
 
+export interface ProjectContributionStat {
+  /** Big number e.g. "20k+", "30+". */
+  value: string;
+  /** Caption, e.g. "Daily messages", "Active groups". */
+  label: string;
+}
+
 export interface ProjectItem {
   id: string;
   slug: string;
@@ -66,6 +73,14 @@ export interface ProjectItem {
    *  flow, each chapter optionally flagged as a contribution and
    *  carrying highlighted links. */
   chapters?: ProjectChapter[];
+  /** Short bullet list of the owner's contributions, rendered in a
+   *  sidebar next to the cover image. Used to give recruiters a
+   *  scannable "what did I actually do here" before they read the
+   *  full chapter timeline. */
+  contributions?: string[];
+  /** Reach / scale stats for the contributions sidebar (e.g. "30+
+   *  groups", "20k+ daily messages"). */
+  contributionStats?: ProjectContributionStat[];
 }
 
 export const CATEGORY_LABEL: Record<ProjectCategory, string> = {

@@ -145,14 +145,33 @@ function IconLink({
 function ProjectActions({ p }: { p: ProjectItem }) {
   const hasRepo = !!p.repo;
   const hasLive = !!p.link;
-  if (!hasRepo && !hasLive) return null;
+  // Always-present case-study button — opens the detail page in a new tab.
+  // The detail page is a separate surface from the live site and the
+  // repo, so it lives in its own column instead of being the default
+  // click target.
+  const caseStudyHref = `/project/${p.slug}`;
+  if (!hasRepo && !hasLive) {
+    return (
+      <div className="mt-3 flex items-center gap-4">
+        <a
+          href={caseStudyHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white underline underline-offset-4 decoration-zinc-400 dark:decoration-zinc-600 hover:decoration-zinc-900 dark:hover:decoration-white transition-colors"
+        >
+          <ExternalIcon className="w-3.5 h-3.5" />
+          <span>Detail</span>
+        </a>
+      </div>
+    );
+  }
   return (
-    <div className="mt-3 flex items-center gap-4">
+    <div className="mt-3 flex items-center gap-x-4 gap-y-1 flex-wrap">
       {hasLive && (
         <IconLink
           href={p.link as string}
           icon={<ExternalIcon className="w-3.5 h-3.5" />}
-          label="Open"
+          label="Live"
         />
       )}
       {hasRepo && (
@@ -162,6 +181,15 @@ function ProjectActions({ p }: { p: ProjectItem }) {
           label="GitHub"
         />
       )}
+      <a
+        href={caseStudyHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white underline underline-offset-4 decoration-zinc-400 dark:decoration-zinc-600 hover:decoration-zinc-900 dark:hover:decoration-white transition-colors"
+      >
+        <ExternalIcon className="w-3.5 h-3.5" />
+        <span>Detail</span>
+      </a>
     </div>
   );
 }
@@ -171,14 +199,22 @@ function ProjectActions({ p }: { p: ProjectItem }) {
 function MajorCard({ p }: { p: ProjectItem }) {
   return (
     <article className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 overflow-hidden hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 flex flex-col">
-      <div className="relative aspect-[16/9] overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+      {/* Cover is now a real click target that opens the case-study
+          page in a new tab, matching the title link below. */}
+      <Link
+        href={`/project/${p.slug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open ${p.title} case study`}
+        className="relative aspect-[16/9] overflow-hidden bg-zinc-100 dark:bg-zinc-900 block group/cover"
+      >
         {p.coverImage ? (
           <Image
             src={p.coverImage}
             alt={p.title}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/cover:scale-[1.02]"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-xs uppercase tracking-wider">
@@ -198,10 +234,10 @@ function MajorCard({ p }: { p: ProjectItem }) {
         <div className="absolute bottom-2.5 right-2.5 text-[9px] tabular-nums text-white/90 dark:text-white/70 font-medium bg-black/40 backdrop-blur-sm px-1.5 py-0.5 rounded">
           {p.year}
         </div>
-      </div>
+      </Link>
 
       <div className="p-4 flex flex-col flex-1">
-        <Link href={`/project/${p.slug}`} className="block group/title">
+        <Link href={`/project/${p.slug}`} target="_blank" rel="noopener noreferrer" className="block group/title">
           <h3
             className="text-[15px] font-semibold tracking-tight text-zinc-900 dark:text-white leading-tight mb-1.5 group-hover/title:text-zinc-600 dark:group-hover/title:text-zinc-300 transition-colors line-clamp-2"
             dangerouslySetInnerHTML={{ __html: p.title }}
