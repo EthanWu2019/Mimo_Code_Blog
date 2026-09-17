@@ -144,68 +144,44 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
   // ──── MAJOR (newer) ────
   // ──── MAJOR 01 (owner priority) ────
   {
-    // Owner's most important project: a local TRSS-Yunzai QQ bot
-    // stack he deployed, customised, and wrote a small landing site
-    // for. Description here is the v1 draft — the owner plans to
-    // polish the project page later with screenshots, so we leave
-    // room for him to swap this prose out.
+    // Owner's flagship personal project. Hosts a self-deployed
+    // TRSS-YunZai QQ bot, contributes plugins to the upstream
+    // example directory, and runs a small landing site for it.
     id: 'fallback-major-yunzai-local',
     slug: 'yunzai-local-deployment',
     title: 'YunZai QQ Bot — Local Deployment',
     tagline:
-      'A self-hosted TRSS-Yunzai stack with a NapCat-tuned QQ client adapter and a small landing site',
+      'A 24/7 self-hosted TRSS-YunZai stack on a Mac mini, with single-JS plugins, a NapCat QQ client adapter, and the 海绵酱.love landing site',
     description:
-      'The flagship personal project. The full TRSS-Yunzai (originally by TimeRainStarSky) stack, self-hosted on a Mac mini. The owner did NOT write YunZai itself and is NOT a contributor upstream — what he contributed is the QQ client adapter integration with NapCat that makes the bot feel like a real chat client: avatars, file transfer, group message routing, login lifecycle. On top of that he built a small landing site (https://海绵酱.love) to introduce the bot to friends; the domain currently renders as the xn-- punycode form. v1 draft prose — the owner will polish the project page with real screenshots, configuration walkthroughs, and a proper changelog when this card is ready for prime time.',
+      'The flagship personal project. The full TRSS-YunZai bot platform (originally by TimeRainStarSky on GitHub — the original repo is https://github.com/TimeRainStarSky/Yunzai — the owner is NOT a contributor upstream and did not write the platform itself) is self-hosted on a Mac mini. What the owner actually built: (1) a stack of single-JS plugins in the bot’s plugin/example directory, single-file modules that hook into the bot’s event bus (Game ID social-card plugin, weather plugin via a free weather API, stock-market + gold-price plugin, 豆浆 in-group virtual-currency + prize-redemption plugin, plus several other one-shot utilities — to be detailed with screenshots later); (2) the NapCat-based QQ client adapter that replaced the unstable official QQ login path after Tencent’s third-party-bot crackdown forced the legacy login flow to keep breaking; (3) the in-progress YunZai Console Tauri 2 desktop app that packages Redis + TRSS-YunZai + NapCat into a single-binary installer. v1 draft prose — the project page will get per-plugin screenshots, sample message transcripts, an actual NapCat adapter walkthrough, and a YunZai Console build log once the owner has time to publish them. The bot also runs 24/7 at https://海绵酱.love (currently served from the xn-- punycode form), which is the public-facing intro site for the same deployment. Note: the inspiration story for the whole effort goes back to 2020 — see the story block at the bottom of this card.',
     category: 'tooling',
     tier: 'major',
     status: 'shipped',
     tech: [
       'Node.js',
-      'TRSS-Yunzai',
+      'TRSS-YunZai',
       'NapCat',
       'QQ client protocol',
       'WebSocket',
       'Linux / macOS daemon',
+      'Tauri 2 (YunZai Console, in progress)',
     ],
     highlights: [
-      'Custom NapCat <-> YunZai adapter: avatars, file transfer, group message routing',
-      'Single-binary deploy: build, install, start with one command on a Mac mini',
-      'Landing site (https://海绵酱.love) to introduce the bot to friends',
+      'NapCat <-> YunZai adapter: the alternative QQ login path the original platform lost after Tencent’s third-party-bot crackdown; covers avatars, file transfer, group message routing, login lifecycle',
+      'Single-JS plugins in plugin/example/: Game ID social-card, weather (free weather API), stock + gold-price (free APIs), 豆浆 virtual-currency + prize redemption, and a handful of one-shot utilities',
+      'YunZai Console: Tauri 2 desktop app that bundles Redis + TRSS-YunZai + NapCat into a one-click installer (in progress, build log to be added to the project page later)',
+      '24/7 deployment running on a Mac mini, public-facing intro at 海绵酱.love',
+      'Upstream source: https://github.com/TimeRainStarSky/Yunzai (owner is a downstream user and plugin author, not a YunZai core contributor)',
     ],
     link: 'https://海绵酱.love',
     repo: 'https://github.com/TimeRainStarSky/Yunzai',
+    // Inline SVG data URI — no third-party hotlink, can’t 404, and
+    // it visually says what the project is instead of being a
+    // generic stock photo. Stable across the whole project life.
     coverImage:
-      'https://images.unsplash.com/photo-1614680376573-df3480f0f9ba?w=1600&q=80&auto=format&fit=crop',
+      'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%20800%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230a0a0b%22%2F%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2318181b%22%2F%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221600%22%20height%3D%22800%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Ccircle%20cx%3D%22320%22%20cy%3D%22400%22%20r%3D%22120%22%20fill%3D%22%23fafafa%22%2F%3E%3Ccircle%20cx%3D%22320%22%20cy%3D%22400%22%20r%3D%2280%22%20fill%3D%22%237a4a22%22%2F%3E%3Ccircle%20cx%3D%22302%22%20cy%3D%22392%22%20r%3D%226%22%20fill%3D%22%233b2410%22%2F%3E%3Ccircle%3D%20328%3D%22%20cy%3D%22385%22%20r%3D%225%22%20fill%3D%22%233b2410%22%2F%3E%3Ccircle%20cx%3D%22312%22%20cy%3D%22415%22%20r%3D%224%22%20fill%3D%22%233b2410%22%2F%3E%3Cpath%20d%3D%22M1180%20720%20Q1320%20680%201420%20740%22%20stroke%3D%22%237a4a22%22%20stroke-width%3D%223%22%20fill%3D%22none%22%2F%3E%3Ctext%20x%3D%22800%22%20y%3D%22200%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2290%22%20fill%3D%22%23fafafa%22%3E%E6%B5%B7%E7%BB%B5%E9%85%B1%3C%2Ftext%3E%3Ctext%20x%3D%22800%22%20y%3D%22290%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2228%22%20fill%3D%22%23a1a1aa%22%20font-style%3D%22italic%22%3EQQ%20bot%20%E2%80%A2%20%E2%97%A6%E2%97%A6%2F7%20%E2%80%A2%2024%2F7%3C%2Ftext%3E%3Ctext%20x%3D%22120%22%20y%3D%22440%22%20font-family%3D%22ui-monospace%2C%20monospace%22%20font-size%3D%2222%22%20fill%3D%22%23a1a1aa%22%3E%3C%2Ftext%3E%3C%2Fsvg%3E',
     featured: true,
     sortOrder: 0,
-    year: 2026,
-  },
-  {
-    // Owner-built single-file YunZai plugins that live in the bot's
-    // plugin/example directory. The owner asked this to live as its
-    // own project entry so the plugin work is visible alongside the
-    // bot itself.
-    id: 'fallback-major-yunzai-plugin',
-    slug: 'yunzai-plugin',
-    title: 'YunZai Plugin Examples',
-    tagline:
-      'Single-JS YunZai plugins written for the local bot — plugin/example/ dir',
-    description:
-      'A handful of single-JS plugins the owner wrote against the local YunZai install, all kept in the plugin/example directory in the bot repo. Lightweight: each plugin is a single .js file that hooks into the bot\'s event bus. v1 draft prose; the project page will get per-plugin screenshots, sample message transcripts, and a usage walkthrough when the owner is ready to publish them in detail.',
-    category: 'tooling',
-    tier: 'major',
-    status: 'shipped',
-    tech: ['JavaScript', 'Node.js', 'YunZai plugin API', 'Event bus'],
-    highlights: [
-      'Each plugin is one .js file — easy to copy, drop into plugin/example, restart',
-      'Event-bus hooks so plugins compose without stepping on each other',
-    ],
-    link: null,
-    repo: 'https://github.com/TimeRainStarSky/Yunzai',
-    coverImage:
-      'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&q=80&auto=format&fit=crop',
-    featured: true,
-    sortOrder: 1,
     year: 2026,
   },
   {
