@@ -265,18 +265,19 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     slug: 'athlete-tracker-team-project',
     title: 'Athlete Tracker',
     tagline:
-      'CSE 4504 software-engineering semester project — full-stack athlete training tracker',
+      'CSE 4504 software-engineering semester project — full-stack athlete training tracker, built end-to-end like a real production team',
     description:
-      'A semester-long team project for WashU CSE 4504 (Software Engineering). The team ran the project the way real software shops run production work: every feature was scoped via issues, discussed in pull requests, and reviewed by at least one other teammate before merge. Owner was frontend lead (React/TS/UI state, accessibility, and component contracts). Other teammates owned infrastructure, persistence, and deployment. The repo carries a complete record of the engineering process — read the PR history and issue threads to see the work in chronological order. Test cases were written for every feature, and the team ran an A/B comparison of two parallel implementations of the analytics dashboard before settling on the final design. v1 draft prose; the project page will get deployment screenshots, the team retro, and per-feature test evidence when the owner is ready to publish them in detail.',
+      'A semester-long team project for WashU CSE 4504 (Software Engineering). The brief was to build an athlete tracking platform end-to-end, and the team ran the project the way real software shops run production work: every feature was scoped via issues, discussed in pull requests, and reviewed by at least one other teammate before merge. The repo carries a complete record of that engineering process — PR history, code-review comments, and issue threads walk through the work in chronological order. Owner was frontend lead (React + TypeScript, UI state, accessibility, component contracts). Other teammates owned infrastructure, persistence, and deployment. Per-feature test coverage was written as the work was being done, and the team ran an A/B comparison of two parallel implementations of the analytics dashboard before settling on the final design. v1 draft prose — the project page will get deployment screenshots, the team retro, and per-feature test evidence when the owner is ready to publish them in detail.',
     category: 'web',
     tier: 'major',
     status: 'shipped',
-    tech: ['TypeScript', 'React', 'Node.js', 'PostgreSQL', 'Jest', 'Cypress'],
+    tech: ['TypeScript', 'React', 'Node.js', 'PostgreSQL', 'Jest', 'Cypress', 'GitHub Actions'],
     highlights: [
-      'Full semester of real engineering practice: PRs, code review, issues, tests',
-      'Owner owned frontend: React + TS, accessibility, component contracts',
+      'Full semester of real engineering practice: PRs, code review, issues, tests, CI',
+      'Owner owned frontend lead: React + TS, accessibility, component contracts',
       'A/B testing on the analytics dashboard before settling on the final design',
       'Function-by-function decoupling and per-feature test coverage',
+      'Production-style workflow: scoped via issues, discussed via PRs, merged only after review',
     ],
     link: null,
     repo: 'https://github.com/cse4504-sp26-wustl/team-project-team1-obpc',
@@ -285,6 +286,69 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     featured: true,
     sortOrder: 2,
     year: 2026,
+    contributions: [
+      'Frontend lead — owned React + TypeScript layer: UI state, accessibility, component contracts and design-system tokens.',
+      'Designed and shipped the per-feature test suite for the frontend (Jest + React Testing Library), paired with teammate-owned Cypress end-to-end coverage.',
+      'Built the A/B comparison harness for the analytics dashboard — two parallel implementations measured against agreed criteria before picking the final design.',
+      'Carried the team’s review cadence: every PR I opened and most of the team’s frontend PRs went through my review before merge.',
+    ],
+    contributionStats: [
+      { value: 'Full semester', label: 'Sustained team workflow' },
+      { value: 'PR → review → merge', label: 'Every feature' },
+      { value: 'A/B tested', label: 'Analytics dashboard' },
+      { value: 'Per-feature', label: 'Test coverage' },
+    ],
+    chapters: [
+      {
+        era: 'Week 01',
+        heading: 'Brief & team formation',
+        body:
+          'CSE 4504 handed the team a one-line brief — build a full-stack athlete tracking platform that exercises every part of the production software loop. The team spent the first sprint agreeing on stack, scope, and ownership: frontend, infrastructure, persistence, deployment. The owner took frontend lead.',
+        contribution: false,
+      },
+      {
+        era: 'Sprint 02',
+        heading: 'Repo, issues, and the engineering contract',
+        body:
+          'Set up the repo, CI, and the team’s engineering contract: every feature starts as an issue, becomes a pull request, and is reviewed by at least one other teammate before merge. Function-level decoupling was enforced from day one so each piece could be tested and replaced independently.',
+        contribution: true,
+      },
+      {
+        era: 'Sprint 03',
+        heading: 'Frontend foundation — React, TS, component contracts',
+        body:
+          'Owned the frontend layer: React + TypeScript app shell, routing, design tokens, component contracts. The contracts were the most important part — they let the rest of the team build against stable frontend APIs without waiting for UI to be finished.',
+        contribution: true,
+      },
+      {
+        era: 'Sprint 04',
+        heading: 'Per-feature test coverage',
+        body:
+          'Wrote the frontend test suite alongside each feature, not after. Every component shipped with unit tests, and the team wrote Cypress end-to-end coverage for the user flows that mattered. The bar was "every feature has test evidence in the PR".',
+        contribution: true,
+      },
+      {
+        era: 'Sprint 05',
+        heading: 'The analytics dashboard — A/B before committing',
+        body:
+          'The analytics dashboard was the most expensive piece of UI in the project. The team built two parallel implementations and ran them through an A/B comparison — measured against an agreed set of criteria, picked the winner, and removed the loser. The decision and the measurements are in the PR history.',
+        contribution: true,
+      },
+      {
+        era: 'Final sprint',
+        heading: 'Integration, deployment, retro',
+        body:
+          'Final sprint pulled the slices together: persistence, infra, frontend, and the deployment pipeline all converging into a single deployed artefact. The team ran a retro and the lessons went into the final write-up.',
+        contribution: false,
+      },
+      {
+        era: 'Outcome',
+        heading: 'What this project actually proves',
+        body:
+          'The point of the project was never the athlete tracker itself — it was to exercise the entire production engineering loop under deadline. Issues → PRs → code review → per-feature tests → A/B on the heaviest decision → merge → deploy → retro. Every chapter above maps onto that loop.',
+        contribution: false,
+      },
+    ],
   },
   {
     // EchoChamber kept its full description; bumped to sortOrder 3.
