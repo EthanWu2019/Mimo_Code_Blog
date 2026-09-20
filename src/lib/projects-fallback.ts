@@ -258,26 +258,46 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
 
   },
   {
-    // Course project: full semester agile build, real engineering
-    // process (PRs / code review / issues / tests / AB). Team of
-    // several CSE 4504 students; owner was frontend lead.
+    // CSE 4504 software-engineering semester project. Full team
+    // sprint cycle: infrastructure first, then features in parallel
+    // branches with PR review, then integration, then packaging.
+    // The owner was frontend lead (Chengze Wu) — owned the Next.js
+    // console, the Zustand store, the display-screen pairing, and
+    // integration tests at the controller layer.
     id: 'fallback-major-athlete',
     slug: 'athlete-tracker-team-project',
     title: 'Athlete Tracker',
     tagline:
-      'CSE 4504 software-engineering semester project — full-stack athlete training tracker, built end-to-end like a real production team',
+      'A semester-long team build in CSE 4504 — Clean Architecture across Python + TypeScript, real PR review, packaged into an Electron desktop app with a multi-platform CI release workflow',
     description:
-      'A semester-long team project for WashU CSE 4504 (Software Engineering). The brief was to build an athlete tracking platform end-to-end, and the team ran the project the way real software shops run production work: every feature was scoped via issues, discussed in pull requests, and reviewed by at least one other teammate before merge. The repo carries a complete record of that engineering process — PR history, code-review comments, and issue threads walk through the work in chronological order. Owner was frontend lead (React + TypeScript, UI state, accessibility, component contracts). Other teammates owned infrastructure, persistence, and deployment. Per-feature test coverage was written as the work was being done, and the team ran an A/B comparison of two parallel implementations of the analytics dashboard before settling on the final design. v1 draft prose — the project page will get deployment screenshots, the team retro, and per-feature test evidence when the owner is ready to publish them in detail.',
+      "A team project for WashU CSE 4504 (Software Engineering). The team ran it the way real software shops run production work: every feature started as an issue, became a pull request, and was reviewed by at least one teammate before merge. Clean Architecture on the Python side (domain / application / infrastructure / controller), Next.js + Zustand + SWR on the frontend, FastAPI bridging the two. The owner was frontend lead — owned the console UI, the Zustand store, the external display-screen pairing, the component contracts, and the controller-layer integration test. Repo carries a complete record of the engineering process — PR history, code-review comments, and issue threads walk through the work in chronological order. Per-feature test coverage was written as features were built. Final packaging: PyInstaller bundles the Python backend into a single folder, Electron wraps it as a desktop app, and GitHub Actions ships multi-platform release builds.",
     category: 'web',
     tier: 'major',
     status: 'shipped',
-    tech: ['TypeScript', 'React', 'Node.js', 'PostgreSQL', 'Jest', 'Cypress', 'GitHub Actions'],
+    tech: [
+      'Next.js 15',
+      'React 19',
+      'TypeScript',
+      'Tailwind v4',
+      'Zustand',
+      'SWR',
+      'FastAPI',
+      'Pydantic',
+      'uvicorn',
+      'Resend (transactional email)',
+      'PyInstaller',
+      'Electron',
+      'electron-builder',
+      'Clean Architecture (domain / application / infrastructure / controller)',
+      'pytest',
+      'GitHub Actions (multi-platform release workflow)',
+    ],
     highlights: [
       'Full semester of real engineering practice: PRs, code review, issues, tests, CI',
-      'Owner owned frontend lead: React + TS, accessibility, component contracts',
-      'A/B testing on the analytics dashboard before settling on the final design',
-      'Function-by-function decoupling and per-feature test coverage',
-      'Production-style workflow: scoped via issues, discussed via PRs, merged only after review',
+      'Owner was frontend lead: Next.js console, Zustand store, external display-screen pairing, component contracts, integration tests at the controller layer',
+      'Clean Architecture across Python and TypeScript — domain / application / infrastructure / controller separation',
+      'Undo last scan feature shipped with ScanDebouncer, event-log index capture, and a toast state machine — all in PR review',
+      'Final packaging: PyInstaller bundles Python backend, Electron wraps it, GitHub Actions ships multi-platform release builds',
     ],
     link: null,
     repo: 'https://github.com/cse4504-sp26-wustl/team-project-team1-obpc',
@@ -287,65 +307,65 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     sortOrder: 2,
     year: 2026,
     contributions: [
-      'Frontend lead — owned React + TypeScript layer: UI state, accessibility, component contracts and design-system tokens.',
-      'Designed and shipped the per-feature test suite for the frontend (Jest + React Testing Library), paired with teammate-owned Cypress end-to-end coverage.',
-      'Built the A/B comparison harness for the analytics dashboard — two parallel implementations measured against agreed criteria before picking the final design.',
-      'Carried the team’s review cadence: every PR I opened and most of the team’s frontend PRs went through my review before merge.',
+      'Frontend lead — owned the Next.js 15 console (Zustand store, SWR, lucide-react, Tailwind v4), the external display-screen pairing, and the component-contract API that let the rest of the team build against stable frontend shapes without waiting for UI.',
+      'Wrote the integration test at the controller layer end-to-end — loads a CSV roster, starts a group, fires simulated RFID/NFC events, asserts the workout completion report. The bar for "feature complete" was "feature has test evidence in the PR".',
+      'Shipped the "undo last scan" feature end-to-end across the boundary — frontend toast state machine, Zustand store rollback, ScanDebouncer on the hardware integration side, event-log index capture for which scan to undo. Took several review rounds to land cleanly.',
+      'Carried the team’s review cadence: every PR I opened and most of the team\'s frontend PRs went through my review before merge.',
     ],
     contributionStats: [
       { value: 'Full semester', label: 'Sustained team workflow' },
       { value: 'PR → review → merge', label: 'Every feature' },
-      { value: 'A/B tested', label: 'Analytics dashboard' },
-      { value: 'Per-feature', label: 'Test coverage' },
+      { value: 'End-to-end test', label: 'Controller integration' },
+      { value: 'Multi-platform', label: 'CI release workflow' },
     ],
     chapters: [
       {
-        era: 'Week 01',
+        era: 'Sprint 01',
         heading: 'Brief & team formation',
         body:
-          'CSE 4504 handed the team a one-line brief — build a full-stack athlete tracking platform that exercises every part of the production software loop. The team spent the first sprint agreeing on stack, scope, and ownership: frontend, infrastructure, persistence, deployment. The owner took frontend lead.',
+          "CSE 4504 handed the team a one-line brief — build an interval-training timing platform that exercises every part of the production engineering loop. The team spent the first sprint agreeing on stack, scope, and ownership: frontend, infrastructure, persistence, deployment. Clean Architecture was the agreed backbone on the Python side — domain / application / infrastructure / controller. The owner took frontend lead (Chengze Wu — also the maintainer of main & integration and the controller-layer integration test, per the README work-assignment table).",
         contribution: false,
       },
       {
         era: 'Sprint 02',
-        heading: 'Repo, issues, and the engineering contract',
+        heading: 'Repo, CI, and the engineering contract',
         body:
-          'Set up the repo, CI, and the team’s engineering contract: every feature starts as an issue, becomes a pull request, and is reviewed by at least one other teammate before merge. Function-level decoupling was enforced from day one so each piece could be tested and replaced independently.',
+          "Set up the repo, CI, and the team\'s engineering contract: every feature starts as an issue, becomes a pull request, and is reviewed by at least one other teammate before merge. Function-level decoupling was enforced from day one so each piece could be tested and replaced independently. The contract we wrote on the wall was simple — 'every feature has test evidence in the PR' — and the team held to it for the whole semester. The postinstall hook even bootstraps a Python venv and installs FastAPI / Pydantic / uvicorn / Resend automatically, so a fresh checkout gets a working backend with one `pnpm install`.",
         contribution: true,
       },
       {
         era: 'Sprint 03',
-        heading: 'Frontend foundation — React, TS, component contracts',
+        heading: 'Frontend foundation — Next.js, Zustand, component contracts',
         body:
-          'Owned the frontend layer: React + TypeScript app shell, routing, design tokens, component contracts. The contracts were the most important part — they let the rest of the team build against stable frontend APIs without waiting for UI to be finished.',
+          "Owned the frontend layer: Next.js 15 + React 19 + Tailwind v4 app shell, the Zustand store as the single source of truth for workout state (active workout, runner states, scan history, undo stack), SWR for backend sync, and lucide-react for icons. The component contracts were the most important part — they let the rest of the team build against stable frontend APIs without waiting for UI to be finished. The frontend also drives two pages: the coach console and an external display screen (a separate /display route) that the team could mirror onto a projector during practice.",
         contribution: true,
       },
       {
         era: 'Sprint 04',
-        heading: 'Per-feature test coverage',
+        heading: 'Undo last scan — end-to-end across the boundary',
         body:
-          'Wrote the frontend test suite alongside each feature, not after. Every component shipped with unit tests, and the team wrote Cypress end-to-end coverage for the user flows that mattered. The bar was "every feature has test evidence in the PR".',
+          "Mid-semester, the team hit a real product pain: a coach mis-scans an RFID tag and now the runner\'s lap count is wrong and there\'s no way to undo it. We shipped the fix end-to-end. Frontend side: a toast state machine (success / failure, with `ok: false` from the backend surfaced as a clear failure toast — that detail was its own review-rounds PR). Zustand store rolled back the runner\'s laps and the last scan\'s event-log index. Hardware integration side: a ScanDebouncer in the RFID reader loop so duplicate events from the same physical tap don't double-count. Backend side: the workout use case grew a real undo endpoint that re-derives runner state from the event log instead of trusting the fronted\'s view of the world. The interesting design problem was modeling which scan to undo when several happened in the same second — we ended up capturing the event-log index at scan time and using that as the undo key. Took three PR rounds to land cleanly. That PR cluster is one of the better illustrations of how a real product bug moves through every layer of the architecture.",
         contribution: true,
       },
       {
         era: 'Sprint 05',
-        heading: 'The analytics dashboard — A/B before committing',
+        heading: 'Per-feature test coverage',
         body:
-          'The analytics dashboard was the most expensive piece of UI in the project. The team built two parallel implementations and ran them through an A/B comparison — measured against an agreed set of criteria, picked the winner, and removed the loser. The decision and the measurements are in the PR history.',
+          "Wrote the frontend test suite alongside each feature, not after. Every component shipped with unit tests, paired with teammate-owned controller-layer integration tests that drive the full stack from CSV roster load → group start → simulated RFID/NFC events → workout completion report. The owner\'s main & integration contribution was a controller-layer integration test that simulates a Feature 1 flow end-to-end without manual input — that test became the team\'s smoke gate for every PR that touched the persistence or use-cases layer.",
         contribution: true,
       },
       {
         era: 'Final sprint',
-        heading: 'Integration, deployment, retro',
+        heading: 'Packaging the desktop app — PyInstaller + Electron + multi-platform CI',
         body:
-          'Final sprint pulled the slices together: persistence, infra, frontend, and the deployment pipeline all converging into a single deployed artefact. The team ran a retro and the lessons went into the final write-up.',
+          "This was the part the team got stuck on the most, and the part that taught the most. We packaged the Python backend with PyInstaller into a single folder distribution (--onedir --name api-server), wired Electron to launch it as a child process, and shipped a GitHub Actions multi-platform desktop release workflow that builds for macOS / Windows / Linux from the same pipeline. There were real review-rounds fights here: making sure the .env got bundled, removing duplicate test helpers, hardening error responses, adding --add-data for the seed CSV, pinning serve in devDependencies. The prebuild:api step that creates a placeholder .env if missing was added specifically so a fresh checkout wouldn't crash on a missing secrets file. We burned more time on this final sprint than on any other, and it was the closest the semester got to a real shipping problem.",
         contribution: false,
       },
       {
         era: 'Outcome',
         heading: 'What this project actually proves',
         body:
-          'The point of the project was never the athlete tracker itself — it was to exercise the entire production engineering loop under deadline. Issues → PRs → code review → per-feature tests → A/B on the heaviest decision → merge → deploy → retro. Every chapter above maps onto that loop.',
+          "The point of the project was never the athlete tracker itself — it was to exercise the entire production engineering loop under deadline. Issues → PRs → code review → per-feature tests → mid-semester bug that touches every architectural layer → packaging → CI release. Every chapter above maps onto that loop. The owner ended up shipping the frontend lead role, the controller-layer integration test, the undo-last-scan end-to-end feature, and a fair amount of the Electron packaging work. The repo carries the full record.",
         contribution: false,
       },
     ],
