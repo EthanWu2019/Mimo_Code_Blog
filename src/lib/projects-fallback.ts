@@ -736,7 +736,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'RENPHO scale, environmental noise dB, headphone volume dB, and weather all correlate in one panel',
     ],
     link: 'https://ethanshermes.com/health/',
-    repo: null,
+    repo: 'https://github.com/EthanWu2019/myHermes-health-tracker',
     coverImage:
       'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600&q=80&auto=format&fit=crop',
     featured: false,
