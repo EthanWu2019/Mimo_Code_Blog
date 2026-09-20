@@ -73,40 +73,42 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
 
   // ────────────────────── OLDER MAJOR (kept for seniority order) ──────────────────────
   {
-    // Undergraduate capstone project — on-board AI for Earth-observation
-    // satellites. Owner was the platform lead; the system coordinates
-    // tasking → onboard inference → ground station → analytics over
-    // a custom FPGA + Cambricon MLU220 compute stack (Jiguang-1000/2000/5000
-    // edge servers). Includes a digital-twin for ground simulation.
+    // Summer 2024 internship project at the ISCAS (Chinese Academy of
+    // Sciences Institute of Software) software park in Beijing. Small
+    // team: owner built the React front end and co-designed the API,
+    // the manager built the Python backend; together the system labels
+    // aircraft and vehicles in satellite imagery end to end.
     id: 'fallback-mono-4',
     slug: 'satellite-onboard-ai-platform',
     title: 'Onboard Satellite AI Platform (星载智能算法平台)',
     tagline:
-      'A satellite-edge AI platform: Earth-observation tasking → onboard inference → ground station → analytics',
+      'A web-to-satellite AI demo platform: upload satellite imagery in the browser, watch it run on-board detection over a simulated satellite link, and get aircraft / vehicle annotations back',
     description:
-      'An end-to-end satellite-edge AI platform: front-end (React + Vite + satellite.js + react-globe.gl) for satellite-pass visualisation and tasking; Python back-end (Flask + SQLAlchemy + PyTorch) coordinating the Jiguang-1000 onboard computer (FPGA + Cambricon NPU) and the Jiguang-2000 MLU220 inference cluster; TIFF/UTIF pipeline for cloud-mask, target-detection and image-compression modules; a parallel-twin ground simulator for hardware-in-the-loop testing; admin dashboard, auth, and Socket.IO real-time data visualisations.',
+      "A demo platform for an on-board satellite AI system, built during a summer 2024 internship at the Chinese Academy of Sciences Institute of Software (ISCAS) software park in Beijing. The browser uploads satellite imagery (TIFF or photo), the operator picks an algorithm / device / mode, and the request travels through a Flask backend and a socket bridge to simulated on-board computers, where a detection model labels aircraft and vehicles in the image and returns an annotated result plus metrics. The owner built the entire React front end (3D satellite-orbit globe, detection pages, realtime telemetry, admin dashboard) and co-designed the Flask API with the manager, who owned the Python backend and the on-board simulation link.",
     category: 'ml',
     tier: 'major',
     status: 'shipped',
     tech: [
-      'React',
+      'React 18',
       'Vite',
-      'Flask',
-      'SQLAlchemy',
-      'PyTorch',
-      'satellite.js',
-      'UTIF/UTIFF',
-      'socket.io',
+      'react-router-dom',
       'react-globe.gl',
       'three.js',
-      'FPGA',
-      'Cambricon MLU220',
+      'satellite.js',
+      'socket.io-client',
+      'Chart.js',
+      'UTIF (TIFF decoding)',
+      'Flask',
+      'Flask-SQLAlchemy (SQLite)',
+      'Pillow',
+      'Python socket client',
     ],
     highlights: [
-      'Onboard inference over Cambricon MLU220 (80 TOPS int8) with a 32-TOPS FPGA-accelerated preprocessor',
-      'WebSocket-backed ground visualisations of orbital passes, telemetry and algorithm outputs',
-      'Hardware-in-the-loop parallel-twin simulator so operators can dry-run tasking payloads before uplink',
-      'TIFF upload + UTIF decoding pipeline feeding cloud-mask, target-detection and image-compression modules',
+      'Browser uploads satellite imagery; the request rides a simulated satellite uplink to on-board computers and returns AI annotations',
+      '3D Earth with live satellite orbits (react-globe.gl + satellite.js) and realtime telemetry over socket.io',
+      'Three processing modules: target detection (aircraft / vehicles), cloud detection, image compression',
+      'TIFF preview in the browser via UTIF decoding before upload',
+      'Parallel-twin simulation view plus a Chart.js metrics dashboard',
     ],
     link: null,
     repo: 'https://github.com/EthanWu2019/SemiProject-SatelliteOnboardAI',
@@ -115,7 +117,79 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     featured: false,
     sortOrder: 9,
     year: 2024,
+    contributions: [
+      'Built the entire React 18 + Vite front end: login/register with protected routes, home + product intro, functional system (target detection, cloud detection, image compression), data visualisation, parallel-twin system, and the admin user-management dashboard.',
+      'Built the 3D satellite-orbit Earth with react-globe.gl + three.js + satellite.js, and wired realtime telemetry and tasking events over socket.io-client.',
+      'Co-designed the Flask API with the manager: /api/convert for TIFF-to-JPEG conversion, /api/process_image for task submission (image + algorithm + device + mode), plus the register/login endpoints and the front-end axios contract.',
+      'Implemented in-browser TIFF preview with UTIF decoding, and the target-detection result view: annotated image, per-class detection table, device metrics, elapsed time, and processing log.',
+      'Participated in the ML interaction design - algorithm and device selection flows, result table schema, and the detection modules the on-board simulation runs against.',
+    ],
+    contributionStats: [
+      { value: '8+', label: 'React pages' },
+      { value: '3', label: 'Detection modules' },
+      { value: '2', label: 'Simulated satellite nodes' },
+      { value: '2024', label: 'Summer internship' },
+    ],
+    chapters: [
+      {
+        era: 'Summer 2024 · Beijing',
+        heading: 'An internship at the ISCAS software park',
+        body:
+          "During the summer of 2024 I interned at the Chinese Academy of Sciences Institute of Software (ISCAS) software park in Beijing. The team was small - my manager and me - and the project was a demonstration platform for an on-board satellite AI system. The idea: an operator sits at a web browser, uploads satellite imagery, and the request travels up to a simulated satellite computer where a detection model labels aircraft and vehicles in the image, then the annotated result travels back down and renders in the browser. My manager owned the Python backend and the on-board simulation link. I owned the React front end, and we co-designed the API between us.",
+        contribution: false,
+      },
+      {
+        era: 'Frontend · React',
+        heading: 'Eight-plus pages of React, from login to admin',
+        body:
+          "The front end is React 18 on Vite with react-router-dom. I built every page: login and register with an AuthContext and protected routes, the home page and product intro, the functional system (three modules: target detection, cloud detection, image compression), a data-visualisation dashboard, a parallel-twin simulation view, and an admin panel for user management. The centrepiece is the 3D Earth built with react-globe.gl, three.js, and satellite.js - real satellite orbits rendered on a globe, with live telemetry and tasking events streaming over socket.io-client. Watching a task you just submitted light up on the globe as it 'passes over' is still one of the most satisfying demos I have built.",
+        contribution: true,
+      },
+      {
+        era: 'API design',
+        heading: 'Co-designing the Flask contract',
+        body:
+          "The manager built the Flask backend (Flask + Flask-SQLAlchemy on SQLite, Pillow for image conversion), but the API contract was a two-person design job. I sat with him through the endpoints: /api/convert takes a TIFF and returns a JPEG so the browser can preview it; /api/process_image accepts the image plus three parameters - algorithm, device, and mode - saves a file record to the database, spawns the socket client as a subprocess, and returns the annotated result image; register and login round out the user system. The lesson that stuck: on a two-person team the API is where the front end and the backend negotiate, and being in that negotiation teaches you more about system design than building either half alone.",
+        contribution: true,
+      },
+      {
+        era: 'The socket bridge',
+        heading: 'How a web request reaches a simulated satellite',
+        body:
+          "The part of the system I did not write but had to understand deeply: the manager's client.py is a Python socket client that packages the image and its metadata (an Excel sheet with the AI mode and algorithm choice, generated with pandas) and sends it over raw TCP to one of two simulated on-board computers on the lab intranet. Flask spawns it as a subprocess for every task, streams its stdout into a per-task log, and serves the resulting annotated image back to the front end. Debugging the full loop - browser to Flask to socket to simulated satellite and back - meant reading his code carefully and reading the task logs together. That is where I learned to trace a request across process boundaries instead of just across files.",
+        contribution: false,
+      },
+      {
+        era: 'The ML loop',
+        heading: 'Target detection, cloud detection, and compression',
+        body:
+          "Three processing modules run on the simulated on-board computers. The flagship is target detection: aircraft and vehicles in satellite imagery, with the detection model running on the simulated satellite node and the annotated image returned downlink. I owned the browser side of the ML loop - the algorithm and device selection flow, the result rendering (annotated image with boxes, a per-class detection table parsed from the returned Excel, device metrics, elapsed time, and the processing log), and the TIFF preview via UTIF decoding before upload. Participating in the ML side meant agreeing on what the model returns and how the UI should present confidence and counts so an operator can trust the result at a glance.",
+        contribution: true,
+      },
+      {
+        era: 'Parallel twin + metrics',
+        heading: 'The digital twin and the numbers',
+        body:
+          "Two more views I built: a parallel-twin system page that mirrors the satellite workflow on the ground for dry runs, and a data-visualisation dashboard built on Chart.js that plots the metrics each task produces. Together they turn the platform from a 'submit and wait' tool into something you can watch: submit on one screen, watch the orbit and the metrics move on the others. The parallel-twin concept - running the same task in simulation before committing to the real uplink - came from the lab's research direction, and rendering it as an interactive page was my part of that idea.",
+        contribution: true,
+      },
+      {
+        era: 'Auth & admin',
+        heading: 'Users, roles, and the admin dashboard',
+        body:
+          "The platform needed accounts because different operators run different kinds of tasks. I built the login and register pages, the AuthContext that holds the session, the ProtectedRoute wrapper that gates every functional page, and the admin dashboard where an administrator manages user accounts. The auth flow talks to the Flask register/login endpoints. Small system, but it forced the full-stack discipline early: the front end must handle token storage, redirects, and expired sessions gracefully, and the backend must say no when the front end forgets to ask.",
+        contribution: true,
+      },
+      {
+        era: 'What I learned',
+        heading: 'A two-person team, a real system, one summer',
+        body:
+          "This was my first real-industry-ish team build: a manager who owned the backend and a frontend owner (me) negotiating an API, a simulated satellite link neither of us fully controlled, and a demo that had to look trustworthy to people who knew satellites far better than I did. Three takeaways. First: the API negotiation is the job - the contract between my React and his Flask was where most of the real engineering happened. Second: tracing a request across process boundaries (browser, Flask, subprocess, socket, simulation) is a different skill from reading a single codebase, and it only comes from debugging in production-ish conditions. Third: presenting an ML result is a UX problem - the annotated image matters, but so do the confidence numbers, the per-class table, and the elapsed time. I have carried all three into every team project since.",
+        contribution: false,
+      },
+    ],
   },
+
 
   // ──── MAJOR (newer) ────
     // ──── MAJOR 01 (owner priority) ────
