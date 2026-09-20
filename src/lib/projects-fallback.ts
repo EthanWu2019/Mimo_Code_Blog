@@ -299,7 +299,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Undo last scan feature shipped with ScanDebouncer, event-log index capture, and a toast state machine — all in PR review',
       'Final packaging: PyInstaller bundles Python backend, Electron wraps it, GitHub Actions ships multi-platform release builds',
     ],
-    link: null,
+    link: 'https://athlete-tracker-team-project.vercel.app',
     repo: 'https://github.com/cse4504-sp26-wustl/team-project-team1-obpc',
     coverImage:
       'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80&auto=format&fit=crop',
