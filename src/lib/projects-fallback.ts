@@ -610,27 +610,119 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     year: 2026,
   },
   {
+    // Personal expense tracker. The story: owner wanted something
+    // less tedious than existing finance apps (every entry needed
+    // category + project name + amount) and did not trust a single
+    // bank-aggregator like Rocket Money to read all accounts (multiple
+    // banks, USD + RMB). So owner built a local-first pipeline where
+    // Hermes (the AI agent) is the input mechanism, Notion is the
+    // structured store, and GitHub Pages is the public visualization.
     id: 'fallback-major-money',
     slug: 'where-my-money-go',
     title: 'Where My Money Go',
-    tagline: 'Personal expense tracker backed by Notion + daily cron sync',
+    tagline:
+      'A personal finance pipeline: tell the AI agent "I spent $40 on lunch" and it lands in Notion by morning — built because every other expense app I tried asked for too much',
     description:
-      'A personal finance front-end that records every expense into a local cache and syncs to Notion on a nightly cron. Categories, fixed monthly subscriptions, and a daily digest.',
+      "A personal expense tracker built around three opinions: (1) input friction is the killer — the entry point is just talking to the AI agent in natural language, no category picker, no project-name field, no amount field to fill; (2) local-first means the AI agent writes to a JSON queue on the Mac mini, and only the daily cron syncs it onward, so any entry point (WebUI, QQ bot, future CLI) shares one source of truth; (3) the dashboard is a static GitHub Page so it costs nothing to host and the data is a single all.json file you can fork. The result is a pipeline with three layers: a Hermes skill that writes pending.json, a 23:00 cron that pushes the queue into Notion, and a 23:10 cron that renders the public dashboard.",
     category: 'web',
     tier: 'major',
     status: 'shipped',
-    tech: ['JavaScript', 'Notion API', 'Cron', 'CSS'],
-    highlights: [
-      'Nightly cron sync into Notion database',
-      'Category system tuned for personal budgeting',
+    tech: [
+      'Vanilla JavaScript',
+      'Chart.js',
+      'Notion API (data source query, page creation)',
+      'Cron (5 jobs: sync, render, monthly charges x 3, backup)',
+      'GitHub Pages (static hosting)',
+      'open.er-api.com (live FX rate)',
+      'CSS (5 hand-rolled themes: Violet / Sharp / Minimal / Neon / Sunset)',
+      'Hermes skill (Python, the entry point)',
     ],
-    link: null,
+    highlights: [
+      'Input mechanism is "tell the AI" — natural-language expense entry, no forms, no dropdowns',
+      'Three-stage pipeline: pending.json → Notion → GitHub Pages static dashboard',
+      'Local-first: pending.json is the single source of truth; multi-entry-point safe (WebUI / QQ bot / future CLI)',
+      '5-month dashboard with currency switch (USD/RMB), weekly/monthly reports, 5 visual themes',
+      'Auto-recurring monthly charges via separate cron jobs (iCloud / Apple Care / split phone bill)',
+    ],
+    link: 'https://ethanwu2019.github.io/where-my-money-go/',
     repo: 'https://github.com/EthanWu2019/where-my-money-go',
     coverImage:
       'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1600&q=80&auto=format&fit=crop',
     featured: false,
     sortOrder: 11,
     year: 2026,
+    sidebarLabel: 'What this taught me',
+    contributions: [
+      'Designed the pipeline shape: input layer (Hermes) → queue layer (pending.json) → structured store (Notion) → public render (GitHub Pages). Each layer has one job and one failure mode.',
+      'Wrote the Notion data_source schema (12 categories across 收入/支出, currency select, date index) and the sync.py that throttles at 2 req/s and uses Notion-Version 2025-09-03.',
+      'Built the GitHub Pages dashboard in vanilla JS: Chart.js pie chart for spend distribution, currency switch with live FX rate (open.er-api.com), weekly/monthly reports with prev/next navigation, click-to-filter transaction list.',
+      'Designed 5 hand-rolled CSS themes (Violet / Sharp / Minimal / Neon / Sunset) — same component, no framework, just CSS custom properties.',
+      'Set up the recurring-charge subsystem: 3 cron jobs (iCloud on the 3rd, Apple Care on the 10th, split phone bill on the 14th) each running a Python script that writes to the same pending.json pipeline.',
+    ],
+    contributionStats: [
+      { value: '1 line', label: 'To log an expense' },
+      { value: '5 cron jobs', label: 'Keeping it alive' },
+      { value: '12 categories', label: 'Notion schema' },
+      { value: '5 themes', label: 'Hand-rolled CSS' },
+    ],
+    chapters: [
+      {
+        era: 'Why I built this',
+        heading: 'Every other expense app asked for too much',
+        body:
+          "I have used a handful of personal finance apps over the years and they all share the same problem: every single entry is a form. You open the app, you pick a date (it autofills to today, but only after you tap), you pick or type a category (which is the wrong list, because what you actually spent on is rarely what their dropdown says), you type a project name (which you will never search for again), you type an amount (the worst part — you have to context-switch from 'I just bought coffee' to 'is this 4.50 or 4.55?'), you hit save. By the third entry of the day you have stopped. Rocket Money solved the data-input half by reading bank transactions directly. But I have two bank accounts, a Chinese RMB account, USD on a debit card, and recurring charges that sometimes come out of one and sometimes the other. Linking them all to a US-focused aggregator did not feel right either — that is one platform seeing my entire financial life, and I did not want one more of those.",
+        contribution: false,
+      },
+      {
+        era: 'The input mechanism',
+        heading: 'I built a Hermes skill so I can just say it',
+        body:
+          "The insight was that I was already talking to an AI agent all day. If the entry point could be 'tell the AI you spent money', the form disappears. So I built an expense-tracker skill for Hermes. The workflow: I say 'I just spent $40 on lunch' in any session — WebUI, QQ bot, anywhere — and the skill appends a JSON entry to a queue file (pending.json) on the Mac mini. No form, no dropdown, no amount field with two decimals of precision. The skill uses simple keyword rules to infer category and currency ('$ → USD', '块 → RMB', '原神/Steam/月卡 → 游戏', 'AI/Token/ChatGPT → AI'), and if it is ambiguous it just asks one clarifying question instead of five. The queue file is the single source of truth: any entry point writes to the same file, and the only process that ever reads it is the nightly cron. This pattern (multi-entry-point write, single-source-of-truth file, time-delayed sync) was the most useful thing I have ever built. It is how every personal-tool I now build works.",
+        contribution: false,
+      },
+      {
+        era: 'The pipeline · stage 1',
+        heading: 'pending.json — the local queue',
+        body:
+          'pending.json is literally an array of objects, one per expense: `{项目, 金额, 币种, 类型, 分类, 日期, 备注}`. Chinese field names because they are for me, not for an API. Every entry point (WebUI / QQ / future CLI) follows the same four steps: read the file, parse the JSON, append, write the whole array back. The reason it has to be read-then-write rather than append is that the queue gets cleared by the nightly cron after sync, and any naive write-append would silently drop entries. The Hermes skill enforces this read-then-write order with a hard rule: never call write_file without first reading. The first time I tried to be clever and skip the read step I overwrote the entire queue and lost a day of entries. Lesson burned in: local-first systems make the read-write race the dominant failure mode, and the only fix is discipline, not better tools.',
+        contribution: false,
+      },
+      {
+        era: 'The pipeline · stage 2',
+        heading: '23:00 cron → Notion',
+        body:
+          "A single cron job at 23:00 CDT does: read pending.json → POST each entry to the Notion 账目明细 database → on success, remove from pending.json. The Notion data source ID is hardcoded in the script. Throttling is 2 requests per second so we don't hit the Notion rate limit even when the queue has 20+ entries (rare but happens after vacation). After this runs, pending.json is empty, and every entry now exists in Notion where I can query it, sort it, filter by date or category, and export it. The reason I split sync from render into two separate cron jobs is so a slow Notion call does not block the public dashboard from updating. If Notion is down for an hour, the render job still runs on yesterday's data; if the render job fails, sync still succeeded and I can run render manually when Notion is back. Two-stage pipelines are easier to debug than one big pipeline that fails halfway.",
+        contribution: false,
+      },
+      {
+        era: 'The pipeline · stage 3',
+        heading: '23:10 cron → GitHub Pages render',
+        body:
+          'A second cron job runs at 23:10, ten minutes after the sync. It pulls all entries from Notion via the data_sources/query API, paginates through them, and writes a single data/all.json file. Then it commits and pushes to the where-my-money-go GitHub repo, and GitHub Pages automatically serves the updated dashboard. The dashboard itself is vanilla JS + Chart.js — no framework, no build step, just an index.html, a script.js, and a styles.css. Five CSS themes are hand-rolled (Violet / Sharp / Minimal / Neon / Sunset) using CSS custom properties, and a single Chart.js pie chart shows spend distribution. The page reads the open.er-api.com live FX rate to convert USD↔RMB on the fly. I am not precious about exposing this publicly — if you can read my spend pattern, that is fine, that is actually the point. Static-hosting the dashboard costs $0/year and the data file is one all.json you can fork.',
+        contribution: false,
+      },
+      {
+        era: 'Recurring charges',
+        heading: 'Three separate cron jobs for monthly auto-charges',
+        body:
+          "Some expenses are recurring and I don't want to manually type 'iCloud $9.99' every month. So there is a small Python script (recurring.py) that takes a date-keyed dict: `{3: [('iCloud 订阅', 9.99, 'USD', '月扣')], 10: [...], 14: [...]}`. Three separate cron jobs fire on the 3rd, 10th, and 14th of each month at 09:00 CDT, each runs recurring.py, each only writes the charges that match today's date. The split-phone-bill entry has a 备注 explaining the calculation ('3 people share $100, my share is $33.33') because six months later I will not remember why that exact amount exists. I made this its own cron subsystem rather than a single big cron because I wanted each recurring to be independently auditable and reschedulable — when I added a fourth recurring, it was one new cron, one new line in the dict, no other changes.",
+        contribution: false,
+      },
+      {
+        era: 'Bugs and recovery',
+        heading: 'The two incidents that taught me everything',
+        body:
+          "Two incidents shaped this project more than any planned feature. First: I once ran sync.py manually to 'force a quick sync' without checking whether the cron had already synced. Result: 5 duplicate entries in Notion. The fix was to write a Notion API deduplication script that groups by (项目, 金额, 币种, 日期), keeps the earliest created_time, archives the rest. Now I never run sync.py by hand — if the queue is empty, I trust the cron ran. Second: an off-platform integration once called sync.py directly and POSTed to Notion, then deleted the entry from pending.json. Result: I genuinely thought the data was lost and almost re-entered it. It was not lost — it was in Notion. The lesson burned in twice over: any time pending.json is empty, query Notion first, never assume the data is gone. These two incidents turned the skill into something that has explicit pitfall warnings at the top. The warnings are longer than the actual implementation — and that is intentional.",
+        contribution: false,
+      },
+      {
+        era: 'What I learned',
+        heading: 'Three things I will carry to the next personal tool',
+        body:
+          '1. **Local-first pipelines beat cloud-first pipelines for personal tools.** Single source of truth file + time-delayed sync is the most resilient architecture I have found for things that only I use. Multi-entry-point, offline-capable, debuggable by reading one JSON file. 2. **The hardest part of a personal tool is not the technology — it is the input discipline.** Every time I want to log an expense, the cost of opening a form vs. saying one sentence determines whether I actually log it. The skill gets 90% of the friction out of the way. 3. **Two-stage pipelines are easier to reason about than one big pipeline.** Sync and render being separate crons means a Notion outage does not take the dashboard down, and a render bug does not block writes. Each stage has one job and one failure mode. If I build another personal tool that has any async data flow, it will have this same three-layer shape.',
+        contribution: false,
+      },
+    ],
   },
   {
     id: 'fallback-major-wucg',
