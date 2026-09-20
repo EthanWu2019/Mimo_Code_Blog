@@ -351,17 +351,15 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     ],
   },
   {
-    // Solo semester project: a hostile social-media simulator that
-    // turns LLM prompt engineering + state design into something
-    // visceral. Every chapter below is a thing I personally built
-    // and shipped.
+    // Solo side-project. Everything below is one person building
+    // something because they wanted to see what it felt like.
     id: 'fallback-mono-echo-chamber',
     slug: 'echo-chamber-cyberbullying-simulator',
     title: 'EchoChamber — Cyber-bullying Simulator',
     tagline:
-      'An interactive social-media simulator where 6 AI personality archetypes gaslight, fawn over, or pile on whatever you just posted',
+      'Post a sentence and six AI personalities pile on. A small browser toy I built because I wanted to feel what toxic comment sections actually feel like',
     description:
-      'A single-page Next.js app that simulates a hostile social-media feed. Post something and six AI archetypes (hater, stan, logic-lord, moral-knight, spam-bot, normal) reply in real time, weighted toward negative personalities. A live sentiment meter drifts your reputation; pulling toward negative unlocks achievement branches (first flamed, sentiment crashed) and DM harassment events, recovery unlocks a different set. Story-mode ships four hand-authored scenarios (easy / medium / hard) with bilingual initial posts. Local mock-ai fallback keeps the experience intact when the upstream API is unreachable. zh/en UI with a per-component i18n table, screen-shake on harsh comments, idle-overlay, account stats, block/report/mute, light/dark themes.',
+      "A solo Next.js project I made on my own — about ~8.9k lines of custom code, 6 AI personality archetypes, 28 achievements, and 4 hand-written story scenarios. Post something in the box and six different toxic archetypes reply in real time, weighted toward the negative. A sentiment meter drifts your reputation; pulling toward negative unlocks achievement branches, recovery unlocks a different set. The whole thing is bilingual (zh/en) and works offline when the upstream API is rate-limited. Free to play, no accounts, no tracking.",
     category: 'web',
     tier: 'major',
     status: 'shipped',
@@ -379,88 +377,73 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Vercel deployment',
     ],
     highlights: [
-      'Six AI personalities with weighted system prompts and per-personality system-prompt engineering',
+      'Six AI personalities, weighted system prompts, per-personality prompt engineering',
       'Local mock-ai fallback keeps the demo fully playable offline / when the API rate-limits',
       'Sentiment-meter drives a 28-achievement branch tree (flamed arc vs recovered arc)',
       'Four hand-authored story-mode scenarios with bilingual initial posts',
-      '143-key bilingual i18n table, full zh/en parity including sentiment-widget copy and idle-overlay hints',
+      '143-key bilingual i18n table, hand-translated end to end',
     ],
     link: 'https://echo-chamber-simulator.vercel.app',
     repo: 'https://github.com/EthanWu2019/SemiProject-EchoChamberSimulator',
-    coverImage:
-      'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=1600&q=80&auto=format&fit=crop',
+    coverImage: '/echochamber-cover.png',
     featured: true,
     sortOrder: 3,
     year: 2026,
-    contributions: [
-      'Architected the entire client experience solo: post / comment / sentiment / DM / story-mode state machines, all on a localStorage-backed session store with a custom React hook.',
-      'Wrote the per-personality system prompts and the weighted routing (35% hater / 15% stan / 20% logic-lord / 20% moral-knight / 10% spam-bot) baked into the LLM call.',
-      'Built the 28-achievement branch tree by hand: thresholds, unlock conditions, icons, and the dichotomy between "flamed" and "recovered" arcs.',
-      'Authored four hand-written story-mode scenarios (easy / medium / hard) with bilingual initial posts and per-scenario difficulty metadata.',
-      'Full zh/en i18n: 143 keys × 2 languages, hand-translated, integrated per-component.',
-      'Implemented sound effects, screen-shake, idle-overlay, sentiment-driven DM events, and the account-widget (followers / following / day count).',
-    ],
-    contributionStats: [
-      { value: '~8.9k', label: 'Lines of custom code' },
-      { value: '6', label: 'AI personalities' },
-      { value: '28', label: 'Achievements' },
-      { value: '4', label: 'Story-mode scenarios' },
-    ],
     chapters: [
       {
-        era: 'Spring 2026 · CSE 4331',
-        heading: 'A one-person semester project with a real research question',
+        era: 'How it started',
+        heading: 'I wanted to know what it actually felt like',
         body:
-          "This started as a CSE 4331 (Translation of Programming Languages) final project. The brief was open-ended, so I picked something that had bothered me for a while: real social-media toxicity research exists, but most people have never seen what an LLM-generated toxic reply actually feels like in a feed. I wanted to build a single-page web app where someone posts a sentence and watches six different toxic archetypes reply in real time, weighted toward the negative — and a sentiment meter that drifts their reputation, opening different achievement branches. Everything below is something I personally shipped: full-stack Next.js 16, six personality system prompts, a 28-achievement branch tree, four hand-authored story scenarios, full bilingual i18n.",
-        contribution: true,
+          "I kept reading academic papers about online toxicity and recommendation algorithms, and they were all very clean and very abstract. I wanted the opposite of that — what does it actually feel like when you post something and a stranger rips into it for no reason? Could I make a small toy where you type one sentence and a feed of replies comes back at you, each one a slightly different kind of awful, and you watch a little number drift down as you read them? That was the whole spark. I started building it on a Saturday with no plan, just to see if it was even possible to get a model to commit to a personality long enough for it to feel like a person and not a slot machine. The first version was ugly and the personalities all sounded the same. By Sunday night I had something that felt close to the thing in my head, and I was hooked enough to keep going.",
+        contribution: false,
       },
       {
         era: 'Architecture · 01',
-        heading: 'Why I kept it client-only — and what that cost me',
+        heading: 'I went client-only on purpose, and that was expensive',
         body:
-          "I made the call early to keep the entire experience client-side. No backend database, no server session — everything persists in localStorage under a single key. That decision traded away multi-device sync for two big wins: zero backend ops for a solo project, and the app behaves like a privacy-respecting local toy that you can poke at without giving anyone your data. The cost was a custom React hook (useLocalStorage) that serializes the entire session — posts, comments, DMs, achievements, blocked users, language preference — on every relevant state change. I learned the practical lesson that \"simple persistence\" is never actually simple when your state tree has 8+ slice types and several cross-slice invariants.",
-        contribution: true,
+          "I made the call early to keep everything in the browser. No backend database, no server session, no auth — just a single React app talking to two API routes and persisting the whole world in localStorage under one key. The honest reason is I didn't want to run a database for a toy, and I liked the idea that the app behaves like something privacy-respecting: you close the tab, nothing about you exists anywhere. The cost turned out to be bigger than I expected. I ended up writing a custom React hook that serializes the entire session — posts, comments, DMs, achievements, blocked users, language preference — on every relevant state change, and I had to think really carefully about cross-slice invariants (like: if you block a user, does their DM history get cleared, and does the sentiment-meter retroactively forget them?). 'Simple persistence' sounds like a small problem until your state tree has 8+ slices that all reference each other. I shipped that hook on the third try and it's the part of the codebase I trust the least — which is maybe the highest compliment I can give it.",
+        contribution: false,
       },
       {
         era: 'Architecture · 02',
-        heading: 'The LLM call shape — system prompt, weights, fallback',
+        heading: 'The LLM call — system prompt, weights, and why I baked the weights into the prompt',
         body:
-          "Every reply goes through one of two server routes: /api/generate-comments (for post-level comments) or /api/generate-topics (for trending + topic posts). Both endpoints take a personality-weighted system prompt + a temperature around 1.0 to 1.1, send the conversation context, and ask for strict JSON back. The personality weighting — 35% hater / 15% stan / 20% logic-lord / 20% moral-knight / 10% spam-bot — is baked into the system prompt as explicit percentage guidance, not into the routing layer. This was a deliberate choice: keeping weight in the prompt (instead of code) means a single config tweak changes the entire vibe. When the upstream API is down or rate-limited, a local mock-ai library picks up the same JSON shape from a static personality-tagged comment pool, so the demo never breaks.",
-        contribution: true,
+          "Every reply goes through one of two routes — /api/generate-comments (post-level replies) or /api/generate-topics (trending + topic posts). Both take a personality-weighted system prompt, a temperature around 1.0 to 1.1, the conversation context, and ask for strict JSON back. The personality weights — 35% hater / 15% stan / 20% logic-lord / 20% moral-knight / 10% spam-bot — live in the system prompt as explicit percentage guidance, not in the routing code. I tried it both ways and the prompt-baked version wins for one reason: a single config tweak changes the whole vibe of the demo, and that makes it easy to A/B the feel without redeploying anything. The downside is that the model occasionally ignores the weights and you get a weirdly wholesome comment section, but for a toy that's fine. When the upstream API is down or rate-limited, a local mock-ai library picks up the same JSON shape from a static personality-tagged pool, so the demo never breaks — that fallback path was the single highest-leverage thing I shipped, because 'broken demo' kills vibe faster than anything else.",
+        contribution: false,
       },
       {
         era: 'Sentiment & Achievements',
-        heading: 'A 28-achievement branch tree driven by a single sentiment number',
+        heading: '28 achievements, two arcs, one number',
         body:
-          "The sentiment meter is a single number that drifts per comment based on per-personality impact (hater: -3 to -8, stan: +3 to +8, spam-bot: -1, etc.) and decays over time. Crossing thresholds unlocks achievements and triggers event cascades (DM harassment events when sentiment collapses, recovery arcs when sentiment recovers). I wrote 28 achievements by hand: thresholds, unlock conditions, icons, and a dichotomy between \"flamed\" arcs (negative drift) and \"recovered\" arcs (positive drift after a collapse). The interesting part was modeling the *branches* — not just \"achievement X unlocks at sentiment Y\", but \"achievement X unlocks at sentiment Y AND you posted at least 3 times AND no achievement from the recovered arc has fired\". Several achievements are mutually exclusive; that constraint is enforced in the unlock hook, not in the data.",
-        contribution: true,
+          "The sentiment meter is a single number that drifts per reply based on per-personality impact (hater: -3 to -8, stan: +3 to +8, spam-bot: -1, etc.) and decays slowly over time. Crossing thresholds unlocks achievements and triggers event cascades — DM harassment when sentiment collapses, recovery arcs when sentiment recovers. I wrote all 28 achievements by hand: thresholds, unlock conditions, icons, and the dichotomy between a 'flamed' arc (negative drift) and a 'recovered' arc (positive drift after a collapse). The interesting design problem was modeling the *branches*. Not just 'achievement X unlocks at sentiment Y', but 'achievement X unlocks at sentiment Y AND you've posted at least 3 times AND no achievement from the recovered arc has fired'. Several achievements are mutually exclusive; that constraint is enforced in the unlock hook, not in the data, so when I want to add a new achievement I don't have to think about edge cases at the data layer. That's the kind of small architectural choice I used to skip and then regret two months later.",
+        contribution: false,
       },
       {
         era: 'Story Mode',
-        heading: 'Four hand-authored scenarios as a guided tour',
+        heading: 'Four scenarios I wrote because I wanted to see how each archetype would behave',
         body:
-          "Story mode is the guided-tour cousin of free-play: pick a difficulty, read a hand-written initial post, and try to survive the replies. Four scenarios — Celebrity Scandal (hard), Product Fail (medium), Viral Moment (easy), Taking Sides (hard) — each with a bilingual initial post and per-scenario difficulty metadata. The data lives in lib/types.ts as STORY_SCENARIOS and feeds StoryModePanel (the picker) and StoryModeView (the immersive player). Writing the scenarios was the part where I had to think hardest about what *feel* I wanted each archetype to deliver: a hard scenario needs the moral-knight to land a real critique, not just generic virtue-signaling.",
-        contribution: true,
+          "Story mode is the guided-tour version of the free-play sandbox: pick a difficulty, read a hand-written initial post, try to survive the replies. Four scenarios — Celebrity Scandal (hard), Product Fail (medium), Viral Moment (easy), Taking Sides (hard) — each with a bilingual initial post and per-scenario difficulty metadata. The data lives in lib/types.ts as STORY_SCENARIOS and feeds two components, the picker panel and the immersive player view. Honestly the scenarios were the hardest part to write. I could make the model play a hater all day, but writing an initial post that actually provokes a moral-knight into landing a real critique (instead of generic virtue-signaling) took a lot of drafts. The easy mode (Viral Moment) is a cat photo that goes viral — even that's interesting because the spam-bots show up disproportionately when something goes viral, which is the kind of pattern you don't see unless you build it.",
+        contribution: false,
       },
       {
-        era: 'i18n · bilingual parity',
-        heading: '143 keys × 2 languages, hand-translated',
+        era: 'i18n',
+        heading: '143 keys, two languages, all translated by hand',
         body:
-          "Every visible string — button labels, idle-overlay hints, sentiment-widget copy, story-mode descriptions, achievement unlock text — lives in lib/i18n.ts as a 143-key translation table with both zh and en. I translated both sides by hand because machine translation would lose the casual tone that makes the toxic replies feel real. The lesson was practical: when you go full bilingual, you discover that some copy is culture-bound (a US idiom reads totally flat in zh), so you sometimes need two separate strings, not one translated string. A handful of keys have intentionally different copy per language, not a translation.",
-        contribution: true,
+          "Every visible string — button labels, idle-overlay hints, sentiment-widget copy, story-mode descriptions, achievement unlock text — lives in lib/i18n.ts as a 143-key translation table with both zh and en. I translated both sides by hand because machine translation would lose the casual tone that makes the toxic replies feel real. A stan who says '啊啊啊宝子你太棒了！！！' in zh should not become 'AHHHH BABY YOU ARE SO AMAZING!!!' in en — the energy is different, and translating it word-for-word strips the energy out. The bigger lesson was that some copy is genuinely culture-bound. A handful of keys have intentionally different copy per language, not a translation. When you go full bilingual, you stop thinking of translation as a one-way map and start thinking of it as two separate writing tasks, which is the only honest way to do it.",
+        contribution: false,
       },
       {
         era: 'Edges',
         heading: 'The bugs that taught me the most',
         body:
-          "The most interesting problems were all edges. The screen-shake animation has to debounce — fire it on every harsh comment and it ruins the framer-motion animation budget, so I added a 1.2s cooldown in the hook. The idle-overlay only shows after the tab has been hidden for 30+ seconds AND the user has at least one post (otherwise an empty-account user sees it as soon as they switch tabs). The DM harassment event fires only when sentiment is below a threshold AND the user has posted at least twice AND they haven't blocked the harasser. The sentiment meter clamps to [-100, +100] so a flood of one-sided replies can't break the UI. And the LLM-output parser was the longest fix of the project: model output wrapping, character-keyed objects, and the JavaScript gotcha where `{...string}` spreads a string into a character-indexed object — I shipped three deploys before I understood all three failure modes.",
-        contribution: true,
+          "The most interesting problems were all edges. The screen-shake animation has to debounce — fire it on every harsh comment and it ruins the framer-motion animation budget, so I added a 1.2s cooldown in the hook. The idle-overlay only shows after the tab has been hidden for 30+ seconds AND the user has at least one post (otherwise an empty-account user sees it the first time they switch tabs, which is annoying). The DM harassment event fires only when sentiment is below a threshold AND the user has posted at least twice AND they haven't blocked the harasser. The sentiment meter clamps to [-100, +100] so a flood of one-sided replies can't break the UI. And the LLM-output parser was the longest fix of the whole project — three deploys in a row where the model wrapped arrays differently each time, and then the JavaScript gotcha where `{...string}` spreads a string into a character-indexed object, so a perfectly valid 'lmao deleted? coward' reply turned into `{0: 'l', 1: 'm', ...}` on the client. I shipped three broken deploys before I understood all three failure modes at once. That's the bug I remember the most, because every fix I tried individually was correct and they only worked together.",
+        contribution: false,
       },
       {
-        era: 'Shipped',
-        heading: 'Where it lives now',
+        era: 'Where it lives',
+        heading: "It's live, free, and I still play with it",
         body:
-          "Deployed to Vercel, repo public on GitHub. Free to play, no accounts, no tracking, no backend. The hosted version runs the same upstream LLM endpoint as local dev, with the same mock-ai fallback path. I've since switched the LLM provider off DeepSeek and onto my own provider — the same prompt still works, but the latency is better and the bill is much lower.",
+          "The whole thing is deployed on Vercel, the repo is public on GitHub, and there's no auth, no tracking, no backend. The hosted version runs the same upstream LLM endpoint as local dev, with the same mock-ai fallback path. I still occasionally open it on my phone and post something to see how the archetypes react — partly to test new prompt tweaks, partly because it's a weirdly useful way to decompress after a frustrating day on the internet. If you want to see it, the live URL is below; if you want to read or fork the code, the GitHub link is right under it.",
         contribution: false,
         links: [
           {
@@ -475,6 +458,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       },
     ],
   },
+
 
 
   // ────────────────────── VIBE ──────────────────────
