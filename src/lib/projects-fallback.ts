@@ -47,30 +47,6 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     year: 2026,
   },
   {
-    id: 'fallback-mono-2',
-    slug: 'ai-video-pipeline',
-    title: 'AI Video Generation Pipeline',
-    tagline: 'ComfyUI workflows → character-consistent video prompts',
-    description:
-      'End-to-end pipeline for generating character-consistent AI video: prompt engineering, workflow automation with ComfyUI, post-processing with SeedVR2 and RIFE-MLX, gallery management with watermarking.',
-    category: 'ml',
-    tier: 'major',
-    status: 'in-progress',
-    tech: ['Python', 'ComfyUI', 'Stable Diffusion', 'PyTorch', 'ffmpeg'],
-    highlights: [
-      'Character reference sheets drive video consistency',
-      'Custom watermarking pipeline (image-perturb) for redistribution protection',
-      'MLX-accelerated frame interpolation on Apple Silicon',
-    ],
-    link: null,
-    repo: 'https://github.com/EthanWu2019/SemiProject-AIVideoPipeline',
-    coverImage:
-      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1600&q=80&auto=format&fit=crop',
-    featured: false,
-    sortOrder: 6,
-    year: 2026,
-  },
-  {
     id: 'fallback-mono-3',
     slug: 'distributed-task-orchestrator',
     title: 'Distributed Task Orchestrator',
@@ -720,6 +696,121 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
         heading: 'Three things I will carry to the next personal tool',
         body:
           '1. **Local-first pipelines beat cloud-first pipelines for personal tools.** Single source of truth file + time-delayed sync is the most resilient architecture I have found for things that only I use. Multi-entry-point, offline-capable, debuggable by reading one JSON file. 2. **The hardest part of a personal tool is not the technology — it is the input discipline.** Every time I want to log an expense, the cost of opening a form vs. saying one sentence determines whether I actually log it. The skill gets 90% of the friction out of the way. 3. **Two-stage pipelines are easier to reason about than one big pipeline.** Sync and render being separate crons means a Notion outage does not take the dashboard down, and a render bug does not block writes. Each stage has one job and one failure mode. If I build another personal tool that has any async data flow, it will have this same three-layer shape.',
+        contribution: false,
+      },
+    ],
+  },
+  {
+    // Personal health tracking pipeline: HealthAutoExport iOS app posts
+    // daily snapshots to a self-hosted Python webhook through Cloudflare
+    // Tunnel; the dashboard is a single-file glassmorphism front end.
+    // Owner built every layer himself.
+    id: 'fallback-major-health',
+    slug: 'personal-health-monitor',
+    title: 'Personal Health Monitor',
+    tagline:
+      'A self-hosted health data pipeline: iPhone snapshots every 1-2 hours, a Python webhook on the Mac mini, and a single-file glassmorphism dashboard with 8 views',
+    description:
+      "A personal health tracking system I built for myself. The iPhone runs HealthAutoExport, which pushes a full-day HealthKit snapshot (steps, heart rate, HRV, sleep stages, VO2 Max, body temperature, walking metrics) to my own webhook every 1-2 hours. The webhook is a Python stdlib http.server on the Mac mini that parses CSV columns dynamically and appends to a daily file. An aggregator rolls everything into daily / weekly / monthly JSON, a cron posts a daily health report, and a staleness checker screams if the pipe goes quiet. The front end is a single 138KB index.html - dark glassmorphism, 8 views, 39 canvas charts, 30-day trends, a health radar, body battery, and a weather-correlation panel. RENPHO scale data, environmental noise, and headphone volume land in the same pipeline. Public at ethanshermes.com/health through Cloudflare Tunnel.",
+    category: 'web',
+    tier: 'major',
+    status: 'shipped',
+    tech: [
+      'Python (stdlib http.server webhook)',
+      'CSV / JSON data pipeline',
+      'Cloudflare Tunnel',
+      'Vanilla JS',
+      'CSS glassmorphism (custom properties)',
+      'Chart.js',
+      'GSAP',
+      'lucide icons',
+      'HealthAutoExport (iOS)',
+      'RENPHO body-composition scale',
+      'cron scheduling',
+    ],
+    highlights: [
+      'iPhone posts a full HealthKit snapshot to my own webhook every 1-2 hours - no third-party health cloud',
+      '574-line Python stdlib webhook parses CSV columns dynamically (schema changes never break the pipe)',
+      'Hourly aggregation cron + 9pm daily report + staleness checker that catches a silent pipe',
+      'Single-file 138KB dashboard: glassmorphism, 8 views, 39 canvas charts, 30-day trends',
+      'RENPHO scale, environmental noise dB, headphone volume dB, and weather all correlate in one panel',
+    ],
+    link: 'https://ethanshermes.com/health/',
+    repo: null,
+    coverImage:
+      'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600&q=80&auto=format&fit=crop',
+    featured: false,
+    sortOrder: 12,
+    year: 2026,
+    sidebarLabel: 'What I built here',
+    contributions: [
+      'Wrote the 574-line Python webhook (health_webhook.py) on stdlib http.server - POST / parses HealthAutoExport CSV with dynamic column detection, appends to daily CSV; GET /api/health/today and /api/health/history serve the dashboard.',
+      'Built the aggregation layer (health_aggregate.py) that rolls raw daily CSVs into daily / weekly / monthly JSON after every push plus an hourly cron.',
+      'Designed and wrote the single-file 138KB dashboard: glassmorphism theme via CSS custom properties, 8 views (overview, activity, cardio, sleep, body composition, environment, weather, correlation), 39 Chart.js canvases, GSAP transitions, 30-day trends, health radar, body battery.',
+      'Wired extra data sources into the same pipe: RENPHO smart scale (weight / fat / lean mass), environmental noise dB with an 85dB safety threshold, headphone volume dB, and weather for correlation analysis.',
+      'Set up Cloudflare Tunnel so the dashboard is public at ethanshermes.com/health, plus the cron stack: hourly aggregation, 9pm daily report, and a staleness checker that alerts when new data stops arriving.',
+    ],
+    contributionStats: [
+      { value: '1-2h', label: 'Snapshot cadence' },
+      { value: '8', label: 'Dashboard views' },
+      { value: '39', label: 'Chart canvases' },
+      { value: '24/7', label: 'Self-hosted' },
+    ],
+    chapters: [
+      {
+        era: 'Why I built this',
+        heading: 'I wanted my own health data, in my own house',
+        body:
+          "Apple Health collects everything - steps, heart rate, HRV, sleep stages, VO2 Max, body temperature - and shows you little cards one at a time on a phone screen. I wanted the opposite: a dashboard I could open on a desktop, see every metric at once, compare trends over 30 days, and correlate sleep with activity with weather. I also did not want to hand my health data to yet another third-party app that would mine it. So the constraint from day one was: the data never leaves my own machines. iPhone pushes to my Mac mini, the Mac mini stores it, the Mac mini renders it. No middleman.",
+        contribution: false,
+      },
+      {
+        era: 'The data source',
+        heading: 'HealthAutoExport - the app that makes HealthKit push, not pull',
+        body:
+          "The hard part of any self-hosted health setup is getting data OUT of the iPhone. Apple locks HealthKit behind a local-only API and iCloud sync is a black box. HealthAutoExport solves it: it runs on the phone, reads the HealthKit store, and every 1-2 hours POSTs a full snapshot of the day so far (CSV) to whatever URL you give it. That URL is my webhook. Each push is a complete 'today up to now' dump, so the receiving side just appends - if a push is lost, the next one repairs the gap automatically. That append-only, snapshot-based design turned out to be the most important decision in the whole project, because it means the pipeline has no ordering bugs and no data loss modes that a retry does not fix.",
+        contribution: false,
+      },
+      {
+        era: 'The webhook',
+        heading: '574 lines of Python stdlib - no framework, one file',
+        body:
+          "health_webhook.py is a single-file http.server on port 8089. POST / receives the multipart CSV, and here is the trick that saved me a dozen rewrites: it does not hardcode columns. HealthAutoExport changes its CSV schema between app versions, and different metrics export different columns. The parser reads the header row and maps every column it recognizes into a canonical record - unknown columns are skipped, missing ones default. The append target is a per-day CSV in ~/.hermes/health_data. There is also POST /workout for gym data and the GET endpoints (/api/health/today, /api/health/history?days=N) that the dashboard polls. stdlib only - no Flask, no FastAPI, no dependencies that break when the Mac updates. The fewer moving parts, the less there is to keep alive.",
+        contribution: false,
+      },
+      {
+        era: 'Aggregation + cron',
+        heading: 'Rollups, the 9pm report, and the watchdog',
+        body:
+          "Raw daily CSVs are not enough - the dashboard needs daily / weekly / monthly aggregates, and I want a health summary pushed to me every evening. health_aggregate.py runs after every webhook push and again on an hourly cron, producing the rollup JSONs the dashboard reads. A 9pm cron assembles the daily report. And then there is the part I am proudest of: health_staleness_check.py. It watches the newest file timestamp and alerts if the pipe goes silent for too long. A health tracker that quietly stops tracking is worse than useless, because you trust it. The watchdog cost twenty lines and has caught every outage since.",
+        contribution: false,
+      },
+      {
+        era: 'The dashboard',
+        heading: 'One 138KB index.html, eight views, no build step',
+        body:
+          "The front end is a single index.html - no bundler, no framework, no build pipeline, just vanilla JS plus Chart.js, GSAP, and lucide from CDNs. Dark glassmorphism theme built on CSS custom properties. Eight views: overview (composite health score, steps, sleep, HRV, weight, BMI, SpO2), activity (VO2 Max, walking speed, stride length, floors climbed, resting energy), cardio (resting HR, HRV, recovery index, 7-day HR bands), sleep (stages, quality score, breathing rate, bedtime regularity, wrist temperature), body composition (RENPHO), environment (noise dB with an 85dB safety threshold, headphone volume), weather, and correlation analysis. 39 canvas charts, 30-day trends everywhere, an activity heatmap, a health radar, and a body-battery gauge. Being one file means deploy is 'scp and done' - no build step to break.",
+        contribution: false,
+      },
+      {
+        era: 'Extra data sources',
+        heading: 'The scale, the noise, and the weather',
+        body:
+          "Once the pipe existed, adding sources became cheap. The RENPHO smart scale reports weight, fat mass, lean mass, and BMI - that data rides the same webhook path into body composition. Environmental noise and headphone volume land there too, and the dashboard flags anything above the 85dB hearing-safety threshold. Weather comes from a public API and joins the correlation panel, so I can answer questions like 'does sleep quality drop on hot nights' or 'do I walk more when the forecast is clear' with my own data instead of a health blog. Each new source was a few dozen lines on the webhook and a new card in the dashboard. The pipeline made the marginal cost of a new data source nearly zero.",
+        contribution: false,
+      },
+      {
+        era: 'Exposure',
+        heading: 'Public via Cloudflare Tunnel',
+        body:
+          "The dashboard lives at ethanshermes.com/health through a Cloudflare Tunnel from the Mac mini - zero port forwarding, TLS handled at the edge, and I can check my trends from anywhere. Health data is sensitive, so the tunnel is the only surface and the API responses are read-only aggregates. I do not share the raw CSVs anywhere.",
+        contribution: false,
+      },
+      {
+        era: 'What I learned',
+        heading: 'Append-only pipes, one-file front ends, and watchdogs',
+        body:
+          "Three things I will reuse in every future personal project. First: append-only, snapshot-based ingestion is the right shape for time-series data - it deletes whole classes of bugs (ordering, duplicates, lost-write recovery) by construction. Second: for a personal tool, a single-file front end with CDN libraries is production-grade enough and dramatically cheaper to keep alive than any framework stack - the dashboard has survived every macOS and browser update untouched. Third: monitoring is a feature, not an afterthought. The staleness watchdog matters more than any chart, because the failure mode that kills a tracker is silence. I will build the watchdog first next time.",
         contribution: false,
       },
     ],
