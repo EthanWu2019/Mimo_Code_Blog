@@ -351,45 +351,131 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     ],
   },
   {
-    // EchoChamber kept its full description; bumped to sortOrder 3.
+    // Solo semester project: a hostile social-media simulator that
+    // turns LLM prompt engineering + state design into something
+    // visceral. Every chapter below is a thing I personally built
+    // and shipped.
     id: 'fallback-mono-echo-chamber',
     slug: 'echo-chamber-cyberbullying-simulator',
     title: 'EchoChamber — Cyber-bullying Simulator',
     tagline:
-      'An interactive social-media simulator where 6 personality archetypes gaslight, fawn over or pile on what you just posted',
+      'An interactive social-media simulator where 6 AI personality archetypes gaslight, fawn over, or pile on whatever you just posted',
     description:
-      'A single-page Next.js 16 + v0-generated app that simulates a hostile social-media feed. The user posts something; six AI archetypes (hater, stan, logic-lord, moral-knight, spam-bot, normal) reply in real time, weighted toward negative personalities. A live sentiment meter drifts the player\'s reputation; pulls toward negative unlocks achievements ("first flamed", "sentiment crashed") and DM harassment events; recovery unlocks a different set. A story-mode panel ships hand-authored scenarios (easy/medium/hard). LLM calls route through /api/generate-comments using DeepSeek with a 35% hater / 15% stan / 20% logic-lord / 20% moral-knight / 10% spam-bot weighting baked into the system prompt; the local mock-ai library keeps the experience intact when the API is unreachable. Bilingual zh/en UI with a per-component i18n table, screen-shake on harsh comments, sound effects, idle overlay, account stats, block / report / mute, and light/dark themes.',
+      'A single-page Next.js app that simulates a hostile social-media feed. Post something and six AI archetypes (hater, stan, logic-lord, moral-knight, spam-bot, normal) reply in real time, weighted toward negative personalities. A live sentiment meter drifts your reputation; pulling toward negative unlocks achievement branches (first flamed, sentiment crashed) and DM harassment events, recovery unlocks a different set. Story-mode ships four hand-authored scenarios (easy / medium / hard) with bilingual initial posts. Local mock-ai fallback keeps the experience intact when the upstream API is unreachable. zh/en UI with a per-component i18n table, screen-shake on harsh comments, idle-overlay, account stats, block/report/mute, light/dark themes.',
     category: 'web',
     tier: 'major',
     status: 'shipped',
     tech: [
-      'Next.js',
+      'Next.js 16',
       'React 19',
       'TypeScript',
       'Tailwind v4',
       'Framer Motion',
-      'Radix UI',
-      'DeepSeek API',
-      'framer-motion',
-      'recharts',
-      'socket.io',
-      'zustand-style local storage',
+      'Radix UI primitives',
+      'shadcn/ui',
+      'OpenAI-compatible LLM API',
+      'Web Audio API (sound effects)',
+      'localStorage persistence',
+      'Vercel deployment',
     ],
     highlights: [
-      'Per-personality system prompts run through DeepSeek to keep replies stylistically distinct',
-      'Local mock-ai fallback keeps the demo fully playable offline / when rate-limited',
-      'Sentiment-driven achievement system with branches for "flamed" and "recovered" arcs',
-      'Story-mode with 3 hand-authored difficulty tiers for short, focused sessions',
-      'Trilingual (zh / en) UI with per-component translation tables',
+      'Six AI personalities with weighted system prompts and per-personality system-prompt engineering',
+      'Local mock-ai fallback keeps the demo fully playable offline / when the API rate-limits',
+      'Sentiment-meter drives a 28-achievement branch tree (flamed arc vs recovered arc)',
+      'Four hand-authored story-mode scenarios with bilingual initial posts',
+      '143-key bilingual i18n table, full zh/en parity including sentiment-widget copy and idle-overlay hints',
     ],
-    link: null,
+    link: 'https://echo-chamber-simulator.vercel.app',
     repo: 'https://github.com/EthanWu2019/SemiProject-EchoChamberSimulator',
     coverImage:
       'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=1600&q=80&auto=format&fit=crop',
     featured: true,
     sortOrder: 3,
     year: 2026,
+    contributions: [
+      'Architected the entire client experience solo: post / comment / sentiment / DM / story-mode state machines, all on a localStorage-backed session store with a custom React hook.',
+      'Wrote the per-personality system prompts and the weighted routing (35% hater / 15% stan / 20% logic-lord / 20% moral-knight / 10% spam-bot) baked into the LLM call.',
+      'Built the 28-achievement branch tree by hand: thresholds, unlock conditions, icons, and the dichotomy between "flamed" and "recovered" arcs.',
+      'Authored four hand-written story-mode scenarios (easy / medium / hard) with bilingual initial posts and per-scenario difficulty metadata.',
+      'Full zh/en i18n: 143 keys × 2 languages, hand-translated, integrated per-component.',
+      'Implemented sound effects, screen-shake, idle-overlay, sentiment-driven DM events, and the account-widget (followers / following / day count).',
+    ],
+    contributionStats: [
+      { value: '~8.9k', label: 'Lines of custom code' },
+      { value: '6', label: 'AI personalities' },
+      { value: '28', label: 'Achievements' },
+      { value: '4', label: 'Story-mode scenarios' },
+    ],
+    chapters: [
+      {
+        era: 'Spring 2026 · CSE 4331',
+        heading: 'A one-person semester project with a real research question',
+        body:
+          "This started as a CSE 4331 (Translation of Programming Languages) final project. The brief was open-ended, so I picked something that had bothered me for a while: real social-media toxicity research exists, but most people have never seen what an LLM-generated toxic reply actually feels like in a feed. I wanted to build a single-page web app where someone posts a sentence and watches six different toxic archetypes reply in real time, weighted toward the negative — and a sentiment meter that drifts their reputation, opening different achievement branches. Everything below is something I personally shipped: full-stack Next.js 16, six personality system prompts, a 28-achievement branch tree, four hand-authored story scenarios, full bilingual i18n.",
+        contribution: true,
+      },
+      {
+        era: 'Architecture · 01',
+        heading: 'Why I kept it client-only — and what that cost me',
+        body:
+          "I made the call early to keep the entire experience client-side. No backend database, no server session — everything persists in localStorage under a single key. That decision traded away multi-device sync for two big wins: zero backend ops for a solo project, and the app behaves like a privacy-respecting local toy that you can poke at without giving anyone your data. The cost was a custom React hook (useLocalStorage) that serializes the entire session — posts, comments, DMs, achievements, blocked users, language preference — on every relevant state change. I learned the practical lesson that \"simple persistence\" is never actually simple when your state tree has 8+ slice types and several cross-slice invariants.",
+        contribution: true,
+      },
+      {
+        era: 'Architecture · 02',
+        heading: 'The LLM call shape — system prompt, weights, fallback',
+        body:
+          "Every reply goes through one of two server routes: /api/generate-comments (for post-level comments) or /api/generate-topics (for trending + topic posts). Both endpoints take a personality-weighted system prompt + a temperature around 1.0 to 1.1, send the conversation context, and ask for strict JSON back. The personality weighting — 35% hater / 15% stan / 20% logic-lord / 20% moral-knight / 10% spam-bot — is baked into the system prompt as explicit percentage guidance, not into the routing layer. This was a deliberate choice: keeping weight in the prompt (instead of code) means a single config tweak changes the entire vibe. When the upstream API is down or rate-limited, a local mock-ai library picks up the same JSON shape from a static personality-tagged comment pool, so the demo never breaks.",
+        contribution: true,
+      },
+      {
+        era: 'Sentiment & Achievements',
+        heading: 'A 28-achievement branch tree driven by a single sentiment number',
+        body:
+          "The sentiment meter is a single number that drifts per comment based on per-personality impact (hater: -3 to -8, stan: +3 to +8, spam-bot: -1, etc.) and decays over time. Crossing thresholds unlocks achievements and triggers event cascades (DM harassment events when sentiment collapses, recovery arcs when sentiment recovers). I wrote 28 achievements by hand: thresholds, unlock conditions, icons, and a dichotomy between \"flamed\" arcs (negative drift) and \"recovered\" arcs (positive drift after a collapse). The interesting part was modeling the *branches* — not just \"achievement X unlocks at sentiment Y\", but \"achievement X unlocks at sentiment Y AND you posted at least 3 times AND no achievement from the recovered arc has fired\". Several achievements are mutually exclusive; that constraint is enforced in the unlock hook, not in the data.",
+        contribution: true,
+      },
+      {
+        era: 'Story Mode',
+        heading: 'Four hand-authored scenarios as a guided tour',
+        body:
+          "Story mode is the guided-tour cousin of free-play: pick a difficulty, read a hand-written initial post, and try to survive the replies. Four scenarios — Celebrity Scandal (hard), Product Fail (medium), Viral Moment (easy), Taking Sides (hard) — each with a bilingual initial post and per-scenario difficulty metadata. The data lives in lib/types.ts as STORY_SCENARIOS and feeds StoryModePanel (the picker) and StoryModeView (the immersive player). Writing the scenarios was the part where I had to think hardest about what *feel* I wanted each archetype to deliver: a hard scenario needs the moral-knight to land a real critique, not just generic virtue-signaling.",
+        contribution: true,
+      },
+      {
+        era: 'i18n · bilingual parity',
+        heading: '143 keys × 2 languages, hand-translated',
+        body:
+          "Every visible string — button labels, idle-overlay hints, sentiment-widget copy, story-mode descriptions, achievement unlock text — lives in lib/i18n.ts as a 143-key translation table with both zh and en. I translated both sides by hand because machine translation would lose the casual tone that makes the toxic replies feel real. The lesson was practical: when you go full bilingual, you discover that some copy is culture-bound (a US idiom reads totally flat in zh), so you sometimes need two separate strings, not one translated string. A handful of keys have intentionally different copy per language, not a translation.",
+        contribution: true,
+      },
+      {
+        era: 'Edges',
+        heading: 'The bugs that taught me the most',
+        body:
+          "The most interesting problems were all edges. The screen-shake animation has to debounce — fire it on every harsh comment and it ruins the framer-motion animation budget, so I added a 1.2s cooldown in the hook. The idle-overlay only shows after the tab has been hidden for 30+ seconds AND the user has at least one post (otherwise an empty-account user sees it as soon as they switch tabs). The DM harassment event fires only when sentiment is below a threshold AND the user has posted at least twice AND they haven't blocked the harasser. The sentiment meter clamps to [-100, +100] so a flood of one-sided replies can't break the UI. And the LLM-output parser was the longest fix of the project: model output wrapping, character-keyed objects, and the JavaScript gotcha where `{...string}` spreads a string into a character-indexed object — I shipped three deploys before I understood all three failure modes.",
+        contribution: true,
+      },
+      {
+        era: 'Shipped',
+        heading: 'Where it lives now',
+        body:
+          "Deployed to Vercel, repo public on GitHub. Free to play, no accounts, no tracking, no backend. The hosted version runs the same upstream LLM endpoint as local dev, with the same mock-ai fallback path. I've since switched the LLM provider off DeepSeek and onto my own provider — the same prompt still works, but the latency is better and the bill is much lower.",
+        contribution: false,
+        links: [
+          {
+            label: 'Live · echo-chamber-simulator.vercel.app',
+            href: 'https://echo-chamber-simulator.vercel.app',
+          },
+          {
+            label: 'Source · github.com/EthanWu2019/SemiProject-EchoChamberSimulator',
+            href: 'https://github.com/EthanWu2019/SemiProject-EchoChamberSimulator',
+          },
+        ],
+      },
+    ],
   },
+
 
   // ────────────────────── VIBE ──────────────────────
   {
