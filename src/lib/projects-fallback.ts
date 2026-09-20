@@ -890,25 +890,118 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     ],
   },
   {
+    // Freshman-year hackathon (fall 2024): WUCG game club event,
+    // team SKOOOL. Teammate did Figma design + ideation; owner wrote
+    // all the Flutter code alone over the sprint.
     id: 'fallback-major-wucg',
     slug: 'wucg-hackathon-skoool',
     title: 'WUCG Hackathon — Team SKOOOL',
-    tagline: 'Game-club hackathon build in Flutter',
+    tagline:
+      'A student calendar-and-tasks app in Flutter, built at a freshman-year hackathon: school timetable import, color-coded task groups, and a full-screen fish tank for finishing your work',
     description:
-      'Hackathon entry built with the WUCG gaming club: a mobile app built in Dart/Flutter over a weekend sprint.',
+      "SKOOOL is a student productivity app built in Flutter at a fall 2024 hackathon run by the WUCG game club. A calendar built on table_calendar shows courses and tasks, grouped into color-coded categories (Work / Personal / School / Others). A settings page imports the school timetable from an ICS link or an uploaded syllabus file, switches light/dark theme, and lets you repaint every group color. Finish your tasks and you earn the reward screen: a full-screen animated fish tank. The teammate owned Figma design and product ideation; the owner wrote all 936 lines of Dart across five files over the sprint.",
     category: 'mobile',
     tier: 'major',
     status: 'shipped',
-    tech: ['Dart', 'Flutter'],
-    highlights: [],
+    tech: [
+      'Dart',
+      'Flutter',
+      'table_calendar',
+      'provider',
+      'http',
+      'shared_preferences',
+      'path_provider',
+      'flutter_colorpicker',
+      'file_picker',
+      'intl',
+    ],
+    highlights: [
+      'Calendar + task system grouped into color-coded categories (Work / Personal / School / Others)',
+      'School timetable import from an ICS link, plus syllabus file upload',
+      'Full-screen fish-tank reward screen - finish your tasks, feed the fish',
+      'Light/dark theme switching with a group color picker',
+      'Teammate owned Figma design; owner translated it into all the Flutter code',
+    ],
     link: null,
     repo: 'https://github.com/EthanWu2019/Hackathon_WUCG_Team_SKOOOL',
     coverImage:
       'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=1600&q=80&auto=format&fit=crop',
     featured: false,
     sortOrder: 12,
-    year: 2026,
+    year: 2024,
+    contributions: [
+      'Wrote all the Flutter code - 936 lines of Dart across five files (main, task page, fish tank page, locked page, settings page).',
+      'Built the calendar core: table_calendar integration, an Event model, and the four color-coded task groups with per-group colors.',
+      'Implemented the school timetable import flow: ICS link input and fetch, plus syllabus file upload via file_picker.',
+      'Built the gamification screens: the full-screen animated fish tank reward page and the locked bonus page.',
+      'Added personalisation: light/dark theme toggle, group color picker (flutter_colorpicker), and settings persistence via shared_preferences.',
+    ],
+    contributionStats: [
+      { value: '936', label: 'Lines of Dart' },
+      { value: '5', label: 'Dart files' },
+      { value: '1', label: 'Hackathon sprint' },
+      { value: '2024', label: 'Freshman year' },
+    ],
+    chapters: [
+      {
+        era: 'Fall 2024',
+        heading: 'A hackathon a few months into freshman year',
+        body:
+          "A few months into my freshman year at WashU, the WUCG game club ran a hackathon and a friend asked me to team up. We called the team SKOOOL. My teammate owned the ideation and the Figma designs. I owned the code. The honest context: I barely knew what I was doing. I had never built a mobile app before, and my Flutter experience was a handful of tutorials. The pitch we landed on was a student productivity app - calendar, tasks, school timetable import - with a game-y twist, because it was a game club hackathon and the judges would expect one.",
+        contribution: false,
+      },
+      {
+        era: 'From Figma to Flutter',
+        heading: 'Turning a teammate design into 936 lines of Dart',
+        body:
+          "The workflow was simple: my teammate designed screens in Figma, handed me the mockups, and I translated them into Flutter widgets. Five Dart files came out of the weekend: the main app with the calendar, a task list page, a fish tank page, a locked bonus page, and a settings page - 936 lines total. Material Design was the base, with a light/dark theme toggle. The translation from design to code taught me the basic loop that every frontend person learns eventually: pixel-perfect is less important than consistent spacing, and a design detail you cannot build in the available time is a scope decision, not a failure.",
+        contribution: true,
+      },
+      {
+        era: 'The calendar core',
+        heading: 'Courses, tasks, and color-coded groups',
+        body:
+          "The heart of the app is the calendar, built on the table_calendar package. I wrote an Event model and grouped everything into four categories - Work, Personal, School, Others - each with its own color, so a week view reads like a color-coded schedule at a glance. The task page groups the same events by category. It was my first real state-management exercise: the calendar selection, the event list, and the group colors all had to stay in sync, which is where the provider package earned its place in the dependency list. Before this I had only ever written single-page toy UIs where state did not need to travel anywhere.",
+        contribution: true,
+      },
+      {
+        era: 'ICS import',
+        heading: 'Pulling the school timetable into the app',
+        body:
+          "A student calendar app is only useful if you do not have to retype your schedule. Two import paths: paste an ICS link (the format every university timetable system exports) and the app fetches and parses it over http, or upload a syllabus file through file_picker. Both land events on the same calendar. This was the first time I dealt with external data formats in a real app - the intl package for dates, parsing an ICS feed, and deciding what to do when an import partially fails. The scope discipline lesson: the import flow was ugly and basic, but it worked end to end, and a working ugly flow beats a beautiful unfinished one at a hackathon.",
+        contribution: true,
+      },
+      {
+        era: 'Gamification',
+        heading: 'The fish tank reward',
+        body:
+          "The game-club twist: finish your tasks and the app rewards you with a full-screen animated fish tank (a GIF stretched edge to edge, computed from the device dimensions). There is also a locked bonus page that hides a 'Prime Offer' easter egg behind a dialog. In retrospect both are the kind of goofy, slightly rough ideas you ship at a student hackathon, and that was exactly the point - the demo got laughs and the judges remembered it. Building the fish tank was also a small technical lesson in its own right: asset sizing, full-bleed layouts, and GIF performance on a phone screen.",
+        contribution: true,
+      },
+      {
+        era: 'Settings & personalisation',
+        heading: 'Themes, colors, and persistence',
+        body:
+          "The settings page has three jobs: switch light/dark theme, repaint the color of any task group with a color picker (flutter_colorpicker), and persist everything with shared_preferences so it survives app restarts. The color picker was a last-day addition - someone on the team pointed out that four fixed group colors were boring, and the picker was the fastest way to make the app feel personal. Persistence taught me the lesson that seems obvious now: an app that forgets your settings every launch feels broken even if every feature works.",
+        contribution: true,
+      },
+      {
+        era: 'What the hackathon taught me',
+        heading: 'From zero to a demo in one sprint',
+        body:
+          "The weekend compressed a lot of firsts into a short time: first Flutter app, first state management beyond setState, first external data import, first real design-to-code handoff with a teammate. The parts that stuck with me: agree on a minimum demo early and defend it; the teammate-designer / me-coder split works when the Figma file is the contract; and a hackathon demo is a performance as much as a product - the fish tank got more judge attention than the calendar did, and that is not a coincidence. It also planted the habit of shipping something complete rather than polishing one screen forever.",
+        contribution: false,
+      },
+      {
+        era: 'Honest retro',
+        heading: 'Yes, the code is rough. That is the point.',
+        body:
+          "I will be honest about this repo: it has one commit ('Add files via upload' - we uploaded it through the GitHub web UI after the event), the naming is inconsistent (the locked bonus page is called locked_page and contains a Prime Offer joke), and there are comments in the code that were written for myself at 2am. If you read it, you are reading the exact artifact of a freshman who did not know what he was doing yet and shipped anyway. I keep it public on purpose. Every project since has better structure, better tooling, and better naming - and the trajectory from this weekend to now is the part of my growth I am most proud of.",
+        contribution: false,
+      },
+    ],
   },
+
 
   // ────────────────────── VIBE (batch added from GitHub inventory) ──────────────────────
   {
