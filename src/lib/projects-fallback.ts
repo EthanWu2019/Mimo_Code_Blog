@@ -620,8 +620,8 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       '5-month dashboard with currency switch (USD/RMB), weekly/monthly reports, 5 visual themes',
       'Auto-recurring monthly charges via separate cron jobs (iCloud / Apple Care / split phone bill)',
     ],
-    link: 'https://ethanwu2019.github.io/where-my-money-go/',
-    repo: 'https://github.com/EthanWu2019/where-my-money-go',
+    link: 'https://ethanwu2019.github.io/myHermes-where-my-money-go/',
+    repo: 'https://github.com/EthanWu2019/myHermes-where-my-money-go',
     coverImage:
       'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1600&q=80&auto=format&fit=crop',
     featured: false,
@@ -674,7 +674,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
         era: 'The pipeline · stage 3',
         heading: '23:10 cron → GitHub Pages render',
         body:
-          'A second cron job runs at 23:10, ten minutes after the sync. It pulls all entries from Notion via the data_sources/query API, paginates through them, and writes a single data/all.json file. Then it commits and pushes to the where-my-money-go GitHub repo, and GitHub Pages automatically serves the updated dashboard. The dashboard itself is vanilla JS + Chart.js — no framework, no build step, just an index.html, a script.js, and a styles.css. Five CSS themes are hand-rolled (Violet / Sharp / Minimal / Neon / Sunset) using CSS custom properties, and a single Chart.js pie chart shows spend distribution. The page reads the open.er-api.com live FX rate to convert USD↔RMB on the fly. I am not precious about exposing this publicly — if you can read my spend pattern, that is fine, that is actually the point. Static-hosting the dashboard costs $0/year and the data file is one all.json you can fork.',
+          'A second cron job runs at 23:10, ten minutes after the sync. It pulls all entries from Notion via the data_sources/query API, paginates through them, and writes a single data/all.json file. Then it commits and pushes to the myHermes-where-my-money-go GitHub repo, and GitHub Pages automatically serves the updated dashboard. The dashboard itself is vanilla JS + Chart.js — no framework, no build step, just an index.html, a script.js, and a styles.css. Five CSS themes are hand-rolled (Violet / Sharp / Minimal / Neon / Sunset) using CSS custom properties, and a single Chart.js pie chart shows spend distribution. The page reads the open.er-api.com live FX rate to convert USD↔RMB on the fly. I am not precious about exposing this publicly — if you can read my spend pattern, that is fine, that is actually the point. Static-hosting the dashboard costs $0/year and the data file is one all.json you can fork.',
         contribution: false,
       },
       {
