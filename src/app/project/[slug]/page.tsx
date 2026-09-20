@@ -141,12 +141,15 @@ export default async function ProjectDetailPage({
 
           {/* Contribution sidebar — short, scannable list of what the
               owner personally contributed to this project. Renders
-              only when at least one bullet exists. */}
+              only when at least one bullet exists. The header label
+              is overridable per project (sidebarLabel) so solo
+              projects can frame it as e.g. "What I built" instead of
+              the team-oriented "My contribution" default. */}
           {p.contributions && p.contributions.length > 0 && (
             <aside className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 p-5 lg:p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="px-2.5 py-0.5 rounded-full border border-zinc-900 dark:border-white text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-900 dark:text-white">
-                  My contribution
+                  {p.sidebarLabel ?? 'My contribution'}
                 </div>
                 <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
               </div>

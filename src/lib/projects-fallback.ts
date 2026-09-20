@@ -357,9 +357,9 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     slug: 'echo-chamber-cyberbullying-simulator',
     title: 'EchoChamber — Cyber-bullying Simulator',
     tagline:
-      'Post a sentence and six AI personalities pile on. A small browser toy I built because I wanted to feel what toxic comment sections actually feel like',
+      'A small browser toy I made because the internet finally felt too loud to ignore. Post a sentence and six AI personalities pile on',
     description:
-      "A solo Next.js project I made on my own — about ~8.9k lines of custom code, 6 AI personality archetypes, 28 achievements, and 4 hand-written story scenarios. Post something in the box and six different toxic archetypes reply in real time, weighted toward the negative. A sentiment meter drifts your reputation; pulling toward negative unlocks achievement branches, recovery unlocks a different set. The whole thing is bilingual (zh/en) and works offline when the upstream API is rate-limited. Free to play, no accounts, no tracking.",
+      "A solo Next.js side-project — about ~8.9k lines of custom code, 6 AI personality archetypes, 28 achievements, and 4 hand-written story scenarios. You post a sentence in the box and six different toxic archetypes reply in real time, weighted toward the negative. A sentiment meter drifts your reputation; pulling toward negative unlocks achievement branches, recovery unlocks a different set. The whole thing is bilingual (zh/en) and works offline when the upstream API is rate-limited. Free to play, no accounts, no tracking.",
     category: 'web',
     tier: 'major',
     status: 'shipped',
@@ -389,12 +389,21 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     featured: true,
     sortOrder: 3,
     year: 2026,
+    sidebarLabel: 'What I leveled up here',
+    contributions: [
+      'LLM prompt engineering for stable persona over a long conversation — system-prompt weighting (35% hater / 15% stan / 20% logic-lord / 20% moral-knight / 10% spam-bot) baked into the prompt itself, not the routing code.',
+      'Defensive parsing of model output: stripping <think>...</think> reasoning blocks, scanning for the first JSON array vs object, unwrapping json_object mode wrapping, and recovering from character-keyed objects (`{0:"l", 1:"m", ...}`).',
+      'The single sharpest JavaScript gotcha I hit this year: `{...someString}` spreads a string into `{0:"a", 1:"b", ...}`. Coercing each parsed item to a real object before spreading fixed three broken deploys in a row.',
+      'localStorage-backed client state with a single custom hook serializing the whole session (posts, comments, DMs, achievements, blocked users, language) and enforcing cross-slice invariants at the hook layer, not the data layer.',
+      'Web Audio API sound effects generated entirely in code — no audio files shipped, just oscillators + gain envelopes wired to per-event triggers with a 1.2s cooldown to keep the framer-motion budget clean.',
+      'Full bilingual i18n with 143 hand-translated keys × 2 languages and an intentional handful of culture-bound strings that are written separately per language, not translated.',
+    ],
     chapters: [
       {
         era: 'How it started',
-        heading: 'I wanted to know what it actually felt like',
+        heading: 'Years of the internet, condensed into one box',
         body:
-          "I kept reading academic papers about online toxicity and recommendation algorithms, and they were all very clean and very abstract. I wanted the opposite of that — what does it actually feel like when you post something and a stranger rips into it for no reason? Could I make a small toy where you type one sentence and a feed of replies comes back at you, each one a slightly different kind of awful, and you watch a little number drift down as you read them? That was the whole spark. I started building it on a Saturday with no plan, just to see if it was even possible to get a model to commit to a personality long enough for it to feel like a person and not a slot machine. The first version was ugly and the personalities all sounded the same. By Sunday night I had something that felt close to the thing in my head, and I was hooked enough to keep going.",
+          "I've been on the internet too long. Group chats, comment sections, DMs from strangers, the whole parade — by now I have a pretty good mental catalogue of every flavor of 'yeah whatever, here is my unsolicited opinion about your post'. I didn't build this project to study toxicity or to write a paper about it. I built it because one day it occurred to me that all of that lived only in my head and other people's heads, and it might be useful to have a tangible toy that lets you poke at it on purpose. Like, you can actually sit down and watch a number drift down as strangers pile on, and feel the thing that real people feel on bad days, and then close the tab. That was the whole spark. I started building on a Saturday with no plan, mostly to see if a model could commit to a personality long enough for it to feel like a person and not a slot machine. By Sunday night I had something close to the thing in my head, and I was in too deep to stop.",
         contribution: false,
       },
       {

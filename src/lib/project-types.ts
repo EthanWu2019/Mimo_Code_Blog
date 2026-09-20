@@ -78,6 +78,11 @@ export interface ProjectItem {
    *  scannable "what did I actually do here" before they read the
    *  full chapter timeline. */
   contributions?: string[];
+  /** Override the sidebar header label. Default is "My contribution",
+   *  which fits team / multi-contributor projects. Solo projects can
+   *  pass e.g. "What I built here" or "Tech I leveled up" to drop
+   *  the contribution framing. */
+  sidebarLabel?: string;
   /** Reach / scale stats for the contributions sidebar (e.g. "30+
    *  groups", "20k+ daily messages"). */
   contributionStats?: ProjectContributionStat[];
