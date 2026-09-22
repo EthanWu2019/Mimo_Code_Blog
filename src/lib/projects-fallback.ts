@@ -215,6 +215,9 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'WebSocket',
       'Linux / macOS daemon',
       'Tauri 2 (YunZai Console, in progress)',
+      'gsuid_core (Python web service on :8765)',
+      'XutheringWavesUID (gsuid_core plugin, 90+ `ww` commands)',
+      'Cloudflare Tunnel (named, on the 3060 itself)',
     ],
     highlights: [
       'NapCat adapter — the QQ login path the platform lost after Tencent’s crackdown',
@@ -223,6 +226,9 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Stock + gold-price plugin — live quotes from free APIs',
       '豆浆 plugin — in-group virtual-currency game to keep chats alive',
       'YunZai Console — Tauri 2 one-click installer (in progress)',
+      'GScore bridge — yunzai-gscore-adapter plugin + a keepalive patch nobody upstream had (ws_ping_interval=60 / ws_ping_timeout=120)',
+      'XutheringWavesUID adapter — `ww查询角色`, `ww登录`, `ww面板` and 87 other commands against the kurobbs library',
+      'Cloudflare Tunnel on the 3060 — every group member can open the login link from any network',
       '24/7 deployment — public intro at 海绵酱.love',
     ],
     link: 'https://www.xn--90w268avpn.love/',
@@ -235,6 +241,8 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
       'Independently shipped a suite of third-party YunZai plugins: weather, 豆浆 in-group virtual-currency game, Game ID social-card, stock + gold/silver price, and several one-shot utilities — all single-JS modules in plugin/example/.',
       'Built and maintained my own NapCat-based QQ login adapter to replace the unstable official QQ login path after Tencent’s third-party-bot crackdown. Covers avatars, file transfer, group-message routing, and the full login lifecycle.',
       'Currently packaging the whole deployment as YunZai Console — a Tauri 2 desktop app that bundles Redis + TRSS-YunZai + NapCat into a single-binary installer.',
+      "Layered the gsuid_core (早柚核心) Python service onto YunZai via xiowo's yunzai-gscore-adapter plugin, including a core.py patch for ws_ping_interval=60 / ws_ping_timeout=120 that resolved the 1011 keepalive drops — no longer fights the YunZai node event loop.",
+      'Installed the XutheringWavesUID plugin under gsuid_core/plugins/, then opened up the bot\'s login flow to every group member by tunneling 127.0.0.1:8765 through a named Cloudflare Tunnel (DNS `waves.ethanshermes.com`, cloudflared.exe on the 3060 itself — no Mac, no SSH reverse proxy, no tailscale gate).',
     ],
     contributionStats: [
       { value: '20k+', label: 'Daily messages' },
@@ -289,6 +297,34 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
         heading: 'YunZai Console — packaging the whole stack',
         body:
           "Right now I'm working on turning this whole deployment into a product: YunZai Console, a Tauri 2 desktop app that bundles Redis + TRSS-YunZai + NapCat into a single-binary installer — setup wizard, QR-code web login (localhost web UI), one-click start/stop, MSI/NSIS packaging for Windows.",
+        contribution: true,
+      },
+      {
+        era: 'Contribution 05',
+        heading: 'The GScore upstream — YunZai meets gsuid_core',
+        body:
+          "Once your bot is alive on Tencent's QQ, the obvious next question is: can it pull in-game data for whatever game the group plays? The YunZai ecosystem is mostly JavaScript plugins in plugin/example/ — Game ID, weather, stock prices, 豆浆, all single-JS modules I wrote earlier. But the real game-data libraries (Genshin, Star Rail, Wuthering Waves, ZZZ) live in a different world: gsuid_core, an upstream Python framework out of the Genshin-bots community. gsuid_core is what those plugins are built against — a Python service on port 8765 with a WebSocket interface. For YunZai to load them, you need a bridge: a plugin on one side, a Python core on the other.",
+        contribution: true,
+      },
+      {
+        era: 'Contribution 06',
+        heading: 'Gscore-Adapter + a keepalive patch nobody upstream had',
+        body:
+          "I cloned xiowo's yunzai-gscore-adapter into D:\\TRSSYUNZAI\\Yunzai-Bot\\plugins\\ and restarted YunZai. The bridge connected, then immediately started logging [Gscore-Adapter] WebSocket 错误: connect ECONNREFUSED 127.0.0.1:8765 every 5 seconds. GScore was never installed in the first place — it's a separate Python service, not a plugin, and it has to run on the same Windows machine as YunZai. I cloned Genshin-bots/gsuid_core into D:\\TRSSYUNZAI\\Gscore\\, ran uv sync, then started pythonw -m gsuid_core.core --host 127.0.0.1 --port 8765. The SSH session closed, and the Python process died with it — Windows Job Object reaps any process spawned under an SSH session. The fix was the same one I used for cloudflared later: register a Task Scheduler task (`GscoreAlwaysOn`, At startup + On connection to user session) so the pythonw.exe survives the SSH disconnect. Once it stuck, YunZai started logging [Gscore-Adapter] 连接 open, then disconnected again 60 seconds later with `1011 keepalive ping timeout` and `Connection reset by peer code 1006`. GScore's default ws_ping_timeout is 30s, and YunZai's node event loop is too busy for that cadence. I patched D:\\TRSSYUNZAI\\Gscore\\gsuid_core\\core.py to set ws_ping_interval=60, ws_ping_timeout=120. Ninety-second idle is stable — WS stays ESTABLISHED.",
+        contribution: true,
+      },
+      {
+        era: 'Contribution 07',
+        heading: "XutheringWavesUID — the 90+ command plugin, and the localhost login problem",
+        body:
+          "With the bridge alive, I cloned https://github.com/Loping151/XutheringWavesUID into gsuid_core/plugins/ and ran uv pip install pypinyin rapidfuzz playwright opencv-python fonttools, then playwright install chromium — the plugin uses a headless browser to auto-fill the human-verification CAPTCHA the kurobbs login page throws. After a restart, GScore auto-loaded the plugin, generated XutheringWavesUID.json with `force_prefix: [\"ww\"]` and 90+ commands, and `ww查询角色` started returning real data. Then someone typed `ww登录` in a group, and YunZai replied with a link like http://localhost:8765/waves/i/<token>. That link is unreachable for anyone outside my LAN. The plugin's `page_login_local` flow opens an HTML form in a browser the user just filled with their kurobbs phone number + SMS code; the plugin then exchanges those creds for a kurogames cookie and stores it in sqlite. Every piece of that flow already works locally — what was missing was a public URL everyone in any group could actually open. That's not a plugin bug; it's a deployment gap, and that's the part I owned.",
+        contribution: true,
+      },
+      {
+        era: 'Contribution 08',
+        heading: "Public login through Cloudflare Tunnel — what I rejected and why",
+        body:
+          "The bot is for everyone in the group, so the URL must be reachable from every network, not just my tailscale or my LAN. I tried three approaches before settling on Cloudflare: (1) Tail the bot to a tailscale-only IP — rejected, only people running tailscale could open it. (2) Reverse-SSH from the 3060 to the Mac and have the Mac sshd forward :8765 — rejected, that makes the Mac a dependency for a service that's supposed to live on the game laptop, and the 3060 sshd's `GatewayPorts no` default made it impractical anyway. (3) Named Cloudflare Tunnel running cloudflared.exe on the 3060 itself, DNS `waves.ethanshermes.com` proxying back to http://127.0.0.1:8765 on the same box — chosen. cloudflared needed its own Task Scheduler (`CloudflaredTunnel`) because SSH-spawned cloudflared.exe dies the same way pythonw.exe does. The plugin config for XutheringWavesUID lives at data/XutheringWavesUID/config.json (not the top-level plugins_configs/JSON I tried first — GScore passes those keys as kwargs to the Plugins constructor and `WavesLoginUrl` is not a kwarg it accepts). Setting `WavesLoginUrl.data = https://waves.ethanshermes.com` and `WavesLoginUrlSelf.data = true` makes the bot hand out `https://waves.ethanshermes.com/waves/i/<token>` instead of the unreachable localhost URL. Today the entire pipeline works: group chat → bot → public login link → user submits creds on the page the plugin serves → cookie lands in sqlite → `ww查询角色` returns the linked account's data.",
         contribution: true,
       },
       {
