@@ -1239,10 +1239,120 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     link: null,
     repo: 'https://github.com/EthanWu2019/HMJ.love',
     coverImage:
-      'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800&q=80&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1600&q=80&auto=format&fit=crop',
     featured: false,
     sortOrder: 16,
     year: 2026,
+  },
+  {
+    // A live ops dashboard for the Hermes agent fleet on
+    // ethanshermes.com. Built one evening as a self-contained
+    // FastAPI service that probes the always-on tunnel backends,
+    // reads the existing token_tracker.py daily rollups, and serves
+    // the Next.js frontend from the same process.
+    id: 'fallback-vibe-hermes-dashboard',
+    slug: 'hermes-dashboard',
+    title: 'Hermes Dashboard',
+    tagline:
+      'A live ops dashboard for the Hermes fleet on ethanshermes.com — token trends, service health, and uptime in one page',
+    description:
+      'A self-contained FastAPI service that probes the always-on ethanshermes.com tunnel backends every 30 seconds, reads the existing token_tracker.py daily token rollups for permanent history, and serves a Next.js dashboard from the same process. Single domain, single machine, single Cloudflare tunnel — no Vercel, no extra database. The dashboard reads from the same ~/.hermes/token_stats/ JSON files the QQ daily token report is built from, so what the owner sees in the browser always matches what they get pushed at 23:55.',
+    category: 'tooling',
+    tier: 'vibe',
+    status: 'shipped',
+    tech: [
+      'Python 3.13',
+      'FastAPI',
+      'Uvicorn',
+      'httpx',
+      'SQLite (rejected — used existing JSON files instead)',
+      'Next.js 15',
+      'React 19',
+      'Chart.js',
+      'TypeScript',
+      'Cloudflare Tunnel',
+      'launchd (Mac daemon)',
+    ],
+    highlights: [
+      'Live service health matrix — 7 always-on tunnel backends, 30s probe, critical services flagged',
+      'Daily token rollup chart + table (141 days history from token_tracker.py)',
+      'Default model + last-call model split (configured model vs API-routed model)',
+      'MiMo quota gauge with used / total / %',
+      'Single-domain architecture — dashboard.ethanshermes.com tunnel → FastAPI on :8800',
+    ],
+    link: 'https://dashboard.ethanshermes.com',
+    repo: 'https://github.com/EthanWu2019/myHermes-hermes-dashboard',
+    coverImage:
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop',
+    featured: false,
+    sortOrder: 17,
+    year: 2026,
+    contributions: [
+      'Designed the data layer around the existing token_tracker.py cron output instead of a parallel SQLite — dashboard numbers stay 1:1 with the QQ daily token report.',
+      'Wired the backend to read model.default from config.yaml (not the last-call model from /api/status), so the dashboard shows the owner-configured model rather than whatever the API happened to route last.',
+      'Owner-curated the 7 services in the health matrix — explicitly removed Docs / ComfyUI / Project, kept WebUI / Health / Chat / Clock / API / Ethanos / Canvas with critical flags on the must-stay-up set.',
+      'Single-domain architecture: dashboard.ethanshermes.com tunnels to :8800 where one FastAPI process serves both the JSON API and the static Next.js build — no Vercel, no extra database.',
+    ],
+    contributionStats: [
+      { value: '7', label: 'Services monitored' },
+      { value: '141', label: 'Days token history' },
+      { value: '30s', label: 'Probe interval' },
+      { value: '1', label: 'Tunnel route' },
+    ],
+    chapters: [
+      {
+        era: '2026-09-21 · the question',
+        heading: '"我需要一个公网网站来看 hermes 实时状态"',
+        body:
+          "The owner asked for a single page that could answer, at a glance: how many tokens have we burned today, is Hermes up to date, are all the always-on ethanshermes.com subdomains still reachable, and what does the token trend look like across days. The four asks that mattered: today's token count, uptime, version, and a chart. Everything else is in service of those four.",
+        contribution: false,
+      },
+      {
+        era: 'Decision 01 · data layer',
+        heading: 'Read token_tracker.py output, do not write a parallel database',
+        body:
+          "The owner already had a cron (job 253c942cc597, 23:55 daily) that aggregates every session's token counts from state.db into ~/.hermes/token_stats/YYYY-MM-DD.json plus a cumulative summary.json — the same numbers that get pushed to QQ every night. The temptation was to write a fresh SQLite and a fresh aggregation loop. Resisted it. The dashboard now reads those JSON files directly, so what the owner sees in the browser always matches what the QQ report says. No drift, no two sources of truth.",
+        contribution: true,
+      },
+      {
+        era: 'Decision 02 · model field',
+        heading: 'Show configured model, not last-call model',
+        body:
+          "/api/status returns the model the last request was actually routed to, which drifts (MiniMax-M3 today, mimo-v2.5-pro in older sessions). The owner explicitly wanted the configured default — the one they paid the annual plan for — surfaced as the canonical answer, with the last-call model kept as a smaller secondary field for context. That distinction now drives both the headline KPI card and the footer text.",
+        contribution: true,
+      },
+      {
+        era: 'Decision 03 · services',
+        heading: 'Owner-curated the service matrix down to seven',
+        body:
+          "The original tunnel config has ten subdomains. The owner asked me to drop the ones they no longer use: Docs (project from years ago), ComfyUI (tried once, abandoned), Project (couldn't even remember what it was). The seven that stayed — WebUI, Health, Chat, Clock, API, Ethanos, Canvas — are the ones actually in use, and five of them got the critical flag because going down would block something the owner relies on.",
+        contribution: true,
+      },
+      {
+        era: 'Decision 04 · architecture',
+        heading: 'One tunnel, one process, one domain',
+        body:
+          "Vercel would have been the obvious answer for the frontend, but it doesn't work with a Cloudflare Tunnel — the tunnel already owns the DNS for dashboard.ethanshermes.com, and vercel.app domains got hijacked by the SSO gate. Solution: drop Vercel entirely, build the Next.js app as a static export into backend/static/, and let the same FastAPI process serve both /api/* and /. Single port, single tunnel route, single launchd plist. The dashboard lives wherever the backend lives.",
+        contribution: true,
+      },
+      {
+        era: '2026-09-21 · shipped',
+        heading: 'dashboard.ethanshermes.com is live',
+        body:
+          "End-to-end smoke test: tunnel OK, FastAPI on :8800 OK, /api/snapshot returns the configured MiniMax-M3 model and seven service states, /api/rollups returns 141 days of token history (grand total 150M tokens, all from MiniMax-M3), and the Next.js page renders the cover KPIs, the service matrix, the 141-day token chart, and the last-30-days table. No Vercel, no extra DB, no scheduled jobs — just one launchd-kept-alive Python process and one Cloudflare tunnel route. The repo is at github.com/EthanWu2019/myHermes-hermes-dashboard and the dashboard is at dashboard.ethanshermes.com.",
+        contribution: false,
+        links: [
+          {
+            label: 'dashboard.ethanshermes.com · live',
+            href: 'https://dashboard.ethanshermes.com',
+          },
+          {
+            label: 'myHermes-hermes-dashboard · source',
+            href: 'https://github.com/EthanWu2019/myHermes-hermes-dashboard',
+          },
+        ],
+      },
+    ],
   },
 ];
 
