@@ -1302,7 +1302,7 @@ export const FALLBACK_PROJECTS: ProjectItem[] = [
     chapters: [
       {
         era: '2026-09-21 · the question',
-        heading: '"我需要一个公网网站来看 hermes 实时状态"',
+        heading: '"I need a public site to see Hermes status in real time"',
         body:
           "The owner asked for a single page that could answer, at a glance: how many tokens have we burned today, is Hermes up to date, are all the always-on ethanshermes.com subdomains still reachable, and what does the token trend look like across days. The four asks that mattered: today's token count, uptime, version, and a chart. Everything else is in service of those four.",
         contribution: false,
